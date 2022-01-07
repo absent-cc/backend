@@ -4,12 +4,12 @@
 
 ## What is it?
 An SMS schoology bot that notifies NPS students when their teachers are absent. Supports both Newton high schools, [Newton South](https://www.newton.k12.ma.us/nshs) & [Newton North](https://www.newton.k12.ma.us/nnhs).
-abSENT uses the [Schoolopy](https://github.com/ErikBoesen/schoolopy) API wrapper to grab teacher absences from Schoology, which are processed. Alerts are then send through FCM (Firebase Cloud Messaging) to registered users.
+abSENT uses the [Schoolopy](https://github.com/ErikBoesen/schoolopy) API wrapper to grab teacher absences from Schoology, which are processed. Alerts are then sent through FCM (Firebase Cloud Messaging) to registered users.
 
 ## How does it work?
 Students sign up in our app. Their schedule is then saved as an SQLite database using 3 tables:
 
-- One table stores students and their characteristics (name and phone number)
+- One table stores students and their characteristics (name, Google subject ID, FCM device details, etc)
 - Another stores teachers and their characteristics (name)
 - The third table is an array of classes that maps teacher & block -> student. 
 
@@ -21,6 +21,7 @@ Refreshing Schoology 20 times every morning is somewhat draining.
 ## Contributors
 - [Kevin Yang](https://github.com/bykevinyang)
 - [Roshan Karim](https://github.com/karimroshan)
+
 Frontend design by [Leah Vashevko](https://github.com/theaquarium)
 
 ## Disclaimer:
