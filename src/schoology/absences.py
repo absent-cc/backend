@@ -107,7 +107,7 @@ class ContentParser:
             else:
                 note = rawTable[row*COLUMNS+5]
             # Generate AbsentTeacher for row.
-            teacher = AbsentTeacher(rawTable[row*COLUMNS+1], rawTable[row*COLUMNS], rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
+            teacher = AbsentTeacher(Teacher(rawTable[row*COLUMNS+1], rawTable[row*COLUMNS]), rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
             absences.append(teacher)
 
         return absences
@@ -139,7 +139,7 @@ class ContentParser:
                 # Split the name.
                 name = rawTable[row*COLUMNS].split(", ")
                 # Generate AbsentTeacher object for row.
-                teacher = AbsentTeacher(name[1], name[0], rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
+                teacher = AbsentTeacher(Teacher(name[1], name[0]), rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
                 absences.append(teacher)
 
         # Clause #2 - Standard, with position as first column, 8 columns, and DoW as last.
@@ -158,7 +158,7 @@ class ContentParser:
                 else:
                     note = rawTable[row*COLUMNS+3]
                 # Generate AbsentTeacher object for row.
-                teacher = AbsentTeacher(rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+1], rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
+                teacher = AbsentTeacher(Teacher(rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+1]), rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
                 absences.append(teacher)
         
         # Clause #3 - Short, same as #2 without DoW.
@@ -177,7 +177,7 @@ class ContentParser:
                 else:
                     note = rawTable[row*COLUMNS+3]
                 # Generate AbsentTeacher object for row.
-                teacher = AbsentTeacher(rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+1], rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
+                teacher = AbsentTeacher(Teacher(rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+1]), rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
                 absences.append(teacher)
 
         return absences
@@ -197,7 +197,7 @@ class ContentParser:
             else:
                 note = rawTable[row*COLUMNS+4]
             # Generate AbsentTeacher for row.
-            teacher = AbsentTeacher(rawTable[row*COLUMNS+1], rawTable[row*COLUMNS], rawTable[row*COLUMNS+2], str(self.date.strftime("%m/%-d/%Y")), note)
+            teacher = AbsentTeacher(Teacher(rawTable[row*COLUMNS+1], rawTable[row*COLUMNS]), rawTable[row*COLUMNS+2], str(self.date.strftime("%m/%-d/%Y")), note)
             absences.append(teacher)
 
         return absences
