@@ -5,13 +5,20 @@ from typing import Set
 from collections import UserString
 from uuid import UUID
 
-import pretty_errors
 class SchoolNameMapper(dict):
     def __init__(self):
         super().__init__()
         self.update({
             "NSHS": SchoolName.NEWTON_SOUTH,
             "NNHS": SchoolName.NEWTON_NORTH
+        })
+
+class ReverseSchoolNameMapper(dict):
+    def __init__(self):
+        super().__init__()
+        self.update({
+            SchoolName.NEWTON_SOUTH: "NSHS",
+            SchoolName.NEWTON_NORTH: "NNHS"
         })
 
 class SchoolName(Enum):
@@ -179,16 +186,8 @@ class AbsentTeacher:
 
 @dataclass
 class SchoologyCreds:
-    northkey: str
-    northsecret: str
-    southkey: str
-    southsecret: str
-
-@dataclass
-class NotificationInformation:
-    teacher: AbsentTeacher
-    students: list
-    block: SchoolBlock
+    keys: dict[SchoolName: str, SchoolName: str]
+    secrets: dict[SchoolName: str, SchoolName: str]
 
 class Token(UserString):
     LENGTH = 86

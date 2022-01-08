@@ -4,7 +4,7 @@ from typing import Tuple, List
 from database.logger import Logger
 
 class DatabaseHandler():
-    def __init__(self, school: SchoolName, db_path = "abSENT.db"):
+    def __init__(self, db_path = "abSENT.db"):
         self.db_path = f"data/{db_path}"
         self.connection = sqlite3.connect(self.db_path)
         self.cursor = self.connection.cursor()
@@ -26,8 +26,8 @@ class DatabaseHandler():
                 school TEXT
             )
             """
-        create_classes_south = """
-        CREATE TABLE IF NOT EXISTS classes_south (
+        create_classes_NSHS = """
+        CREATE TABLE IF NOT EXISTS classes_NSHS (
                 class_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 teacher_id INTEGER,
                 block TEXT,
@@ -38,8 +38,8 @@ class DatabaseHandler():
                     REFERENCES teacher_directory(teacher_id)
             )
             """
-        create_classes_north = """
-        CREATE TABLE IF NOT EXISTS classes_north (
+        create_classes_NNHS = """
+        CREATE TABLE IF NOT EXISTS classes_NNHS (
                 class_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 teacher_id INTEGER,
                 block TEXT,
@@ -65,8 +65,8 @@ class DatabaseHandler():
         # Create tables if they don't exist
         self.cursor.execute(create_student_directory)
         self.cursor.execute(create_teacher_directory)
-        self.cursor.execute(create_classes_south)
-        self.cursor.execute(create_classes_north)
+        self.cursor.execute(create_classes_NNHS)
+        self.cursor.execute(create_classes_NSHS)
         self.cursor.execute(create_sessions)
 
         self.connection.commit()
@@ -102,11 +102,11 @@ class DatabaseHandler():
     def getStudent(self, student: Student):
         # Check if student object already has an id
         if student.uuid == None:
-            # If not, search students in DB by student_uuid
-            query = f"SELECT * FROM student_directory WHERE student_uuid = '{student.student_uuid}' LIMIT 1"
+            # If not, search students in DB by uuid
+            query = f"SELECT * FROM student_directory WHERE uuid = '{student.uuid}' LIMIT 1"
         else:
             # If student object already has an id, search students in DB by id
-            query = f"SELECT * FROM student_directory WHERE student_id = '{student.uuid}' LIMIT 1"
+            query = f"SELECT * FROM student_directory WHERE uuid = '{student.uuid}' LIMIT 1"
         # Conduct query
         res = self.cursor.execute(query).fetchone()
         # If student is found (not None), return student object
@@ -138,8 +138,8 @@ class DatabaseHandler():
     def getStudentID(self, student: Student):
         # Check if student object already has an id
         if student.uuid == None:
-            # If not, search students in DB by student_uuid
-            query = f"SELECT student_id FROM student_directory WHERE student_uuid = '{student.student_uuid}' LIMIT 1"
+            # If not, search students in DB by uuid
+            query = f"SELECT uuid FROM student_directory WHERE subject = '{student.subject}' LIMIT 1"
             # Conduct query
             res = self.cursor.execute(query).fetchone()
             # If student is found (not None), return student id (first in results list)
@@ -162,11 +162,11 @@ class DatabaseHandler():
         
         # Grab student id if it isn't given
         if student.uuid == None:
-            student_id = self.getStudentID(student)
+            student_uuid = self.getStudentID(student)
         else:
-            student_id = student.uuid
+            student_uuid = student.uuid
 
-        query = f"SELECT class_id FROM classes WHERE teacher_id = '{teacher_id}' AND block = '{block}' AND student_id = '{student_id}' LIMIT 1"
+        query = f"SELECT class_id FROM classes_{ReverseSchoolNameMapper()[student.school]} WHERE teacher_id = '{teacher_id}' AND block = '{block}' AND student_id = '{student_uuid}' LIMIT 1"
         res = self.cursor.execute(query).fetchone()
         if res != None:
             return res[0]
@@ -215,7 +215,7 @@ class DatabaseHandler():
         student_id = return_id.fetchone()[0] # Get student id created from autoincrement
         self.connection.commit()
 
-        updatedStudent = Student(student.uuid, student.subject, student.first, student.last, student.school, student.grade, student_id)
+        updatedStudent = Student(student.uuid, student.subject, student.first, student.last, student.school, student.grade)
 
         self.logger.addedStudent(updatedStudent)
         # Return the newly generated id for student object manipulation
@@ -237,7 +237,7 @@ class DatabaseHandler():
         if student.uuid == None:
             return False
         # Delete a student's classes.
-        query = f"DELETE FROM classes WHERE student_id = '{student.uuid}'"
+        query = f"DELETE FROM classes_{ReverseSchoolNameMapper()[student.school]} WHERE student_id = '{student.uuid}'"
         self.cursor.execute(query)
         self.connection.commit
         self.removeStudentFromStudentDirectory(student)
@@ -323,9 +323,9 @@ class DatabaseHandler():
         if teacher_id == None:
             teacher_id = self.addTeacherToTeacherDirectory(newTeacher)
         # Get student id
-        student_id = self.getStudentID(student)
+        student_uuid = self.getStudentID(student)
         # Add class to classes table
-        print(f"Created new class with id: {self.addClassToClasses(teacher_id, block, student_id)}")
+        print(f"Created new class with id: {self.addClassToClasses(teacher_id, block, student_uuid, student.school)}")
         return True
     
     # Change existing class entry in data table classes
@@ -339,7 +339,7 @@ class DatabaseHandler():
             if student.uuid == None:
                 student.uuid = self.getStudentID(student)
             query = f"""
-            DELETE FROM classes WHERE teacher_id = '{old_teacher.id}' AND block = '{str_block}' AND student_id = '{student.uuid}'
+            DELETE FROM classes_{ReverseSchoolNameMapper()[student.school]} WHERE teacher_id = '{old_teacher.id}' AND block = '{str_block}' AND student_id = '{student.uuid}'
             """
             self.cursor.execute(query)
             self.connection.commit()
@@ -357,7 +357,7 @@ class DatabaseHandler():
             # Get teacher id for the given block and student. 
             query = f"""
             SELECT teacher_id
-            FROM classes
+            FROM classes_{ReverseSchoolNameMapper()[student.school]}
             WHERE teacher_id = '{old_teacher.id}' AND block = '{str_block}' AND student_id = '{student.uuid}'
             """
             res = self.cursor.execute(query).fetchone()
@@ -367,7 +367,7 @@ class DatabaseHandler():
             # Else class slot full, update the class entry that already exists.
             else:
                 query = f"""
-                UPDATE classes 
+                UPDATE classes_{ReverseSchoolNameMapper()[student.school]}
                 SET teacher_id = '{new_teacher_id}' 
                 WHERE teacher_id = '{res[0]}' AND block = '{str_block}' AND student_id = '{student.uuid}'
                 """
@@ -408,7 +408,7 @@ class DatabaseHandler():
         FROM student_directory
         WHERE student_id IN (
             SELECT student_id
-            FROM classes
+            FROM classes_{ReverseSchoolNameMapper()[teacher.school]}
             WHERE teacher_id = '{teacher_id}' AND block = '{str_block}' AND school = '{str_school}'
         )
         """
@@ -426,8 +426,8 @@ class DatabaseHandler():
         for teacher in teachers:
             query = f"""
             SELECT block
-            FROM classes
-            WHERE teacher_id = '{teacher.id}' AND student_id = '{student.uuid}'
+            FROM classes_{ReverseSchoolNameMapper()[student.school]}
+            WHERE teacher_id = '{teacher.id}' AND student_uuid = '{student.uuid}'
             """
             res = self.cursor.execute(query).fetchall()
             for block in res:
@@ -449,8 +449,8 @@ class DatabaseHandler():
         FROM teacher_directory
         WHERE teacher_id in (
             SELECT teacher_id
-            FROM classes
-            WHERE student_id = '{student.uuid}'
+            FROM classes_{ReverseSchoolNameMapper()[student.school]}
+            WHERE student_uuid = '{student.uuid}'
         )
         """
         res = self.cursor.execute(query).fetchall()
