@@ -1,7 +1,11 @@
+from datetime import date, datetime
 from enum import Enum
 from dataclasses import dataclass
 from typing import Set
+from collections import UserString
+from uuid import UUID
 
+import pretty_errors
 class SchoolNameMapper(dict):
     def __init__(self):
         super().__init__()
@@ -71,12 +75,12 @@ class SchoolBlock(Enum):
 
 @dataclass
 class Student:
-    number: str
+    uuid: UUID
+    subject: str
     first: str
     last: str
     school: SchoolName
     grade: int
-    id: int = None
 
     def __str__(self) -> str:
         return f"{self.first} {self.last}"
@@ -165,43 +169,13 @@ class Schedule(dict):
 
 @dataclass
 class AbsentTeacher:
-    first: str
-    last: str 
+    teacher: Teacher 
     length: str
     date: str
     note: str
 
     def __str__(self):
         return f"{self.first} {self.last} {self.length} {self.date} {self.note}"
-
-@dataclass
-class Number:
-    number: str
-    
-    def __str__(self):
-        return self.number
-    
-    def __hash__(self):
-        return hash(str(self))
-
-    def __eq__(self, other):
-        if not isinstance(other, Number):
-            return False
-        return self.number == other.number
-
-@dataclass
-class Message:
-    number: Number
-    content: str
-
-    def __str__(self):
-        return f"{self.number} {self.content}"
-
-@dataclass
-class TextNowCreds:
-    username: str
-    sid: str
-    csrf: str
 
 @dataclass
 class SchoologyCreds:
@@ -215,4 +189,20 @@ class NotificationInformation:
     teacher: AbsentTeacher
     students: list
     block: SchoolBlock
+
+class Token(UserString):
+    LENGTH = 86
+    def __init__(self, *args, **kwargs):
+        if len(args[0]) != self.LENGTH:
+            raise ValueError("Token must be 86 characters long")
+        super().__init__(*args, **kwargs)
+
+@dataclass
+class Session():
+    uuid: UUID
+    token: Token
+    start_time: datetime
+    validity: bool = True
+    id: int = None
+
     
