@@ -11,7 +11,7 @@ class DatabaseHandler():
         create_student_directory = """
         CREATE TABLE IF NOT EXISTS student_directory (
                 student_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                number TEXT,
+                subject INT,
                 first_name TEXT,
                 last_name TEXT,
                 school TEXT,
