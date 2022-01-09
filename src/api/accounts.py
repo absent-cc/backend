@@ -1,5 +1,5 @@
 import secrets
-from uuid import uuid4
+import base64
 from database.databaseHandler import DatabaseHandler
 from dataStructs import *
 from datetime import datetime
@@ -13,25 +13,30 @@ class Authenticator:
         # OAUTH CODE GOES HERE
         return True
 
-    def initializeSession(self, uuid):
+    def initializeSession(self, uuid: UUID):
         database = DatabaseHandler()
-        strtoken = self.generateToken()
-        try:
-            token = Token(strtoken)
-        except ValueError:
-            return None
-        session = Session(uuid, token, datetime.now())
+        token = self.generateToken()
+        clientID = self.generateClientID(uuid)
+        session = Session(uuid, clientID, token, datetime.now())
 
         database.addSession(session)
-        return True
+        return session
 
     def generateToken(self):
-        return secrets.token_urlsafe(64)
+        return Token(secrets.token_urlsafe(64))
 
-    def validateToken(self, token: Token, uuid: UUID):
+    def generateClientID(self, uuid: UUID):
+        return ClientID(secrets.token_hex(8) + "." + str(uuid))
+
+    def validateToken(self, clientID: ClientID, token: Token):
         database = DatabaseHandler()
-        if database.getSessionID(Session(uuid, token, None)):
+        inSessions = database.getSessionID(Session(None, clientID, token, None))
+        print(database.getSession(Session(None, None, None, None, None, inSessions)))
+        if inSessions != None:
+            #if database.getSession(Session(None, None, None, None, None, inSessions)).start_time :
             return True
         return False
+
+    
     
 

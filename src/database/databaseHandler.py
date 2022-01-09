@@ -54,6 +54,7 @@ class DatabaseHandler():
         CREATE TABLE IF NOT EXISTS sessions (
                 session_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 uuid TEXT,
+                client_id TEXT,
                 token TEXT,
                 start_time TEXT,
                 validity INT,
@@ -102,8 +103,8 @@ class DatabaseHandler():
     def getStudent(self, student: Student):
         # Check if student object already has an id
         if student.uuid == None:
-            # If not, search students in DB by uuid
-            query = f"SELECT * FROM student_directory WHERE uuid = '{student.uuid}' LIMIT 1"
+            # If not, search students in DB by subject
+            query = f"SELECT * FROM student_directory WHERE subject = '{student.subject}' LIMIT 1"
         else:
             # If student object already has an id, search students in DB by id
             query = f"SELECT * FROM student_directory WHERE uuid = '{student.uuid}' LIMIT 1"
@@ -466,7 +467,7 @@ class DatabaseHandler():
         query = f"""
         SELECT session_id
         FROM sessions
-        WHERE token = '{session.token}' AND uuid = '{session.uuid}'
+        WHERE token = '{session.token}' AND client_id = '{session.clientID}'
         """
         res = self.cursor.execute(query).fetchone()
         if res == None:
@@ -492,13 +493,15 @@ class DatabaseHandler():
     def addSession(self, session: Session) -> bool:
         query = f"""
         INSERT INTO sessions (
-                uuid, 
+                uuid,
+                client_id, 
                 token, 
                 start_time,
                 validity
                 )
             VALUES (
                 '{session.uuid}',
+                '{session.clientID}',
                 '{session.token}',
                 '{session.start_time}',
                 '{session.validity}'

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Set
 from collections import UserString
 from uuid import UUID
+from pydantic import BaseModel
 
 class SchoolNameMapper(dict):
     def __init__(self):
@@ -189,6 +190,8 @@ class SchoologyCreds:
     keys: dict[SchoolName: str, SchoolName: str]
     secrets: dict[SchoolName: str, SchoolName: str]
 
+# API Stuff
+
 class Token(UserString):
     LENGTH = 86
     def __init__(self, *args, **kwargs):
@@ -196,12 +199,33 @@ class Token(UserString):
             raise ValueError("Token must be 86 characters long")
         super().__init__(*args, **kwargs)
 
+    def __str__(self):
+        return self.data
+
+class ClientID(UserString):
+    LENGTH = 53
+    def __init__(self, *args, **kwargs):
+        if len(args[0]) != self.LENGTH:
+            raise ValueError("ClientID must be 53 characters long")
+        super().__init__(*args, **kwargs)
+
+    def __str__(self):
+        return self.data
+
 @dataclass
 class Session():
     uuid: UUID
+    clientID: ClientID
     token: Token
     start_time: datetime
     validity: bool = True
     id: int = None
+
+class IDToken(BaseModel):
+    idToken: str
+
+    def __str__(self):
+        return self.idToken
+
 
     

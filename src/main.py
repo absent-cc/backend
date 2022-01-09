@@ -1,6 +1,6 @@
 import threading, time, yaml
 from dataStructs import *
-from driver.schoologyListener import *
+from schoology.schoologyListener import *
 from database.databaseHandler import *
 from datetime import timedelta, datetime, timezone
 from database.logger import Logger
@@ -13,8 +13,19 @@ with open('secrets.yml') as f:
     cfg = yaml.safe_load(f)
 
 # Define API variables.
-scCreds = SchoologyCreds(cfg['north']['key'], cfg['north']['secret'], cfg['south']['key'], cfg['south']['secret'])
-textnowCreds = TextNowCreds(cfg['textnow']['username'], cfg['textnow']['sid'], cfg['textnow']['csrf'])
+SCHOOLOGYCREDS = SchoologyCreds(
+    
+    {
+    SchoolName.NEWTON_NORTH: cfg['north']['key'],
+    SchoolName.NEWTON_SOUTH: cfg['south']['key'] 
+    }, 
+    
+    {
+    SchoolName.NEWTON_NORTH: cfg['north']['secret'],
+    SchoolName.NEWTON_SOUTH: cfg['south']['secret']
+    }
+    
+    )
 
 # Make threads regenerate on fault.
 def threadwrapper(func):
@@ -61,7 +72,7 @@ def sc_listener():
             belowEndTime: bool = currentTime.hour <= dailyCheckTimeEnd
             if (aboveStartTime and belowEndTime and not schoologySuccessCheck) or debugMode:
                 print("CHECKING SCHOOLOGY.")
-                sc = SchoologyListener(textnowCreds, scCreds)
+                sc = SchoologyListener(textnowCreds, SCHOOLOGYCREDS)
                 schoologySuccessCheck = sc.run()
                 print("CHECK COMPLETE.")
         
