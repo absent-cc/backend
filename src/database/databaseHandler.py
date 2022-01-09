@@ -199,7 +199,7 @@ class DatabaseHandler():
     def addStudentToStudentDirectory(self, student: Student):
         # Insert student into student directory
         query = f"""
-        INSERT INTO student_directory(UUID, subject, first_name, last_name, school, grade) VALUES (
+        INSERT INTO student_directory(uuid, subject, first_name, last_name, school, grade) VALUES (
             '{student.uuid}',
             '{student.subject}',
             '{student.first}',

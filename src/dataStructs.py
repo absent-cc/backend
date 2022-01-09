@@ -223,6 +223,8 @@ class Session():
 
 class IDToken(BaseModel):
     idToken: str
+    def __str__(self):
+        return self.idToken
 
 class BasicInfo(BaseModel):
     uuid: str
@@ -233,8 +235,10 @@ class BasicInfo(BaseModel):
     grade: int
     schedule: dict
 
-    def __str__(self):
-        return self.idToken
+class SessionCredentials(BaseModel):
+    studentUUID: str
+    clientID: str
+    token: str
 
 
     

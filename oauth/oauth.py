@@ -1,7 +1,7 @@
 # Credentials you get from registering a new application
-client_id = '349911558418-h5hjb7am233nj61iusjjqplks61dpsf8.apps.googleusercontent.com'
-client_secret = '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'
-redirect_uri = 'https://your.registered/callback'
+client_id = '349911558418-5joq5quivkmpbkl8nnu89rn8upa6itr1.apps.googleusercontent.com'
+client_secret = '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'
+redirect_uri = 'http://localhost'
 
 # OAuth endpoints given in the Google API documentation
 authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -25,9 +25,13 @@ print('Please go here and authorize:', authorization_url)
 # Get the authorization verifier code from the callback url
 redirect_response = input('Paste the full redirect URL here: ')
 
+print('\n\n')
+
 # Fetch the access token
-google.fetch_token(token_url, client_secret=client_secret,
-        authorization_response=redirect_response)
+print(google.fetch_token(token_url, client_secret=client_secret,
+        authorization_response=redirect_response)['id_token'])
+
+print('\n\n')
 
 # Fetch a protected resource, i.e. user profile
 r = google.get('https://www.googleapis.com/oauth2/v1/userinfo')

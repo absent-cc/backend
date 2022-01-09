@@ -1,8 +1,10 @@
 import secrets
-import base64
 from database.databaseHandler import DatabaseHandler
 from dataStructs import *
 from datetime import datetime
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from uuid import uuid4
 
 class Authenticator:
 
@@ -10,8 +12,12 @@ class Authenticator:
         pass
 
     def validateGoogleToken(self, token):
-        # OAUTH CODE GOES HERE
-        return True
+        gClientID = "349911558418-5joq5quivkmpbkl8nnu89rn8upa6itr1.apps.googleusercontent.com"
+        try:
+            idInfo = id_token.verify_oauth2_token(str(token), requests.Request(), gClientID)
+            return idInfo
+        except ValueError:
+            return None
 
     def initializeSession(self, uuid: UUID):
         database = DatabaseHandler()
@@ -27,6 +33,9 @@ class Authenticator:
 
     def generateClientID(self, uuid: UUID):
         return ClientID(secrets.token_hex(8) + "." + str(uuid))
+    
+    def generateUUID(self):
+        return uuid4()
 
     def validateToken(self, clientID: ClientID, token: Token):
         database = DatabaseHandler()

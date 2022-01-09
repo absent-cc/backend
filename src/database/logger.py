@@ -23,7 +23,7 @@ class Logger():
     
     # Log when new student is added to database
     def addedStudent(self, user: Student):
-        self.log(f"STUDENT ADDED \t| {user.first}; {user.last}; {user.number}")
+        self.log(f"STUDENT ADDED \t| {user.first}; {user.last}; {user.subject}")
 
     # Log when student is removed from database    
     def removedStudent(self, user: Student):

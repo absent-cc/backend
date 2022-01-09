@@ -26,18 +26,23 @@ def verifyCredentials(req: Request):
 
 # /USERS ENDPOINTS
 
-@absent.post("/login/")
+@absent.post("/login/", status_code=201)
 async def authenticate(idToken: IDToken): #GOOGLE ID TOKEN WOULD BE ARG HERE.
-    print(idToken)
-    if auth.validateGoogleToken(idToken):
-        res = database.getStudentID(Student(None, "TestSubject", None, None, None, None))
-        print(res)
+    creds = auth.validateGoogleToken(idToken)
+    print(creds)
+    if creds != None:
+        res = database.getStudentID(Student(None, creds['sub'], None, None, None, None))
+        
         if res != None:
             session = auth.initializeSession(UUID(res))
-            return {'UUID': str(session.studentUUID), 'ClientID': str(session.clientID), 'Token': str(session.token)}
+            return SessionCredentials(studentUUID=str(session.studentUUID), clientID=str(session.clientID), token=str(session.token))
         else:
-            pass
-            # Create account chain here.
+            name = creds['name'].split(' ', 1)
+            student = Student(auth.generateUUID(), creds['sub'], name[0], name[1], None, None)
+            database.addStudentToStudentDirectory(student)
+            
+            session = auth.initializeSession(student.uuid)
+            return SessionCredentials(studentUUID=str(session.studentUUID), clientID=str(session.clientID), token=str(session.token))
 
     raise HTTPException(
         status_code=401,
