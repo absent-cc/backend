@@ -214,7 +214,7 @@ class ClientID(UserString):
 
 @dataclass
 class Session():
-    uuid: UUID
+    studentUUID: UUID
     clientID: ClientID
     token: Token
     start_time: datetime
@@ -223,6 +223,15 @@ class Session():
 
 class IDToken(BaseModel):
     idToken: str
+
+class BasicInfo(BaseModel):
+    uuid: str
+    subject: str
+    first: str
+    last: str
+    school: str
+    grade: int
+    schedule: dict
 
     def __str__(self):
         return self.idToken

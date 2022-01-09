@@ -31,7 +31,6 @@ class Authenticator:
     def validateToken(self, clientID: ClientID, token: Token):
         database = DatabaseHandler()
         inSessions = database.getSessionID(Session(None, clientID, token, None))
-        print(database.getSession(Session(None, None, None, None, None, inSessions)))
         if inSessions != None:
             #if database.getSession(Session(None, None, None, None, None, inSessions)).start_time :
             return True

@@ -53,12 +53,12 @@ class DatabaseHandler():
         create_sessions = """
         CREATE TABLE IF NOT EXISTS sessions (
                 session_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                uuid TEXT,
+                student_uuid TEXT,
                 client_id TEXT,
                 token TEXT,
                 start_time TEXT,
                 validity INT,
-                FOREIGN KEY(uuid)
+                FOREIGN KEY(student_uuid)
                     REFERENCES student_directory(uuid)
                     )
                 """
@@ -493,14 +493,14 @@ class DatabaseHandler():
     def addSession(self, session: Session) -> bool:
         query = f"""
         INSERT INTO sessions (
-                uuid,
+                student_uuid,
                 client_id, 
                 token, 
                 start_time,
                 validity
                 )
             VALUES (
-                '{session.uuid}',
+                '{session.studentUUID}',
                 '{session.clientID}',
                 '{session.token}',
                 '{session.start_time}',
@@ -527,7 +527,14 @@ class DatabaseHandler():
         self.connection.commit()
         return True
 
-    
+    def getUUIDFromCreds(self, clientID: ClientID, token: Token):
+        query = f"""
+        SELECT student_uuid
+        FROM sessions
+        WHERE client_id = '{clientID}' and token = '{token}'
+        """
+        res = self.cursor.execute(query).fetchone()
+        return res[0]
     
     
 
