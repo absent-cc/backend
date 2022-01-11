@@ -379,6 +379,22 @@ class DatabaseHandler():
             return True
         return False
 
+    def updateStudentInfo(self, student):
+        if student.uuid == None:
+            return False
+        query = f"""
+        UPDATE student_directory
+        SET first_name = ?,
+        last_name = ?,
+        school = ?,
+        grade = ?
+        WHERE uuid = ?
+        """
+        args = (student.first, student.last, ReverseSchoolNameMapper()[student.school], student.grade, student.uuid)
+        self.cursor.execute(query, args)
+        self.connection.commit()
+        return True
+
     # Creates a new class entry in data table classes for student + teachers in their schedule
     ## General function to call when you want to add a user to abSENT system
     def addStudent(self, student: Student, schedule: Schedule) -> bool:
@@ -397,14 +413,6 @@ class DatabaseHandler():
                         teacher_id = self.addTeacherToTeacherDirectory(teacher)
                     self.addClassToClasses(teacher_id, block, student_uuid)
         return True
-
-    def updateStudentInfo(self, student: Student, newStudent: Student) -> bool:
-        if student.uuid == None:
-            student.uuid = self.getStudentID(student)
-
-        query = """
-        SELECT FROM student_directory 
-        """
 
     # Gets a list of students by absent teacher.
     def getStudentsByAbsentTeacher(self, teacher: Teacher, block: SchoolBlock, school: SchoolName) -> List[Student]:
