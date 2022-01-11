@@ -1,7 +1,7 @@
 # Credentials you get from registering a new application
-client_id = '349911558418-5joq5quivkmpbkl8nnu89rn8upa6itr1.apps.googleusercontent.com'
-client_secret = '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'
-redirect_uri = 'http://localhost'
+client_id = '349911558418-4vsrql42lser1qi029n4n9fsm9v3kjjh.apps.googleusercontent.com'
+client_secret = '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'
+redirect_uri = 'https://localhost'
 
 # OAuth endpoints given in the Google API documentation
 authorization_base_url = "https://accounts.google.com/o/oauth2/v2/auth"

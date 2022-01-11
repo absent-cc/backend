@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+from typing_extensions import Required
+from fastapi import FastAPI, HTTPException, Depends, Request, Header
 from dataStructs import *
 from database.databaseHandler import DatabaseHandler
 from api.accounts import Authenticator
@@ -22,11 +23,11 @@ def verifyCredentials(req: Request):
             status_code=401,
             detail="Invalid credentials."
         )
-    return (clientID, token)
+    return True
 
 # /USERS ENDPOINTS
 
-@absent.post("/login/", status_code=201)
+@absent.post("/login/", status_code=201,  response_model=SessionCredentials)
 async def authenticate(idToken: IDToken): #GOOGLE ID TOKEN WOULD BE ARG HERE.
     creds = auth.validateGoogleToken(idToken)
     print(creds)
@@ -49,11 +50,29 @@ async def authenticate(idToken: IDToken): #GOOGLE ID TOKEN WOULD BE ARG HERE.
         detail="Invalid credentials."
     )
 
-@absent.get("/users/me/info")
-async def returnUserInfo(credentials: tuple[ClientID, Token] = Depends(verifyCredentials)):
-    uuid = database.getUUIDFromCreds(credentials[0], credentials[1])
+@absent.put("/users/me/update")
+async def updateUserInfo(
+userInfo: BasicInfo,
+authorization: bool = Depends(verifyCredentials), 
+X_ClientID: str | None = Header(None), 
+X_Token: str | None = Header(None)
+):
+    uuid = X_ClientID.split('.')[1]
+    student = Student(UUID(uuid), None, None, None, None, None)
+    student = database.getStudent(student)
+
+    return {"detail": "User information updated."}    
+
+@absent.get("/users/me/info", response_model=BasicInfo)
+async def returnUserInfo(
+authorization: bool = Depends(verifyCredentials), 
+X_ClientID: str | None = Header(None), 
+X_Token: str | None = Header(None)
+):
+    uuid = X_ClientID.split('.')[1]
     student = Student(UUID(uuid), None, None, None, None, None)
     student = database.getStudent(student)
     schedule = database.getScheduleByStudent(student)
 
     return BasicInfo(uuid=uuid, subject=student.subject, first=student.first, last=student.last, school=ReverseSchoolNameMapper()[student.school], grade=student.grade, schedule=schedule)
+

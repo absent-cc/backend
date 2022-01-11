@@ -12,7 +12,7 @@ class Authenticator:
         pass
 
     def validateGoogleToken(self, token):
-        gClientID = "349911558418-5joq5quivkmpbkl8nnu89rn8upa6itr1.apps.googleusercontent.com"
+        gClientID = "349911558418-4vsrql42lser1qi029n4n9fsm9v3kjjh.apps.googleusercontent.com"
         try:
             idInfo = id_token.verify_oauth2_token(str(token), requests.Request(), gClientID)
             return idInfo

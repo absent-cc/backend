@@ -11,7 +11,8 @@ class SchoolNameMapper(dict):
         super().__init__()
         self.update({
             "NSHS": SchoolName.NEWTON_SOUTH,
-            "NNHS": SchoolName.NEWTON_NORTH
+            "NNHS": SchoolName.NEWTON_NORTH,
+            None: None
         })
 
 class ReverseSchoolNameMapper(dict):
@@ -19,7 +20,8 @@ class ReverseSchoolNameMapper(dict):
         super().__init__()
         self.update({
             SchoolName.NEWTON_SOUTH: "NSHS",
-            SchoolName.NEWTON_NORTH: "NNHS"
+            SchoolName.NEWTON_NORTH: "NNHS",
+            None: None
         })
 
 class SchoolName(Enum):
@@ -60,7 +62,7 @@ class ReverseBlockMapper(dict):
             "D": SchoolBlock.D,
             "E": SchoolBlock.E,
             "F": SchoolBlock.F,
-            "G": SchoolBlock.G
+            "G": SchoolBlock.G,
         })
 
 class SchoolBlock(Enum):
@@ -84,11 +86,11 @@ class SchoolBlock(Enum):
 @dataclass
 class Student:
     uuid: UUID
-    subject: str
+    subject: int
     first: str
     last: str
-    school: SchoolName
-    grade: int
+    school: SchoolName | None
+    grade: int | None
 
     def __str__(self) -> str:
         return f"{self.first} {self.last}"
@@ -227,13 +229,13 @@ class IDToken(BaseModel):
         return self.idToken
 
 class BasicInfo(BaseModel):
-    uuid: str
-    subject: str
-    first: str
-    last: str
-    school: str
-    grade: int
-    schedule: dict
+    uuid: str | None = None
+    subject: int | None = None
+    first: str | None = None
+    last: str | None = None
+    school: str | None = None
+    grade: int | None = None
+    schedule: dict | None = None
 
 class SessionCredentials(BaseModel):
     studentUUID: str
