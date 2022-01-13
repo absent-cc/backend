@@ -8,7 +8,7 @@ from database.databaseHandler import DatabaseHandler
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from cryptography.hazmat.primitives import serialization
-from fastapi import HTTPException, Depends
+from fastapi import Depends
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 
 
@@ -17,7 +17,6 @@ class Accounts():
     def __init__(self):
         self.database = DatabaseHandler()
         self.helper = HelperFunctions()
-        pass
 
     # Top level accounts function used for creating account for new user.
     def createAccount(self, creds: dict):
@@ -50,13 +49,19 @@ class Accounts():
 
     # Google IDToken check.
     def validateGoogleToken(self, token):
-        gClientID = "349911558418-fj7bq368rsj74fp2no0f2hir84i8pal7.apps.googleusercontent.com"
+        CLIENT_ID = "349911558418-25qq88oirls8unm6mln5kb41fn2shkns.apps.googleusercontent.com"
+        NEWTON = "newton.k12.ma.us"
         try:
-            idInfo = id_token.verify_oauth2_token(str(token), requests.Request(), gClientID)
-            return idInfo
+            idInfo = id_token.verify_oauth2_token(str(token), requests.Request(), CLIENT_ID)
         except BaseException as error:
             self.helper.raiseError(401, error, ErrorType.AUTH)
+        try:
+            if idInfo['hd'] != NEWTON:
+                self.helper.raiseError(401, "Not an NPS issued account", ErrorType.AUTH)
+        except BaseException:
+            self.helper.raiseError(401, "Not an NPS issued account", ErrorType.AUTH)
     
+        return idInfo
     # Our token check.
     def validateToken(self, jwt: str):
         database = DatabaseHandler()
