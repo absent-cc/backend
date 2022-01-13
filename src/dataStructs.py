@@ -1,10 +1,14 @@
 from datetime import date, datetime
 from enum import Enum
 from dataclasses import dataclass
-from typing import Set
+from typing import List, Literal, Set, Tuple
 from collections import UserString
 from uuid import UUID
 from pydantic import BaseModel
+
+#
+# SCHOOL ENUMS (BLOCK AND NAME) 
+#
 
 class SchoolNameMapper(dict):
     def __init__(self):
@@ -15,26 +19,9 @@ class SchoolNameMapper(dict):
             None: None
         })
 
-class ReverseSchoolNameMapper(dict):
-    def __init__(self):
-        super().__init__()
-        self.update({
-            SchoolName.NEWTON_SOUTH: "NSHS",
-            SchoolName.NEWTON_NORTH: "NNHS",
-            None: None
-        })
-
-class SchoolName(Enum):
-    NEWTON_SOUTH = "NSHS"
-    NEWTON_NORTH = "NNHS"
-
-    def __str__(self) -> str:
-        if self == SchoolName.NEWTON_SOUTH:
-            return "NSHS"
-        elif self == SchoolName.NEWTON_NORTH:
-            return "NNHS"
-        else:
-            return "Unknown School"
+class SchoolName(str, Enum):
+    NEWTON_SOUTH: str = "NSHS"
+    NEWTON_NORTH: str = "NNHS"
 
 class BlockMapper(dict):
     def __init__(self, *args, **kwargs):
@@ -65,32 +52,51 @@ class ReverseBlockMapper(dict):
             "G": SchoolBlock.G,
         })
 
-class SchoolBlock(Enum):
-    A = "A"
-    ADV = "ADVISORY"
-    B = "B"
-    C = "C"
-    D = "D"
-    E = "E"
-    F = "F"
-    G = "G"
+class SchoolBlock(str, Enum):
+    A: str = "A"
+    ADV: str = "ADVISORY"
+    B: str = "B"
+    C: str = "C"
+    D: str = "D"
+    E: str = "E"
+    F: str = "F"
+    G: str = "G"
 
+#
+# API ENUMS
+#
+
+class ErrorTypeMapper(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.update({
+            ErrorType.AUTH: "Authentication Error",
+            ErrorType.DB: "Database Error",
+            ErrorType.PAYLOAD: "Payload Error"
+        })
+
+class ErrorType(Enum):
+    AUTH = "Authentication Error"
+    DB = "Database Error"
+    PAYLOAD = "Payload Error"
     def __str__(self) -> str:
-        mapper = BlockMapper()
-        return mapper[self]
-        
-    def __repr__(self) -> str:
-        mapper = BlockMapper()
+        mapper = ErrorTypeMapper()
         return mapper[self]
 
-@dataclass
-class Student:
-    uuid: UUID
-    subject: int
-    first: str
-    last: str
-    school: SchoolName | None
-    grade: int | None
+#
+# STUDENT, TEACHER, CLASSTEACHERS(CUSTOM SET), ABSENTTEACHER, AND SCHEDULE OBJECTS
+#
+
+class NotPresent(Enum):
+    TRUE = None
+
+class Student(BaseModel):
+    uid: UUID = None
+    gid:  int = None
+    first: str = None
+    last: str = None
+    school: SchoolName = None
+    grade: Literal["9", "10", "11", "12"] = None
 
     def __str__(self) -> str:
         return f"{self.first} {self.last}"
@@ -98,84 +104,30 @@ class Student:
     def __hash__(self):
         return hash(str(self.number))
 
-@dataclass
-class Teacher:
+class Teacher(BaseModel):
     first: str
     last: str
-    school: SchoolName
-    id: int = None
-
-    def __str__(self) -> str:
-        return f"{self.first} {self.last}"
+    school: SchoolName 
+    tid: int = None
+    
     def __hash__(self):
         primaryKey = self.first + self.last + str(self.school)
         return hash(primaryKey)
+    def __str__(self) -> str:
+        return f"{self.first} {self.last}"
     def __repr__(self) -> str:
         return f"{self.first} {self.last}"
     def __eq__ (self, other):
         if type(other) is not Teacher: return False
         return self.first == other.first and self.last == other.last and self.school == other.school
 
-class ClassTeachers(Set[Teacher]):
+class ClassTeachers(set[Teacher]):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
     def __str__(self) -> str:
         return ", ".join(str(t) for t in self)
     def __repr__(self) -> str:
         return ", ".join(str(t) for t in self)
-
-@dataclass
-class Schedule(dict):
-    def __init__(self,  
-                        A: ClassTeachers = None, 
-                        ADV: ClassTeachers = None,
-                        B: ClassTeachers = None,
-                        C: ClassTeachers = None, 
-                        D: ClassTeachers = None, 
-                        E: ClassTeachers = None, 
-                        F: ClassTeachers = None, 
-                        G: ClassTeachers = None):
-        self.schedule = {
-            SchoolBlock.A: A,
-            SchoolBlock.ADV: ADV,
-            SchoolBlock.B: B,
-            SchoolBlock.C: C,
-            SchoolBlock.D: D,
-            SchoolBlock.E: E,
-            SchoolBlock.F: F,
-            SchoolBlock.G: G
-        }
-    
-    def __str__(self):
-        return f"""A: {self.schedule[SchoolBlock.A]}
-                    ADVISORY: {self.schedule[SchoolBlock.ADV]},
-                    B: {self.schedule[SchoolBlock.B]},
-                    C: {self.schedule[SchoolBlock.C]},
-                    D: {self.schedule[SchoolBlock.D]},
-                    E: {self.schedule[SchoolBlock.E]},
-                    F: {self.schedule[SchoolBlock.F]},
-                    G: {self.schedule[SchoolBlock.G]}"""
-    
-    def __iter__(self):
-        yield from self.schedule.keys()
-
-    def __getitem__(self, key):
-        return self.schedule[key]
-    
-    def __setitem__(self, key, value):
-        self.schedule[key] = value
-
-    def __delitem__(self, key):
-        del self.schedule[key]
-    
-    def keys(self):
-        return self.schedule.keys()
-    
-    def values(self):
-        return self.schedule.values()
-    
-    def __contains__(self, item):
-        return item in self.schedule.keys()
 
 @dataclass
 class AbsentTeacher:
@@ -187,60 +139,112 @@ class AbsentTeacher:
     def __str__(self):
         return f"{self.first} {self.last} {self.length} {self.date} {self.note}"
 
+# @dataclass
+# class Schedule(dict):
+#     def __init__(self,  
+#                         A: ClassTeachers = None, 
+#                         ADV: ClassTeachers = None,
+#                         B: ClassTeachers = None,
+#                         C: ClassTeachers = None, 
+#                         D: ClassTeachers = None, 
+#                         E: ClassTeachers = None, 
+#                         F: ClassTeachers = None, 
+#                         G: ClassTeachers = None):
+#         self.schedule = {
+#             SchoolBlock.A: A,
+#             SchoolBlock.ADV: ADV,
+#             SchoolBlock.B: B,
+#             SchoolBlock.C: C,
+#             SchoolBlock.D: D,
+#             SchoolBlock.E: E,
+#             SchoolBlock.F: F,
+#             SchoolBlock.G: G
+#         }
+    
+#     def __str__(self):
+#         return f"""A: {self.schedule[SchoolBlock.A]}
+#                     ADVISORY: {self.schedule[SchoolBlock.ADV]},
+#                     B: {self.schedule[SchoolBlock.B]},
+#                     C: {self.schedule[SchoolBlock.C]},
+#                     D: {self.schedule[SchoolBlock.D]},
+#                     E: {self.schedule[SchoolBlock.E]},
+#                     F: {self.schedule[SchoolBlock.F]},
+#                     G: {self.schedule[SchoolBlock.G]}"""
+    
+#     def __iter__(self):
+#         yield from self.schedule.keys()
+
+#     def __getitem__(self, key):
+#         return self.schedule[key]
+    
+#     def __setitem__(self, key, value):
+#         self.schedule[key] = value
+
+#     def __delitem__(self, key):
+#         del self.schedule[key]
+
+#     def keys(self):
+#         return self.schedule.keys()
+    
+#     def values(self):
+#         return self.schedule.values()
+    
+#     def __contains__(self, item):
+#         return item in self.schedule.keys()
+
+#     def __hash__(self):
+#         return hash(str(self))
+
 @dataclass
 class SchoologyCreds:
     keys: dict[SchoolName: str, SchoolName: str]
     secrets: dict[SchoolName: str, SchoolName: str]
 
-# API Stuff
+#
+# SESSION AND TOKEN OBJECTS
+#
 
-class Token(UserString):
-    LENGTH = 86
-    def __init__(self, *args, **kwargs):
-        if len(args[0]) != self.LENGTH:
-            raise ValueError("Token must be 86 characters long")
-        super().__init__(*args, **kwargs)
-
-    def __str__(self):
-        return self.data
-
-class ClientID(UserString):
-    LENGTH = 53
-    def __init__(self, *args, **kwargs):
-        if len(args[0]) != self.LENGTH:
-            raise ValueError("ClientID must be 53 characters long")
-        super().__init__(*args, **kwargs)
-
-    def __str__(self):
-        return self.data
-
-@dataclass
-class Session():
-    studentUUID: UUID
-    clientID: ClientID
-    token: Token
-    start_time: datetime
+class Session(BaseModel):
+    cid: str 
+    startTime: datetime | None = None
     validity: bool = True
-    id: int = None
 
-class IDToken(BaseModel):
-    idToken: str
+class GToken(BaseModel):
+    gToken: str
     def __str__(self):
-        return self.idToken
+        return self.gToken
+
+
+#
+# SCHEMAS
+#
+
+class Schedule(BaseModel):
+    A: None | List[Teacher] = NotPresent.TRUE
+    ADV: None | List[Teacher] = NotPresent.TRUE
+    B: None | List[Teacher] = NotPresent.TRUE
+    C: None | List[Teacher] = NotPresent.TRUE
+    D: None | List[Teacher] = NotPresent.TRUE
+    E: None | List[Teacher] = NotPresent.TRUE
+    F: None | List[Teacher] = NotPresent.TRUE
+    G: None | List[Teacher] = NotPresent.TRUE
+
+class Profile(BaseModel):
+    first: None | str = NotPresent.TRUE
+    last: None | str = NotPresent.TRUE
+    school: None | SchoolName = NotPresent.TRUE
+    grade: None | Literal["9", "10", "11", "12"] = NotPresent.TRUE
+
+    def __str__(self) -> str:
+        return f"{self.first} {self.last}"
+    
+    def __hash__(self):
+        return hash(str(self.number))
 
 class BasicInfo(BaseModel):
-    uuid: str | None = None
-    subject: int | None = None
-    first: str | None = None
-    last: str | None = None
-    school: str | None = None
-    grade: int | None = None
-    schedule: dict | None = None
+    profile: Profile | None = None
+    schedule: Schedule | None = None
 
 class SessionCredentials(BaseModel):
-    studentUUID: str
-    clientID: str
     token: str
 
-
-    

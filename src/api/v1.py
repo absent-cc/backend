@@ -1,8 +1,10 @@
-from fastapi import FastAPI, HTTPException, Depends, Request, Header
-from fastapi.openapi.utils import get_openapi
+from os import sched_get_priority_max
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from api.helper import HelperFunctions
 from dataStructs import *
 from database.databaseHandler import DatabaseHandler
-from api.accounts import Authenticator
+from api.accounts import Accounts
 
 # All this fucking shit for the docs because I am legitimately this vain.
 
@@ -37,89 +39,71 @@ absent = FastAPI(
 )
 
 database = DatabaseHandler()
-auth = Authenticator()
-
-def verifyCredentials(req: Request):
-    try:
-        clientID = req.headers["X-ClientID"]
-        token = req.headers["X-Token"]
-        valid = auth.validateToken(ClientID(clientID), Token(token))
-    except KeyError:
-        valid = False
-    except ValueError:
-        valid = False
-    
-    if not valid:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credentials."
-        )
-    return True
+accounts = Accounts()
+helper = HelperFunctions()
 
 # /USERS ENDPOINTS
 
 @absent.post("/users/login/", status_code=201,  response_model=SessionCredentials, tags=["users"])
-async def authenticate(idToken: IDToken): #GOOGLE ID TOKEN WOULD BE ARG HERE.
-    creds = auth.validateGoogleToken(idToken)
+async def authenticate(gToken: GToken): #GOOGLE ID TOKEN WOULD BE ARG HERE.
+    creds = accounts.validateGoogleToken(gToken)
     print(creds)
     if creds != None:
-        res = database.getStudentID(Student(None, creds['sub'], None, None, None, None))
-        
+        res = database.getStudentID(Student(gid=creds['sub']))
         if res != None:
-            session = auth.initializeSession(UUID(res))
-            return SessionCredentials(studentUUID=str(session.studentUUID), clientID=str(session.clientID), token=str(session.token))
+            jwt = accounts.initializeSession(UUID(res))
+            return SessionCredentials(token=jwt)
         else:
-            name = creds['name'].split(' ', 1)
-            student = Student(auth.generateUUID(), creds['sub'], name[0], name[1], None, None)
-            database.addStudentToStudentDirectory(student)
-            
-            session = auth.initializeSession(student.uuid)
-            return SessionCredentials(studentUUID=str(session.studentUUID), clientID=str(session.clientID), token=str(session.token))
+            return SessionCredentials(token=accounts.initializeSession(accounts.createAccount(creds)))
 
-    raise HTTPException(
-        status_code=401,
-        detail="Invalid credentials."
-    )
-
-@absent.put("/users/me/update", tags=["users"])
+@absent.put("/users/me/update", tags=["users"], status_code=201)
 async def updateUserInfo(
 userInfo: BasicInfo,
-authorization: bool = Depends(verifyCredentials), 
-X_ClientID: str | None = Header(None), 
-X_Token: str | None = Header(None)
+creds: Session = Depends(accounts.verifyCredentials), 
 ):
-    uuid = X_ClientID.split('.')[1]
-    student = Student(UUID(uuid), None, None, None, None, None)
+    uuid = creds.cid.split('.')[1]
+    student = Student(uid=UUID(uuid))
     student = database.getStudent(student)
-    usableUserInfo = dict(userInfo)
 
-    if 'first' in usableUserInfo:
-        student.first = usableUserInfo['first']
-    if 'last' in usableUserInfo:
-        student.last = usableUserInfo['last']
-    if 'school' in usableUserInfo:
-        try:
-            student.school = SchoolNameMapper()[usableUserInfo['school']]
-        except KeyError:
-            student.school = None
-    if 'grade' in usableUserInfo:
-        student.grade = usableUserInfo['grade']
+    # if userInfo.profile != None:
+    #     for key in userInfo.profile:
+    #         if key == 'first' and userInfo.profile[key] != None:
+    #             student.first = userInfo.profile[key]
+    #         if key == 'last' and userInfo.profile[key] != None:
+    #             student.last = userInfo.profile[key]
+    #         if key == 'school' and userInfo.profile[key] != None:
+    #             try:
+    #                 student.school = SchoolNameMapper()[userInfo.profile[key]]
+    #             except KeyError:
+    #                 pass
+    #         if key == 'grade' and userInfo.profile[key] != None:
+    #             student.grade = userInfo.profile[key]
 
-    if database.updateStudentInfo(student):
-        return {"detail": "User information updated."}  
+    profileSuccess = False
+    scheduleSuccess = False
+
+    if userInfo.profile != None:
+        profileSuccess = accounts.updateProfile(student, userInfo.profile)
     else:
-        return 422, {'detail': 'Database operation failed.'}  
+        profileSuccess = True
+
+    if userInfo.schedule != None and student.school != None:
+        scheduleSuccess = accounts.updateSchedule(student, userInfo.schedule)
+    else: 
+        scheduleSuccess = True
+
+    if profileSuccess and scheduleSuccess:
+        return helper.returnStatus("Information Updated")
+    else:
+        helper.raiseError(500, "Operation Failed", ErrorType.DB)
 
 @absent.get("/users/me/info", response_model=BasicInfo, tags=["users"])
 async def returnUserInfo(
-authorization: bool = Depends(verifyCredentials), 
-X_ClientID: str | None = Header(None), 
-X_Token: str | None = Header(None)
+creds: Session = Depends(accounts.verifyCredentials), 
 ):
-    uuid = X_ClientID.split('.')[1]
-    student = Student(UUID(uuid), None, None, None, None, None)
+    uuid = creds.cid.split('.')[1]
+    student = Student(uid=UUID(uuid))
     student = database.getStudent(student)
     schedule = database.getScheduleByStudent(student)
-
-    return BasicInfo(uuid=uuid, subject=student.subject, first=student.first, last=student.last, school=ReverseSchoolNameMapper()[student.school], grade=student.grade, schedule=schedule)
+    return BasicInfo(profile=student, schedule=schedule)
 
