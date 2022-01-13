@@ -134,3 +134,4 @@ state.yml
 data/
 abSENT
 oauth/
+.ssh
