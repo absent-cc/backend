@@ -1,9 +1,7 @@
-# abSENT     [![CodeQL](https://github.com/bykevinyang/abSENT/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/bykevinyang/abSENT/actions/workflows/codeql-analysis.yml) 
+# abSENT - Notifications for NPS students. 
 Push notifications for NPS students, informing them of absent teachers. The solution to the absent list problem.
 ##
 ![abSENT Github Banner](marketing/banner.png)
-<p align="center">
-<img src="https://www.gnu.org/graphics/agplv3-155x51.png" alt="drawing" height="50"/> <img src="https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png" alt="drawing" height="50"/> <img src="https://user-images.githubusercontent.com/57116984/149611913-70e409e0-980e-4a2a-b063-cb6227fd3986.png" alt="drawing" height="50"/>
 
 ## What is it?
 An SMS schoology bot that notifies NPS students when their teachers are absent. Supports both Newton high schools, [Newton South](https://www.newton.k12.ma.us/nshs) & [Newton North](https://www.newton.k12.ma.us/nnhs).
