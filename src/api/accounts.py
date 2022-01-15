@@ -10,7 +10,7 @@ from google.oauth2 import id_token
 from cryptography.hazmat.primitives import serialization
 from fastapi import Depends
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
-
+from loguru import logger
 
 class Accounts():
 
@@ -26,7 +26,10 @@ class Accounts():
         else:
             student = Student(uid=self.generateUUID(), gid=int(creds['sub']), first=name[0])
         
-        return self.database.addStudent(student)
+        id = self.database.addStudent(student)
+        logger.info(f"Account created: {student.uid}")
+
+        return id
 
     # Top level accounts function used for creating a session.
     def initializeSession(self, uuid: UUID):
@@ -36,6 +39,7 @@ class Accounts():
         database.addSession(session)
 
         jwt = self.generateJWT(clientID)
+        logger.info(f"Session initialized: {uuid}")
         return jwt
 
     # Depends for checking credentials on each request.
@@ -47,31 +51,45 @@ class Accounts():
     # Token validation.
     #
 
+    def checkEmail(self, email):
+        try:
+            split = email.split('@')
+            if split[0].isnumeric():
+                return True
+        except:
+            self.helper.raiseError(401, "Invalid email", ErrorType.AUTH)
+
     # Google IDToken check.
     def validateGoogleToken(self, token):
         CLIENT_ID = "349911558418-25qq88oirls8unm6mln5kb41fn2shkns.apps.googleusercontent.com"
         NEWTON = "newton.k12.ma.us"
         try:
             idInfo = id_token.verify_oauth2_token(str(token), requests.Request(), CLIENT_ID)
+            logger.info(f"Sucessful Google login: {idInfo['sub']}")
         except BaseException as error:
+            logger.info(f"Invalid Google token POSTed.")
             self.helper.raiseError(401, error, ErrorType.AUTH)
         try:
             if idInfo['hd'] != NEWTON:
+                logger.info(f"Google token for a non-NPS account POSTed")
                 self.helper.raiseError(401, "Not an NPS issued account", ErrorType.AUTH)
         except BaseException:
+            logger.info(f"Google token for a non-NPS account POSTed")
             self.helper.raiseError(401, "Not an NPS issued account", ErrorType.AUTH)
-    
+        self.checkEmail(idInfo['email'])
         return idInfo
+
     # Our token check.
     def validateToken(self, jwt: str):
         database = DatabaseHandler()
         creds = self.decodeJWT(jwt)
         if creds == None:
             return None
-        inSessions = database.getSession(Session(cid=creds['sub'], startTime=None))
-        if inSessions != None:
-            #if database.getSession(Session(None, None, None, None, None, inSessions)).start_time :
-            return inSessions
+        sub = creds['sub'].split('.')
+        sessions = database.getSession(Session(cid=ClientID(token=sub[0], uuid=sub[1]), startTime=None))
+        if sessions != None:
+            return sessions
+        logger.info(f"Credential check failed: {sub}")
         self.helper.raiseError(401, "Invalid Credentials.", ErrorType.AUTH)
 
     # Building block for our token check.
@@ -96,20 +114,20 @@ class Accounts():
 
     # Generates a ClientID (unique to each session).
     def generateClientID(self, uuid: UUID):
-        return secrets.token_hex(8) + "." + str(uuid)
+        return ClientID(token=secrets.token_hex(8), uuid=uuid)
     
     # Generates UUID for user management.
     def generateUUID(self):
         return uuid4()
 
     # Takes a ClientID and generates signed JWT for authentication purposes.
-    def generateJWT(self, clientID: str):
+    def generateJWT(self, clientID: ClientID):
         SECRET = open('.ssh/id_rsa', 'r').read()
         EXP_TIME = 2592000
         key = serialization.load_ssh_private_key(SECRET.encode(), password=None)
         payload = {
             "iss": "https://api.absent.cc",
-            "sub": clientID,
+            "sub": str(clientID),
             "aud": "https://api.absent.cc",
             "exp": round(time.time()) + EXP_TIME,
             "iat": round(time.time()),

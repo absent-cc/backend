@@ -1,9 +1,8 @@
-from pydantic.errors import ArbitraryTypeError
 from dataStructs import *
 import sqlite3
 from database.logger import Logger
-import random
 from typing import List
+from loguru import logger
 
 class DatabaseHandler():
     def __init__(self, db_path = "abSENT.db"):
@@ -66,12 +65,8 @@ class DatabaseHandler():
         self.cursor.execute(create_classes_NNHS)
         self.cursor.execute(create_classes_NSHS)
         self.cursor.execute(create_sessions)
-
         self.connection.commit()
-
-        # Logging:
-        self.logger = Logger()
-    
+        
     # Reset the database, for development purposes only!
     def reset(self):
         import os
@@ -99,6 +94,7 @@ class DatabaseHandler():
         # If teacher is found (not None), return teacher object
         if res != None:
             teacher = Teacher(first=res[1], last=res[2], school=SchoolNameMapper()[res[3]], tid=res[0])
+            logger.info(f"Looked up teacher: {teacher.tid}")
             return teacher
         return None
     
@@ -118,6 +114,7 @@ class DatabaseHandler():
         # If student is found (not None), return student object
         if res != None:
             student = Student(uid=res[0], gid=res[1], first=res[2], last=res[3], school=SchoolNameMapper()[res[4]], grade=res[5])
+            logger.info(f"Looked up student: {student.uid}")
             return student
         return None
     
@@ -128,7 +125,7 @@ class DatabaseHandler():
         if teacher.tid == None:
             # If not, search teachers in DB by first + last name
             query = "SELECT tid FROM teacher_directory WHERE first = ? AND last = ? LIMIT 1"
-            args = (teacher.first, teacher.last)
+            args = (teacher.first.upper(), teacher.last.upper())
             # Conduct query
             res = self.cursor.execute(query, args).fetchone()
             # If teacher is found (not None), return teacher id (first in results list)
@@ -191,6 +188,7 @@ class DatabaseHandler():
             # Mapping attributes from student DB to a student dataclass.
             entry = Student(uid=col[0], gid=col[1], first=col[2], last=col[3], school=SchoolNameMapper()[col[4]], grade=col[5])
             studentArray.append(entry)
+        logger.info(f"Administrator operation: looked up student list by grade.")
         return studentArray
 
     # Just grabs all students, returns list.
@@ -201,6 +199,7 @@ class DatabaseHandler():
         for col in res:
             entry = Student(uid=col[0], gid=col[1], first=col[2], last=col[3], school=SchoolNameMapper()[col[4]], grade=col[5])
             studentArray.append(entry)
+        logger.info(f"Administrator operation: looked up student list.")
         return studentArray
 
     # Gets a list of students by absent teacher.
@@ -255,6 +254,7 @@ class DatabaseHandler():
             if isinstance(block[1], NotPresent):
                 setattr(schedule, block[0], None)
 
+        logger.info(f"Looked up student schedule: {student.uid}")
         return schedule
     
     def getTeachersFromStudent(self, student: Student):
@@ -293,9 +293,9 @@ class DatabaseHandler():
             teachers = block[1]
             if isinstance(teachers, NotPresent):
                 teachers = getattr(oldSchedule, block[0])
-            if teachers != None and not isinstance(teachers, NotPresent):
+            elif teachers != None:
                 for teacher in teachers:
-                    self.addClass(student, block[0], Teacher(first=teacher.first, last=teacher.last, school=teacher.school))
+                    self.addClass(student, block[0], Teacher(first=teacher.first, last=teacher.last, school=student.school))
         return True
 
     # Add student to student directory
@@ -317,8 +317,9 @@ class DatabaseHandler():
         self.cursor.execute(query, args)
         self.connection.commit()
 
-        self.logger.addedStudent(student)
+        logger.info(f"Added student: {student.uid}")
         # Return the newly generated id for student object manipulation
+        
         return student.uid
 
     # Add teacher to teacher directory
@@ -345,7 +346,7 @@ class DatabaseHandler():
 
         self.connection.commit()
 
-        self.logger.addedTeacher(teacher)
+        logger.info(f"Added teacher: {teacher.tid}, {teacher.first} {teacher.last}")
 
         return tid
 
@@ -370,8 +371,11 @@ class DatabaseHandler():
             ) 
         """
         args = (newTeacher.tid, block, str(student.uid))
-        self.cursor.execute(query, args)
-        self.connection.commit()
+        try: 
+            self.cursor.execute(query, args)
+            self.connection.commit()
+        except:
+            return False
         return True
 
     #
@@ -384,7 +388,7 @@ class DatabaseHandler():
         if student.uid == None:
             return False
         # Remove student from student directory
-        query = "DELETE FROM student_directory WHERE sid = ?"
+        query = "DELETE FROM student_directory WHERE uid = ?"
         args = (str(student.uid),)
         self.cursor.execute(query, args)
         self.connection.commit()
@@ -395,13 +399,18 @@ class DatabaseHandler():
         if student.uid == None:
             return False
         if student.school == None:
-            return False
-        # Delete a student's classes.
-        query = f"DELETE FROM classes_{student.school} WHERE uid = ?"
-        args = (str(student.uid),)
-        self.cursor.execute(query, args)
-        self.connection.commit
+            queryStudent = self.getStudent(student)
+            student.school = queryStudent.school
+
+        if student.school != None:
+            # Delete a student's classes.
+            query = f"DELETE FROM classes_{student.school} WHERE uid = ?"
+            args = (str(student.uid),)
+            self.cursor.execute(query, args)
+            self.connection.commit
+        
         self.removeStudentFromStudentDirectory(student)
+        logger.info(f"Removed student: {student.uid}")
         return True
     
     # Remove class from classes table
@@ -444,102 +453,8 @@ class DatabaseHandler():
         self.removeStudentSchedule(student)
         self.addStudentSchedule(student, oldSchedule, schedule)
 
+        logger.info(f"Updated student schedule: {student.uid}")
         return True        
-        # currentSchedule = self.getScheduleByStudent(student)
-        # if currentSchedule == None:
-        #     currentSchedule = Schedule()
-
-        # print(currentSchedule)
-        # print(schedule)
-
-        # for block in schedule:
-        #     if schedule[block] == None:
-        #         if currentSchedule[block] == None:
-        #             continue
-        #         for teacher in currentSchedule[block]:
-        #             self.removeClass(teacher, block, student)
-        #     else:
-        #         if currentSchedule[block] == None:
-        #             for teacher in schedule[block]:
-        #                 self.addClass(student, block, teacher)
-        #             continue
-        #         diff = int(len(schedule[block]) - len(currentSchedule[block]))
-        #         newSetIter = iter(schedule[block])
-        #         oldSetIter = iter(currentSchedule[block])
-                
-        #         if diff > 0:
-        #             for _ in range(diff):
-        #                 newTeacher = next(newSetIter)
-        #                 self.addClass(student, block, newTeacher)
-        #             for teacher in currentSchedule[block]:
-        #                 oldTeacher = next(oldSetIter)
-        #                 self.changeClass(student, oldTeacher, block, teacher)
-        #         elif diff < 0:
-        #             for _ in range(abs(diff)):
-        #                 oldTeacher = next(oldSetIter)
-        #                 print("REMOVED", oldTeacher)
-        #                 self.removeClass(student, block, oldTeacher)
-        #             for teacher in schedule[block]:
-        #                 oldTeacher = next(oldSetIter)
-        #                 print("REPLACED", oldTeacher)
-        #                 self.changeClass(student, oldTeacher, block, teacher)
-        #         elif diff == 0:
-        #             for teacher in schedule[block]:
-        #                 oldTeacher = next(oldSetIter)
-        #                 self.changeClass(student, oldTeacher, block, teacher)
-    
-    # Change existing class entry in data table classes
-    def updateClass(self, student: Student, old_teacher: Teacher, block: SchoolBlock, new_teacher: Teacher) -> bool:
-        if student.school == None:
-            return None
-        # Map enum SchoolBlock to string savable to DB
-        str_block = BlockMapper()[block]
-        
-        # If teacher is none type, delete specific entry for changing
-        ## Note: abSENT does not store the lack of a class in the DB
-        if new_teacher == None:
-            if student.uid == None:
-                student.uid = self.getStudentID(student)
-            query = f"""
-            DELETE FROM classes_{student.school} WHERE tid = ? AND block = ? AND uid = ?
-            """
-            args = (old_teacher.tid, str_block, str(student.uid))
-            self.cursor.execute(query, args)
-            self.connection.commit()
-            return True
-
-        # Grab teacher id from DB
-        tid = self.getTeacherID(new_teacher)
-
-        # If teacher id is none, then teacher does not exist
-        # Add that teacher to directory
-        if tid == None:
-            tid = self.addTeacherToTeacherDirectory(new_teacher)
-        
-        if student.uid != None:
-            # Get teacher id for the given block and student. 
-            query = f"""
-            SELECT tid
-            FROM classes_{student.school}
-            WHERE tid = ? AND block = ? AND uid = ?
-            """
-            args = (old_teacher.tid, str_block, str(student.uid))
-            res = self.cursor.execute(query, args).fetchone()
-            # If student has an empty block, we can just add this teacher to the directory.
-            if res == None:
-                self.addClass(tid, block, student.uid)
-            # Else class slot full, update the class entry that already exists.
-            else:
-                query = f"""
-                UPDATE classes_{student.school}
-                SET tid = ?
-                WHERE tid = ? AND block = ? AND uid = ?
-                """
-                args = (tid, res[0], str_block, str(student.uid))
-                self.cursor.execute(query, args)
-                self.connection.commit()
-            return True
-        return False
 
     def updateStudentInfo(self, student, profile):
         
@@ -561,6 +476,7 @@ class DatabaseHandler():
         args = (student.first, student.last, student.school, student.grade, str(student.uid))
         self.cursor.execute(query, args)
         self.connection.commit()
+        logger.info(f"Updated student information: {student.uid}")
         return True
     
     #
@@ -576,11 +492,12 @@ class DatabaseHandler():
         FROM sessions
         WHERE cid = ?
         """
-        args = (session.cid,)
+        args = (str(session.cid),)
         res = self.cursor.execute(query, args).fetchone()
         if res == None:
             return None
-        return Session(cid=res[0], startTime=res[1], validity=res[2])
+        logger.info(f"Looked up session: {session.cid}")
+        return Session(cid=session.cid, startTime=res[1], validity=res[2])
 
     #
     # ACCOUNTS - ADD
@@ -602,6 +519,7 @@ class DatabaseHandler():
         args = (str(session.cid), session.startTime, session.validity)
         self.cursor.execute(query, args)
         self.connection.commit()
+        logger.info(f"Added session: {session.cid}")
         return True
     
     #
@@ -619,7 +537,24 @@ class DatabaseHandler():
         SET validity = '{False}'
         WHERE cid = ?
         """
-        args = (session.cid,)
+        args = (str(session.cid),)
         self.cursor.execute(query, args)
         self.connection.commit()
+        logger.info(f"Invalidated session: {session.cid}")
+        return True
+
+    def removeUserSessions(self, student) -> bool:
+        if student.uid == None:
+            student.uid = self.getStudentID(student)
+            if student.uid == None:
+                return False
+        
+        query = f"""
+        UPDATE sessions
+        SET validity = '{False}'
+        WHERE cid LIKE '%.{str(student.uid)}'
+        """
+        self.cursor.execute(query)
+        self.connection.commit()
+        logger.info(f"Terminated all sessions for {student.uid}")
         return True
