@@ -207,4 +207,5 @@ class BasicInfo(BaseModel):
 
 class SessionCredentials(BaseModel):
     token: str
+    refresh: str | None = None
 

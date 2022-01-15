@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from api.helper import HelperFunctions
@@ -74,12 +74,23 @@ async def authenticate(gToken: GToken): #GOOGLE ID TOKEN WOULD BE ARG HERE.
     if creds != None:
         res = database.getStudentID(Student(gid=creds['sub']))
         if res != None:
-            jwt = accounts.initializeSession(UUID(res))
-            return SessionCredentials(token=jwt)
+            details = accounts.initializeSession(UUID(res))
+            refresh = refresh=accounts.generateRefreshToken(details[1])
+            return SessionCredentials(token=details[0], refresh=refresh)
         else:
             id = accounts.createAccount(creds)
             if id != None:
-                return SessionCredentials(token=accounts.initializeSession(id))
+                return SessionCredentials(token=accounts.initializeSession(id), refresh=accounts.generateRefreshToken(id))
             else:
-                helper.raiseError(500, "Account creation failed.", ErrorType.DB)
+                helper.raiseError(500, "Account creation failed", ErrorType.DB)
+
+@absent.post("/refresh/", status_code=201, response_model=SessionCredentials, tags=["Main"])
+async def refresh(cid = Depends(accounts.verifyRefreshToken)):
+    if cid != None:
+        token = accounts.generateToken(cid)
+        return SessionCredentials(token=token)
+    else:
+        helper.raiseError(401, "Invalid refresh token provided", ErrorType.AUTH)
+
+
 

@@ -38,14 +38,18 @@ class Accounts():
         session = Session(cid=clientID, startTime=datetime.now())
         database.addSession(session)
 
-        jwt = self.generateJWT(clientID)
+        jwt = self.generateToken(clientID)
         logger.info(f"Session initialized: {uuid}")
-        return jwt
+        return jwt, clientID
 
     # Depends for checking credentials on each request.
     def verifyCredentials(self, creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
         session = self.validateToken(creds.credentials)
         return session
+
+    def verifyRefreshToken(self, creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+        cid = self.validateRefreshToken(creds.credentials)
+        return cid
 
     #
     # Token validation.
@@ -61,7 +65,7 @@ class Accounts():
 
     # Google IDToken check.
     def validateGoogleToken(self, token):
-        CLIENT_ID = "349911558418-25qq88oirls8unm6mln5kb41fn2shkns.apps.googleusercontent.com"
+        CLIENT_ID = "349911558418-9d07ptkk7pg7aqq58qkj5tshi8bq9s5v.apps.googleusercontent.com"
         NEWTON = "newton.k12.ma.us"
         try:
             idInfo = id_token.verify_oauth2_token(str(token), requests.Request(), CLIENT_ID)
@@ -82,7 +86,7 @@ class Accounts():
     # Our token check.
     def validateToken(self, jwt: str):
         database = DatabaseHandler()
-        creds = self.decodeJWT(jwt)
+        creds = self.decodeToken(jwt)
         if creds == None:
             return None
         sub = creds['sub'].split('.')
@@ -90,18 +94,42 @@ class Accounts():
         if sessions != None:
             return sessions
         logger.info(f"Credential check failed: {sub}")
-        self.helper.raiseError(401, "Invalid Credentials.", ErrorType.AUTH)
+        self.helper.raiseError(401, "Invalid credentials", ErrorType.AUTH)
+
+    def validateRefreshToken(self, jwt: str):
+        creds = self.decodeRefreshToken(jwt)
+        try:
+            if creds['ref'] == True:
+                return creds['sub']
+            else:
+                return None
+        except:
+            return None
 
     # Building block for our token check.
-    def decodeJWT(self, webtoken: str):
+    def decodeToken(self, webtoken: str):
         SECRET = open('.ssh/id_rsa.pub', 'r').read()
         key = serialization.load_ssh_public_key(SECRET.encode())
         try:
             decoded = jwt.decode(
                 webtoken,
                 key=key,
-                options={"require": ["exp", "iss", "sub", "aud", "iat"]},
-                audience="https://api.absent.cc",
+                options={"require": ["iss", "exp", "sub", "iat"]},
+                algorithms=['RS256',]
+                )
+        except BaseException as error:
+            self.helper.raiseError(401, error, ErrorType.AUTH)
+        return decoded
+
+    # Building block for our token check.
+    def decodeRefreshToken(self, webtoken: str):
+        SECRET = open('.ssh/id_rsa.pub', 'r').read()
+        key = serialization.load_ssh_public_key(SECRET.encode())
+        try:
+            decoded = jwt.decode(
+                webtoken,
+                key=key,
+                options={"require": ["iss", "sub", "iat", "ref"]},
                 algorithms=['RS256',]
                 )
         except BaseException as error:
@@ -121,16 +149,33 @@ class Accounts():
         return uuid4()
 
     # Takes a ClientID and generates signed JWT for authentication purposes.
-    def generateJWT(self, clientID: ClientID):
+    def generateToken(self, clientID: ClientID):
         SECRET = open('.ssh/id_rsa', 'r').read()
-        EXP_TIME = 2592000
+        EXP_TIME = 600
         key = serialization.load_ssh_private_key(SECRET.encode(), password=None)
         payload = {
             "iss": "https://api.absent.cc",
             "sub": str(clientID),
-            "aud": "https://api.absent.cc",
             "exp": round(time.time()) + EXP_TIME,
             "iat": round(time.time()),
+        }
+        webtoken = jwt.encode(
+            payload=payload,
+            key=key,
+            algorithm='RS256'
+        )
+
+        return webtoken
+
+    # Takes a ClientID and generates signed JWT for authentication purposes.
+    def generateRefreshToken(self, clientID: ClientID):
+        SECRET = open('.ssh/id_rsa', 'r').read()
+        key = serialization.load_ssh_private_key(SECRET.encode(), password=None)
+        payload = {
+            "iss": "https://api.absent.cc",
+            "sub": str(clientID),
+            "iat": round(time.time()),
+            "ref": True
         }
         webtoken = jwt.encode(
             payload=payload,
@@ -145,5 +190,3 @@ class Accounts():
 
     def updateProfile(self, student, profile):
         return self.database.updateStudentInfo(student, profile)
-
-
