@@ -1,6 +1,6 @@
 # abSENT - Notifications for NPS students. 
 Push notifications for NPS students, informing them of absent teachers. The solution to the absent list problem.
-##
+
 ![abSENT Github Banner](marketing/banner.png)
 
 ## What is it?
