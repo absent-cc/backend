@@ -13,7 +13,7 @@ class Absences:
 
     # Gets the feed, accepting an argument 'school' which is either 0 or 1, 0 corresponding to North and 1 corresponding to South (this value being the same as the school's index within the API array). Grabs all updates posted by individuals of interest and saves them to an array 'feed', and returns that array.
     def getFeed(self, school: SchoolName):
-        teachers = ["Tracy Connolly","Casey Friend","Suzanne Spirito"]
+        teachers = ["Tracy Connolly", "Casey Friend", "Suzanne Spirito"]
         feed = []
         for update in self.api[school].get_feed():
             user = self.api[school].get_user(update.uid)

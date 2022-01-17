@@ -1,7 +1,7 @@
 from dataStructs import *
 from database.databaseHandler import *
 from database.logger import Logger
-from schoology.fetchAbsences import Absence
+from schoology.absences import Absences
 import time
 import random
 

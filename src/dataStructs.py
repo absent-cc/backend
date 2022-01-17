@@ -206,6 +206,6 @@ class BasicInfo(BaseModel):
     schedule: Schedule | None = None
 
 class SessionCredentials(BaseModel):
-    token: str
+    token: str | None = None
     refresh: str | None = None
 

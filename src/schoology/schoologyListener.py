@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta, timezone
 import yaml
 from dataStructs import *
-from driver.notifications import *
+from notifications.firebase import *
 from database.logger import Logger
 
 class SchoologyListener:
-    def __init__(self, textnowCreds, scCreds):
+    def __init__(self, SCHOOLOGYCREDS, ):
         self.north = SchoolName.NEWTON_NORTH
         self.south = SchoolName.NEWTON_SOUTH
-        self.notifications = NotificationDriver(textnowCreds, scCreds)
         self.restTime = timedelta(seconds=10)
         
         # Logging:
