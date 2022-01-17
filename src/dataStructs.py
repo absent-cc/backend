@@ -167,8 +167,7 @@ class ClientID(BaseModel):
 
 class Session(BaseModel):
     cid: ClientID 
-    startTime: datetime | None = None
-    validity: bool = True
+    lastAccessed: datetime | None = None
 
 class GToken(BaseModel):
     gToken: str

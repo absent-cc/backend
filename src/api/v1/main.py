@@ -27,12 +27,14 @@ async def authenticate(gToken: GToken): #GOOGLE ID TOKEN WOULD BE ARG HERE.
         res = database.getStudentID(Student(gid=creds['sub']))
         if res != None:
             details = accounts.initializeSession(UUID(res))
-            refresh = refresh=accounts.generateRefreshToken(details[1])
+            refresh = accounts.generateRefreshToken(details[1])
             return SessionCredentials(token=details[0], refresh=refresh)
         else:
             id = accounts.createAccount(creds)
             if id != None:
-                return SessionCredentials(token=accounts.initializeSession(id), refresh=accounts.generateRefreshToken(id))
+                details = accounts.initializeSession(id)
+                refresh = accounts.generateRefreshToken(id)
+                return SessionCredentials(token=details[0], refresh=refresh)
             else:
                 helper.raiseError(500, "Account creation failed", ErrorType.DB)
 

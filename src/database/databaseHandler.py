@@ -1,3 +1,4 @@
+import time
 from dataStructs import *
 import sqlite3
 from database.logger import Logger
@@ -54,8 +55,7 @@ class DatabaseHandler():
         create_sessions = """
         CREATE TABLE IF NOT EXISTS sessions (
                 cid TEXT PRIMARY KEY,
-                start_time TEXT,
-                validity INT
+                last_accessed TEXT
                 )
                 """
         
@@ -497,26 +497,59 @@ class DatabaseHandler():
         if res == None:
             return None
         logger.info(f"Looked up session: {session.cid}")
-        return Session(cid=session.cid, startTime=res[1], validity=res[2])
+        query = f"""
+        UPDATE sessions
+        SET last_accessed = ?
+        WHERE cid = ?
+        """
+        currentTime = round(time.time())
+        args = (str(currentTime), str(session.cid))
+        self.cursor.execute(query, args)
+        self.connection.commit()
+        return Session(cid=session.cid, lastAccessed=currentTime)
+
+    def getSessionsByUser(self, student: Student):
+        if student.uid == None:
+            return None
+        query = f"""
+        SELECT *
+        FROM sessions
+        WHERE cid LIKE '%.{str(student.uid)}'
+        """
+        rawSessions = self.cursor.execute(query).fetchall()
+        sessions = []
+        for session in rawSessions:
+            tmp = session[0].split('.')
+            did = tmp[0]
+            uid = tmp[1]
+            sessions.append(Session(cid=ClientID(token=did, uuid=uid), lastAccessed=session[1]))
+        return sessions
 
     #
     # ACCOUNTS - ADD
     #
 
     def addSession(self, session: Session) -> bool:
+        uid = session.cid.uuid
+        sessions = self.getSessionsByUser(Student(uid=uid))
+        if len(sessions) >= 6:
+            dates = list(entry.lastAccessed for entry in sessions)
+            datesSorted = dates
+            datesSorted.sort()
+            oldest = datesSorted[0]
+            self.removeSession(sessions[dates.index(oldest)])
         query = f"""
         INSERT INTO sessions (
                 cid, 
-                start_time,
-                validity
+                last_accessed
                 )
             VALUES (
-                ?,
                 ?,
                 ?
             )
         """
-        args = (str(session.cid), session.startTime, session.validity)
+        currentTime = round(time.time())
+        args = (str(session.cid), str(currentTime))
         self.cursor.execute(query, args)
         self.connection.commit()
         logger.info(f"Added session: {session.cid}")
@@ -527,20 +560,17 @@ class DatabaseHandler():
     #
 
     def removeSession(self, session: Session) -> bool:
-        if session.id == None:
-            session.id = self.getSessionID(session)
-            if session.id == None:
+        if session.cid == None:
+            session.cid = self.getSessionID(session)
+            if session.cid == None:
                 return False
-        
         query = f"""
-        UPDATE sessions
-        SET validity = '{False}'
-        WHERE cid = ?
+        DELETE FROM sessions WHERE cid = ?
         """
         args = (str(session.cid),)
         self.cursor.execute(query, args)
         self.connection.commit()
-        logger.info(f"Invalidated session: {session.cid}")
+        logger.info(f"Deleted session: {session.cid}")
         return True
 
     def removeUserSessions(self, student) -> bool:
@@ -550,11 +580,9 @@ class DatabaseHandler():
                 return False
         
         query = f"""
-        UPDATE sessions
-        SET validity = '{False}'
-        WHERE cid LIKE '%.{str(student.uid)}'
+        DELETE FROM sessions WHERE cid LIKE '%.{str(student.uid)}'
         """
         self.cursor.execute(query)
         self.connection.commit()
-        logger.info(f"Terminated all sessions for {student.uid}")
+        logger.info(f"Deleted all sessions for {student.uid}")
         return True

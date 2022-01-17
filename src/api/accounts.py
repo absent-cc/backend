@@ -35,7 +35,7 @@ class Accounts():
     def initializeSession(self, uuid: UUID):
         database = DatabaseHandler()
         clientID = self.generateClientID(uuid)
-        session = Session(cid=clientID, startTime=datetime.now())
+        session = Session(cid=clientID)
         database.addSession(session)
 
         jwt = self.generateToken(clientID)
@@ -90,7 +90,7 @@ class Accounts():
         if creds == None:
             return None
         sub = creds['sub'].split('.')
-        sessions = database.getSession(Session(cid=ClientID(token=sub[0], uuid=sub[1]), startTime=None))
+        sessions = database.getSession(Session(cid=ClientID(token=sub[0], uuid=sub[1])))
         if sessions != None:
             return sessions
         logger.info(f"Credential check failed: {sub}")
