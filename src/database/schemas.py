@@ -10,7 +10,7 @@ class UserBase(BaseModel):
     first: str = None
     last: str = None
     school: SchoolName = None
-    grade: Literal[9, 10, 11, 12]
+    grade: Literal[9, 10, 11, 12] = None
 
     def __str__(self) -> str:
         return f"{self.first} {self.last}"

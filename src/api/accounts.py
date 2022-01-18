@@ -47,6 +47,14 @@ class Accounts():
         cid = self.validateRefreshToken(creds.credentials)
         return cid
 
+    # Depends for yielding a DB.
+    def getDB(self):
+        db = CRUD()
+        try:
+            yield db
+        finally:
+            db = None
+
     #
     # Token validation.
     #

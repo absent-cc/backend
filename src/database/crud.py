@@ -1,11 +1,12 @@
 import time
+import secrets
+from loguru import logger
 from uuid import UUID, uuid4
-from sqlalchemy import update
+from sqlalchemy import update, func
 from sqlalchemy.orm import Session 
 from . import models, schemas
 from .database import SessionLocal, engine
 from dataStructs import *
-import secrets
 
 class CRUD:
     def __init__(self):
@@ -13,92 +14,125 @@ class CRUD:
 
     def getUser(self, user: schemas.UserReturn):
         if user.uid != None:
-            return self.db.query(models.User).filter(models.User.uid == user.uid).first()
+            logger.info("User looked up: " + user.uid) # Logs lookup.
+            return self.db.query(models.User).filter(models.User.uid == user.uid).first() # Grabs the first entry of the model User that matches UID.
         if user.gid != None:
-            return self.db.query(models.User).filter(models.User.gid == user.gid).first()
+            logger.info("User looked up: " + user.gjd) # Logs lookup.
+            return self.db.query(models.User).filter(models.User.gid == user.gid).first() # Grabs the first entry of the model User that matches GID.
         return None
 
     def getTeacher(self, teacher: schemas.TeacherReturn):
         if teacher.tid != None:
-            return self.db.query(models.Teacher).filter(models.Teacher.tid == teacher.tid).first()
-        return self.db.query(models.Teacher).filter(models.Teacher.first == teacher.first, models.Teacher.last == teacher.last, models.Teacher.school == teacher.school).first()
+            return self.db.query(models.Teacher).filter(models.Teacher.tid == teacher.tid).first() # Looks up teacher by TID if available, grabs the first match.
+        if teacher.first != None and teacher.last != None and teacher.school != None: # Does so below by name and school, these entries are treated as a primary key by our DB.
+            return self.db.query(models.Teacher).filter(models.Teacher.first == teacher.first, models.Teacher.last == teacher.last, models.Teacher.school == teacher.school).first()
+        return None
 
     def getSession(self, session: schemas.SessionReturn):
-        if session.sid != None and session.uid != None:
-            return self.db.query(models.UserSession).filter(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).first()
-        raise ValueError("Missing SID, UID, or both.")
+        if session.sid != None and session.uid != None: # These two values are used to look up sessions, much exist.
+            q = update(models.UserSession).where(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).values(last_accessed=time.time()).\
+            execution_options(synchronize_session="fetch") # Updates last accessed time.
+            self.db.execute(q)
+            self.db.commit()
+            
+            logger.info("Session looked up:" + session.sid + '.' + session.uid) # Logs the lookup. This essentially behaves as an access log as the accounts code calls this to verify sessions.
+            return self.db.query(models.UserSession).filter(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).first() # Returns session information.
+        return None
 
-    def getClass(self, cls: schemas.Class):
-        return self.db.query(models.Class).filter(models.Class.tid == cls.tid, models.Class.uid == cls.uid, models.Class.block == cls.block).first()
+    def getClass(self, cls: schemas.Class): # Completely useless function. DEP.
+        if cls.tid != None and cls.uid != None and cls.block != None: 
+            return self.db.query(models.Class).filter(models.Class.tid == cls.tid, models.Class.uid == cls.uid, models.Class.block == cls.block).first()
+        return None
 
-    def getClassesByUser(self, user: schemas.UserReturn):
-        return self.db.query(models.Class).filter(models.Class.uid == user.uid).all()
+    def getClassesByUser(self, user: schemas.UserReturn): 
+        if user.uid != None:
+            return self.db.query(models.Class).filter(models.Class.uid == user.uid).all() # Returns all entries in classes table for a given user.
+        return None
 
     def addUser(self, user: schemas.UserCreate):
-        uid = str(uuid4())
-        userModel = models.User(uid=uid, **user.dict())
-        self.db.add(userModel)
-        self.db.commit()
-        self.db.refresh(userModel)
-        return userModel
+        if user.gid != None: # Checks for GID as this is the only mandatory field.
+            uid = str(uuid4()) # Generates UUID.
+            userModel = models.User(uid=uid, **user.dict()) # Creates model from dict of input values.
+            self.db.add(userModel)
+            self.db.commit()
+            logger.info("User added:" + uid) # Logs the addition.
+            return userModel # Returns user details, import as many details are generated here.
+        return None
 
     def addClass(self, newClass: schemas.Class):
-        classModel = models.Class(**newClass.dict())
-        self.db.add(classModel)
-        self.db.commit()
-        self.db.refresh(classModel)
-        return classModel
+        if newClass.tid != None and newClass.uid != None and newClass.block != None: # Checks for the required fields.
+            classModel = models.Class(**newClass.dict()) # Creates a model.
+            self.db.add(classModel) # Adds it.
+            self.db.commit()
+            return classModel # Returns class details.
+        return None
 
     def addTeacher(self, newTeacher: schemas.TeacherCreate):
-        tid = secrets.token_hex(8)
-        teacherModel = models.Teacher(tid=tid, first=newTeacher.first.upper(), last=newTeacher.last.upper(), school=newTeacher.school)
-        self.db.add(teacherModel)
-        self.db.commit()
-        self.db.refresh(teacherModel)
-        return teacherModel
+        if newTeacher.first != None and newTeacher.last != None and newTeacher.school != None: # Checks for required fields.
+            tid = secrets.token_hex(8) # Generates hexadecimal TID.
+            teacherModel = models.Teacher(tid=tid, first=newTeacher.first.upper(), last=newTeacher.last.upper(), school=newTeacher.school) # Creates a model.
+            self.db.add(teacherModel) # Adds teacher.
+            self.db.commit()
+            logger.info("Teacher added:" + tid) # Logs the action.
+            return teacherModel
+        return None
 
     def addSession(self, newSession: schemas.SessionCreate):
-        sid = secrets.token_hex(8)
-        sessionModel = models.UserSession(**newSession.dict(), sid=sid, last_accessed=time.time())
-        self.db.add(sessionModel)
-        self.db.commit()
-        self.db.refresh(sessionModel)
-        return sessionModel
+        if newSession.uid != None: # Checks for required fields.
+            sid = secrets.token_hex(8) # Generates SID.
+            sessionModel = models.UserSession(uid=newSession.uid, sid=sid, last_accessed=time.time()) # Creates object including timestamp, makes model.
+            self.db.add(sessionModel) # Adds model.
+            self.db.commit()
+            logger.info("Session added: " + sid + '.' + newSession.uid) # Logs actions.
+            return sessionModel
+        return None
     
-    def removeClass(self, cls: schemas.Class):
-        modelClass = models.Class(**cls.dict())
-        self.db.delete(modelClass)
-        self.db.commit()
-        return True
+    def removeUser(self, user: schemas.UserReturn):
+        if user.uid != None: # Checks for required fields.
+            self.removeClassesByUser(user) # Removes all of a user's classes.
+            self.db.query(models.User).filter(models.User.uid == user.uid).delete() # Removes the user.
+            self.db.commit()
+            logger.info("Student removed: " + user.uid) # Logs the action.
+            return True
+        return False
 
-    def removeClassesByUser(self, user: schemas.UserReturn):
-        classes = self.getClassesByUser(user)
+    def removeClass(self, cls: schemas.Class):
+        if cls.tid != None and cls.uid != None and cls.block != None: # Checks for required fields.
+            modelClass = models.Class(**cls.dict()) # Builds model.
+            self.db.delete(modelClass) # Removes it.
+            self.db.commit()
+            return True
+        return False
+
+    def removeClassesByUser(self, user: schemas.UserReturn): # Used for updating schedule and cancellation.
+        classes = self.getClassesByUser(user) # Gets a student's classes.
         for cls in classes:
-            self.db.delete(cls)
+            self.db.delete(cls) # Deletes them all.
         self.db.commit()
         return True
 
     def updateSchedule(self, user: schemas.UserReturn, schedule: schemas.Schedule):
-        self.removeClassesByUser(user)
+        self.removeClassesByUser(user) # Removes all old classes.
         for cls in schedule:
-            for teacher in cls[1]:
+            for teacher in cls[1]: # This loops through all the teachers for a given block.
                 resTeacher = self.getTeacher(schemas.TeacherReturn(tid=None, first=teacher.first, last=teacher.last, school=teacher.school))
                 if resTeacher == None:
-                    tid = self.addTeacher(schemas.TeacherCreate(first=teacher.first, last=teacher.last, school=user.school)).tid
+                    tid = self.addTeacher(schemas.TeacherCreate(first=teacher.first, last=teacher.last, school=user.school)).tid # Adds them to DB if they don't exist.
                 else:
-                    tid = resTeacher.tid
-                self.addClass(schemas.Class(tid=tid, block=ReverseBlockMapper()[cls[0]], uid=user.uid))
+                    tid = resTeacher.tid # Else, just reference them.
+                self.addClass(schemas.Class(tid=tid, block=ReverseBlockMapper()[cls[0]], uid=user.uid)) # Creates class entry.
         return True
     
     def updateProfile(self, profile: schemas.UserBase, uid: str):
         q = update(models.User).where(models.User.uid == uid).values(**profile.dict()).\
-        execution_options(synchronize_session="fetch")
+        execution_options(synchronize_session="fetch") # This is the update query, just sets the values to those of the profile dict.
         result = self.db.execute(q)
         self.db.commit()
-        return result
+        return result # Returns new profile.
 
-crud = CRUD()
+#crud = CRUD()
 
+#crud.removeUser(schemas.UserReturn(uid="afac7ce0-1ecf-49f1-b1b4-81876b288508"))
 # crud.addUser(schemas.StudentBase(first="Roshan", last="Karim", gid=12345, school=SchoolName.NEWTON_NORTH, grade=10))
 
 #t = schemas.TeacherCreate(first="James", last="Black", school=SchoolName.NEWTON_SOUTH)
