@@ -1,7 +1,8 @@
 import jwt
 import time
 from api.helper import HelperFunctions
-from dataStructs import *
+from dataTypes import schemas
+from dataTypes import structs
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from cryptography.hazmat.primitives import serialization
@@ -9,7 +10,6 @@ from fastapi import Depends
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from loguru import logger
 from database.crud import CRUD
-from database import models, schemas
 
 class Accounts():
 
@@ -47,14 +47,6 @@ class Accounts():
         cid = self.validateRefreshToken(creds.credentials)
         return cid
 
-    # Depends for yielding a DB.
-    def getDB(self):
-        db = CRUD()
-        try:
-            yield db
-        finally:
-            db = None
-
     #
     # Token validation.
     #
@@ -65,7 +57,7 @@ class Accounts():
             if split[0].isnumeric():
                 return True
         except:
-            self.helper.raiseError(401, "Invalid email", ErrorType.AUTH)
+            self.helper.raiseError(401, "Invalid email", structs.ErrorType.AUTH)
 
     # Google IDToken check.
     def validateGoogleToken(self, token):
@@ -76,14 +68,14 @@ class Accounts():
             logger.info(f"Sucessful Google login: {idInfo['sub']}")
         except BaseException as error:
             logger.info(f"Invalid Google token POSTed.")
-            self.helper.raiseError(401, error, ErrorType.AUTH)
+            self.helper.raiseError(401, error, structs.ErrorType.AUTH)
         try:
             if idInfo['hd'] != NEWTON:
                 logger.info(f"Google token for a non-NPS account POSTed")
-                self.helper.raiseError(401, "Not an NPS issued account", ErrorType.AUTH)
+                self.helper.raiseError(401, "Not an NPS issued account", structs.ErrorType.AUTH)
         except BaseException:
             logger.info(f"Google token for a non-NPS account POSTed")
-            self.helper.raiseError(401, "Not an NPS issued account", ErrorType.AUTH)
+            self.helper.raiseError(401, "Not an NPS issued account", structs.ErrorType.AUTH)
         self.checkEmail(idInfo['email'])
         return idInfo
 
@@ -98,7 +90,7 @@ class Accounts():
         if session != None:
             return session
         logger.info(f"Credential check failed: {sub}")
-        self.helper.raiseError(401, "Invalid credentials", ErrorType.AUTH)
+        self.helper.raiseError(401, "Invalid credentials", structs.ErrorType.AUTH)
 
     def validateRefreshToken(self, jwt: str):
         creds = self.decodeRefreshToken(jwt)
@@ -122,7 +114,7 @@ class Accounts():
                 algorithms=['RS256',]
                 )
         except BaseException as error:
-            self.helper.raiseError(401, error, ErrorType.AUTH)
+            self.helper.raiseError(401, error, structs.ErrorType.AUTH)
         return decoded
 
     # Building block for our token check.
@@ -137,7 +129,7 @@ class Accounts():
                 algorithms=['RS256',]
                 )
         except BaseException as error:
-            self.helper.raiseError(401, error, ErrorType.AUTH)
+            self.helper.raiseError(401, error, structs.ErrorType.AUTH)
         return decoded
 
     #

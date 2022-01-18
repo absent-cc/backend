@@ -1,12 +1,11 @@
 import time
 import secrets
 from loguru import logger
-from uuid import UUID, uuid4
-from sqlalchemy import update, func
-from sqlalchemy.orm import Session 
-from . import models, schemas
-from .database import SessionLocal, engine
-from dataStructs import *
+from uuid import uuid4
+from sqlalchemy import update
+
+from dataTypes import schemas, models, structs
+from database.database import SessionLocal
 
 class CRUD:
     def __init__(self):
@@ -17,7 +16,7 @@ class CRUD:
             logger.info("User looked up: " + user.uid) # Logs lookup.
             return self.db.query(models.User).filter(models.User.uid == user.uid).first() # Grabs the first entry of the model User that matches UID.
         if user.gid != None:
-            logger.info("User looked up: " + user.gjd) # Logs lookup.
+            logger.info("User looked up: " + user.gid) # Logs lookup.
             return self.db.query(models.User).filter(models.User.gid == user.gid).first() # Grabs the first entry of the model User that matches GID.
         return None
 
@@ -25,12 +24,12 @@ class CRUD:
         if teacher.tid != None:
             return self.db.query(models.Teacher).filter(models.Teacher.tid == teacher.tid).first() # Looks up teacher by TID if available, grabs the first match.
         if teacher.first != None and teacher.last != None and teacher.school != None: # Does so below by name and school, these entries are treated as a primary key by our DB.
-            return self.db.query(models.Teacher).filter(models.Teacher.first == teacher.first, models.Teacher.last == teacher.last, models.Teacher.school == teacher.school).first()
+            return self.db.query(models.Teacher).filter(models.Teacher.first == teacher.first.upper(), models.Teacher.last == teacher.last.upper()).first()
         return None
 
     def getSession(self, session: schemas.SessionReturn):
         if session.sid != None and session.uid != None: # These two values are used to look up sessions, much exist.
-            q = update(models.UserSession).where(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).values(last_accessed=time.time()).\
+            q = update(models.UserSession).where(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).values(last_accessed=round(time.time())).\
             execution_options(synchronize_session="fetch") # Updates last accessed time.
             self.db.execute(q)
             self.db.commit()
@@ -79,14 +78,27 @@ class CRUD:
 
     def addSession(self, newSession: schemas.SessionCreate):
         if newSession.uid != None: # Checks for required fields.
+            
+            sessions = self.db.query(models.UserSession).filter(models.UserSession.uid == newSession.uid).all()
+            if len(sessions) >= 6:
+                oldestSession = min(sessions, key = lambda t: t.last_accessed)
+                self.removeSession(schemas.SessionReturn.from_orm(oldestSession))
+
             sid = secrets.token_hex(8) # Generates SID.
-            sessionModel = models.UserSession(uid=newSession.uid, sid=sid, last_accessed=time.time()) # Creates object including timestamp, makes model.
+            sessionModel = models.UserSession(uid=newSession.uid, sid=sid, last_accessed=round(time.time())) # Creates object including timestamp, makes model.
             self.db.add(sessionModel) # Adds model.
             self.db.commit()
             logger.info("Session added: " + sid + '.' + newSession.uid) # Logs actions.
             return sessionModel
         return None
-    
+
+    def removeSession(self, session: schemas.SessionReturn):
+        if session.sid != None and session.uid != None:
+            self.db.query(models.UserSession).filter(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).delete()
+            self.db.commit()
+            return True
+        return False
+
     def removeUser(self, user: schemas.UserReturn):
         if user.uid != None: # Checks for required fields.
             self.removeClassesByUser(user) # Removes all of a user's classes.
@@ -115,12 +127,13 @@ class CRUD:
         self.removeClassesByUser(user) # Removes all old classes.
         for cls in schedule:
             for teacher in cls[1]: # This loops through all the teachers for a given block.
-                resTeacher = self.getTeacher(schemas.TeacherReturn(tid=None, first=teacher.first, last=teacher.last, school=teacher.school))
+                resTeacher = self.getTeacher(schemas.TeacherReturn(first=teacher.first, last=teacher.last, school=teacher.school))
+                print(resTeacher)
                 if resTeacher == None:
                     tid = self.addTeacher(schemas.TeacherCreate(first=teacher.first, last=teacher.last, school=user.school)).tid # Adds them to DB if they don't exist.
                 else:
                     tid = resTeacher.tid # Else, just reference them.
-                self.addClass(schemas.Class(tid=tid, block=ReverseBlockMapper()[cls[0]], uid=user.uid)) # Creates class entry.
+                self.addClass(schemas.Class(tid=tid, block=structs.ReverseBlockMapper()[cls[0]], uid=user.uid)) # Creates class entry.
         return True
     
     def updateProfile(self, profile: schemas.UserBase, uid: str):

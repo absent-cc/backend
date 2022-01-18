@@ -1,17 +1,13 @@
 from datetime import datetime, timedelta, timezone
 import yaml
-from dataStructs import *
+from dataTypes import structs
 from notifications.firebase import *
-from database.logger import Logger
 
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS, ):
-        self.north = SchoolName.NEWTON_NORTH
-        self.south = SchoolName.NEWTON_SOUTH
+        self.north = structs.SchoolName.NEWTON_NORTH
+        self.south = structs.SchoolName.NEWTON_SOUTH
         self.restTime = timedelta(seconds=10)
-        
-        # Logging:
-        self.logger = Logger()
 
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
@@ -25,14 +21,14 @@ class SchoologyListener:
             update = self.notifications.run(date, self.north) # Sends notifications, checks sucess.
             if update:
                 self.writeState(self.north, date) # Update statefile and var.
-                self.logger.sentAbsencesSuccess(SchoolName.NEWTON_NORTH)
+                self.logger.sentAbsencesSuccess(structs.SchoolName.NEWTON_NORTH)
 
         # NSHS Runtime
         if states[self.south] == False:
             update = self.notifications.run(date, self.south) # Sends notifications, check sucess.
             if update:
                 self.writeState(self.south, date) # Update statefile and var.
-                self.logger.sentAbsencesSuccess(SchoolName.NEWTON_SOUTH)
+                self.logger.sentAbsencesSuccess(structs.SchoolName.NEWTON_SOUTH)
         
         states = self.fetchStates(date)
         
@@ -41,28 +37,28 @@ class SchoologyListener:
     # Function for fetching an up to date state file content.
     def fetchStates(self, date, statePath = 'state.yml'):
         stateDict = {
-            SchoolName.NEWTON_NORTH: False,
-            SchoolName.NEWTON_SOUTH: False
+            structs.SchoolName.NEWTON_NORTH: False,
+            structs.SchoolName.NEWTON_SOUTH: False
         }
         # Read state yaml file.
         with open(statePath, 'r') as f:
             state = yaml.safe_load(f)
-        if state[str(SchoolName.NEWTON_NORTH)] == date.strftime('%m/%-d/%Y'):
-            stateDict[SchoolName.NEWTON_NORTH] = True
-        if state[str(SchoolName.NEWTON_SOUTH)] == date.strftime('%m/%-d/%Y'):
-            stateDict[SchoolName.NEWTON_SOUTH] = True
+        if state[str(structs.SchoolName.NEWTON_NORTH)] == date.strftime('%m/%-d/%Y'):
+            stateDict[structs.SchoolName.NEWTON_NORTH] = True
+        if state[str(structs.SchoolName.NEWTON_SOUTH)] == date.strftime('%m/%-d/%Y'):
+            stateDict[structs.SchoolName.NEWTON_SOUTH] = True
         return stateDict
 
     # Function for writing state.
-    def writeState(self, school: SchoolName, date, statePath = 'state.yml'):
+    def writeState(self, school: structs.SchoolName, date, statePath = 'state.yml'):
         # Read state yaml file.
         with open(statePath, 'r') as f:
             state = yaml.safe_load(f)
         state[str(school)] = date.strftime('%m/%-d/%Y')
-        if school == SchoolName.NEWTON_NORTH:
-            state[str(SchoolName.NEWTON_SOUTH)] = state[str(SchoolName.NEWTON_SOUTH)]
+        if school == structs.SchoolName.NEWTON_NORTH:
+            state[str(structs.SchoolName.NEWTON_SOUTH)] = state[str(structs.SchoolName.NEWTON_SOUTH)]
         else:
-            state[str(SchoolName.NEWTON_NORTH)] = state[str(SchoolName.NEWTON_NORTH)]
+            state[str(structs.SchoolName.NEWTON_NORTH)] = state[str(structs.SchoolName.NEWTON_NORTH)]
         # Write new state to state file
         with open('state.yml', 'w') as f:
             yaml.safe_dump(state, f)

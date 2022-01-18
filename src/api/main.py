@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from api.v1 import main as v1
-from dataStructs import *
-from database import models, schemas, database
+from dataTypes import structs, models, schemas
+from database import database
 
 # All this fucking shit for the docs because I am legitimately this vain.
 

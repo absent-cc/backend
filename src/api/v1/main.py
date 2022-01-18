@@ -1,10 +1,10 @@
 from fastapi import Depends, APIRouter
 from api.helper import HelperFunctions
 from api.accounts import Accounts
-from .routers import users, admin
-from dataStructs import *
-from database import models, schemas
+from api.v1.routers import users, admin
+from dataTypes import structs, schemas, models
 from database.crud import CRUD
+
 
 accounts = Accounts()
 helper = HelperFunctions()
@@ -35,7 +35,7 @@ async def authenticate(gToken: schemas.GToken): # GToken is expected in request 
                 refresh = accounts.generateRefreshToken(id)
                 return schemas.SessionCredentials(token=details[0], refresh=refresh)
             else:
-                helper.raiseError(500, "Account creation failed", ErrorType.DB)
+                helper.raiseError(500, "Account creation failed", structs.ErrorType.DB)
 
 # Endpoint used to request new main token using refresh token. Refresh token is expected in authentication header, with Bearer scheme.
 @router.post("/refresh/", status_code=201, response_model=schemas.SessionCredentials, tags=["Main"])
@@ -44,4 +44,4 @@ async def refresh(cid = Depends(accounts.verifyRefreshToken)): # Here, the refre
         token = accounts.generateToken(cid) # Issue a new token, using accounts code. Since these tokens are stateless no DB interaction is needed.
         return schemas.SessionCredentials(token=token) # Return this using our credentials schema.
     else:
-        helper.raiseError(401, "Invalid refresh token provided", ErrorType.AUTH) # Otherwise, raise an error of type AUTH, signifying an invalid token.
+        helper.raiseError(401, "Invalid refresh token provided", structs.ErrorType.AUTH) # Otherwise, raise an error of type AUTH, signifying an invalid token.

@@ -1,18 +1,18 @@
-from dataStructs import *
+from dataTypes import structs, schemas, models
 import schoolopy
 
 class Absences:
     # Sets up the two API objects as entries within a list 'api' . 
-    def __init__(self, scCreds: SchoologyCreds):
+    def __init__(self, scCreds: structs.SchoologyCreds):
         self.api = {
-            SchoolName.NEWTON_NORTH: schoolopy.Schoology(schoolopy.Auth(scCreds.northkey, scCreds.northsecret)),
-            SchoolName.NEWTON_SOUTH: schoolopy.Schoology(schoolopy.Auth(scCreds.southkey, scCreds.southsecret))
+            structs.SchoolName.NEWTON_NORTH: schoolopy.Schoology(schoolopy.Auth(scCreds.northkey, scCreds.northsecret)),
+            structs.SchoolName.NEWTON_SOUTH: schoolopy.Schoology(schoolopy.Auth(scCreds.southkey, scCreds.southsecret))
         }
-        self.api[SchoolName.NEWTON_NORTH].limit = 10
-        self.api[SchoolName.NEWTON_SOUTH].limit = 10
+        self.api[structs.SchoolName.NEWTON_NORTH].limit = 10
+        self.api[structs.SchoolName.NEWTON_SOUTH].limit = 10
 
     # Gets the feed, accepting an argument 'school' which is either 0 or 1, 0 corresponding to North and 1 corresponding to South (this value being the same as the school's index within the API array). Grabs all updates posted by individuals of interest and saves them to an array 'feed', and returns that array.
-    def getFeed(self, school: SchoolName):
+    def getFeed(self, school: structs.SchoolName):
         teachers = ["Tracy Connolly", "Casey Friend", "Suzanne Spirito"]
         feed = []
         for update in self.api[school].get_feed():
@@ -22,7 +22,7 @@ class Absences:
         return feed
 
     # Gets the absence table for the date requested as defined by 'date'. Returns just this update for furthing processing. The date argument ultimately comes from the call of this function in main.py.
-    def getAbsenceTable(self, school: SchoolName):
+    def getAbsenceTable(self, school: structs.SchoolName):
         validDates = [
             # Tracy Connolly
             self.date.strftime("%m/%-d/%Y"),
@@ -53,7 +53,7 @@ class Absences:
     # Takes the raw North attendance table from the prior function and parses it, using the AbsentTeacher dataclass. Returns an array of entries utilizing this class. 
     def filterAbsencesNorth(self, date):       
         self.date = date
-        table = self.getAbsenceTable(SchoolName.NEWTON_NORTH)    
+        table = self.getAbsenceTable(structs.SchoolName.NEWTON_NORTH)    
         absences = ContentParser(date).parse(table)
 
         print(absences)
@@ -62,7 +62,7 @@ class Absences:
     # Same as the above, but the parsing is handled slightly differently due to the South absence table being differenct in formatting.
     def filterAbsencesSouth(self, date):
         self.date = date
-        table = self.getAbsenceTable(SchoolName.NEWTON_SOUTH)    
+        table = self.getAbsenceTable(structs.SchoolName.NEWTON_SOUTH)    
         absences = ContentParser(date).parse(table)
 
         print(absences)
@@ -107,7 +107,7 @@ class ContentParser:
             else:
                 note = rawTable[row*COLUMNS+5]
             # Generate AbsentTeacher for row.
-            teacher = AbsentTeacher(Teacher(rawTable[row*COLUMNS+1], rawTable[row*COLUMNS]), rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
+            teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=rawTable[row*COLUMNS+1], last=rawTable[row*COLUMNS], school=structs.SchoolName.NEWTON_NORTH), rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
             absences.append(teacher)
 
         return absences
@@ -139,7 +139,7 @@ class ContentParser:
                 # Split the name.
                 name = rawTable[row*COLUMNS].split(", ")
                 # Generate AbsentTeacher object for row.
-                teacher = AbsentTeacher(Teacher(name[1], name[0]), rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
+                teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=name[1], last=name[0], school=structs.SchoolName.NEWTON_NORTH), rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
                 absences.append(teacher)
 
         # Clause #2 - Standard, with position as first column, 8 columns, and DoW as last.
@@ -158,7 +158,7 @@ class ContentParser:
                 else:
                     note = rawTable[row*COLUMNS+3]
                 # Generate AbsentTeacher object for row.
-                teacher = AbsentTeacher(Teacher(rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+1]), rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
+                teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
                 absences.append(teacher)
         
         # Clause #3 - Short, same as #2 without DoW.
@@ -177,7 +177,7 @@ class ContentParser:
                 else:
                     note = rawTable[row*COLUMNS+3]
                 # Generate AbsentTeacher object for row.
-                teacher = AbsentTeacher(Teacher(rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+1]), rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
+                teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
                 absences.append(teacher)
 
         return absences
@@ -197,7 +197,7 @@ class ContentParser:
             else:
                 note = rawTable[row*COLUMNS+4]
             # Generate AbsentTeacher for row.
-            teacher = AbsentTeacher(Teacher(rawTable[row*COLUMNS+1], rawTable[row*COLUMNS]), rawTable[row*COLUMNS+2], str(self.date.strftime("%m/%-d/%Y")), note)
+            teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=rawTable[row*COLUMNS+1], last=rawTable[row*COLUMNS], school=structs.SchoolName.NEWTON_SOUTH), rawTable[row*COLUMNS+2], str(self.date.strftime("%m/%-d/%Y")), note)
             absences.append(teacher)
 
         return absences

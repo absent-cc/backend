@@ -2,14 +2,14 @@ import sched
 from typing import List, Literal, Optional
 from uuid import UUID
 from pydantic import BaseModel, validator
-from dataStructs import *
+from dataTypes import structs
 
 
 
 class UserBase(BaseModel):
     first: str = None
     last: str = None
-    school: SchoolName = None
+    school: structs.SchoolName = None
     grade: Literal[9, 10, 11, 12] = None
 
     def __str__(self) -> str:
@@ -24,7 +24,7 @@ class UserCreate(UserBase):
 class TeacherCreate(BaseModel):
     first: str = None
     last: str = None
-    school: SchoolName = None
+    school: structs.SchoolName = None
 
 class TeacherReturn(TeacherCreate):
     tid: str = None
@@ -34,7 +34,7 @@ class TeacherReturn(TeacherCreate):
 
 class Schedule(BaseModel):
     A: List[TeacherReturn] = None
-    ADV: List[TeacherReturn] = None
+    ADVISORY: List[TeacherReturn] = None
     B: List[TeacherReturn] = None
     C: List[TeacherReturn] = None 
     D: List[TeacherReturn] = None
@@ -47,7 +47,7 @@ class Schedule(BaseModel):
         schedule = Schedule()
         for cls in classes:
             current = getattr(schedule, cls.block)
-            if current != None and current != NotPresent.TRUE:
+            if current != None and current != structs.NotPresent.TRUE:
                 current.append(cls.teacher)
                 setattr(schedule, cls.block, current)
             else:
@@ -56,7 +56,7 @@ class Schedule(BaseModel):
 
 class Class(BaseModel):
     tid: str = None
-    block: SchoolBlock = None
+    block: structs.SchoolBlock = None
     uid: str = None
 
     class Config:
@@ -91,7 +91,6 @@ class UserInfo(BaseModel):
 
 class SessionCreate(BaseModel):
     uid: str
-
     @validator('uid')
     def checkUIDLength(cls, v):
         try:
@@ -109,6 +108,8 @@ class SessionReturn(SessionCreate):
         if len(v) != 16:
             raise ValueError('SID Must be 17 characters long.')
         return v
+    class Config:
+        orm_mode = True
 
 class GToken(BaseModel):
     gToken: str

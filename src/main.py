@@ -1,5 +1,5 @@
 import threading, time, yaml
-from dataStructs import *
+from dataTypes import structs
 from schoology.schoologyListener import *
 from database.database import *
 from datetime import timedelta, datetime, timezone
@@ -9,16 +9,16 @@ with open('secrets.yml') as f:
     cfg = yaml.safe_load(f)
 
 # Define API variables.
-SCHOOLOGYCREDS = SchoologyCreds(
+SCHOOLOGYCREDS = structs.SchoologyCreds(
     
     {
-    SchoolName.NEWTON_NORTH: cfg['north']['key'],
-    SchoolName.NEWTON_SOUTH: cfg['south']['key'] 
+    structs.SchoolName.NEWTON_NORTH: cfg['north']['key'],
+    structs.SchoolName.NEWTON_SOUTH: cfg['south']['key'] 
     }, 
     
     {
-    SchoolName.NEWTON_NORTH: cfg['north']['secret'],
-    SchoolName.NEWTON_SOUTH: cfg['south']['secret']
+    structs.SchoolName.NEWTON_NORTH: cfg['north']['secret'],
+    structs.SchoolName.NEWTON_SOUTH: cfg['south']['secret']
     }
     
     )

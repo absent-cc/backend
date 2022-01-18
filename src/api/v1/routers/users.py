@@ -1,11 +1,9 @@
-import sched
 from fastapi import Depends, APIRouter
 from api.helper import HelperFunctions
-from dataStructs import *
+from dataTypes import structs, schemas
 from database.crud import CRUD
 from api.accounts import Accounts 
 from loguru import logger
-from database import models, schemas
 
 router = APIRouter(prefix="/users", tags=["Users"])
 accounts = Accounts()
@@ -34,7 +32,7 @@ async def cancel(
     if database.removeUser(user):
         database.removeUserSessions(user)
         return helper.returnStatus("Account deleted.")
-    helper.raiseError(500, "Operation failed.", ErrorType.DB)
+    helper.raiseError(500, "Operation failed.", structs.ErrorType.DB)
 
 @router.put("/me/update", status_code=201)
 async def updateUserInfo(
