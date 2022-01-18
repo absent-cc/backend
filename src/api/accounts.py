@@ -1,46 +1,42 @@
-import secrets
 import jwt
 import time
-from uuid import uuid4
 from api.helper import HelperFunctions
 from dataStructs import *
-from database.databaseHandler import DatabaseHandler
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from cryptography.hazmat.primitives import serialization
 from fastapi import Depends
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from loguru import logger
+from database.crud import CRUD
+from database import models, schemas
 
 class Accounts():
 
     def __init__(self):
-        self.database = DatabaseHandler()
+        self.database = CRUD()
         self.helper = HelperFunctions()
 
     # Top level accounts function used for creating account for new user.
     def createAccount(self, creds: dict):
         name = creds['name'].split(' ', 1)
         if len(name) == 2:
-            student = Student(uid=self.generateUUID(), gid=int(creds['sub']), first=name[0], last=name[1])
+            user = schemas.UserCreate(gid=int(creds['sub']), first=name[0], last=name[1])
         else:
-            student = Student(uid=self.generateUUID(), gid=int(creds['sub']), first=name[0])
-        
-        id = self.database.addStudent(student)
-        logger.info(f"Account created: {student.uid}")
+            user = schemas.UserCreate(gid=int(creds['sub']), first=name[0])
+        user = self.database.addUser(user)
+        logger.info(f"Account created: {user.uid}")
 
-        return id
+        return user.uid
 
     # Top level accounts function used for creating a session.
-    def initializeSession(self, uuid: UUID):
-        database = DatabaseHandler()
-        clientID = self.generateClientID(uuid)
-        session = Session(cid=clientID)
-        database.addSession(session)
-
-        jwt = self.generateToken(clientID)
-        logger.info(f"Session initialized: {uuid}")
-        return jwt, clientID
+    def initializeSession(self, uid: str):
+        session = schemas.SessionCreate(uid=uid)
+        session = self.database.addSession(session)
+        cid = f"{session.sid}.{uid}"
+        jwt = self.generateToken(cid)
+        logger.info(f"Session initialized: {uid}")
+        return jwt, cid
 
     # Depends for checking credentials on each request.
     def verifyCredentials(self, creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
@@ -85,14 +81,14 @@ class Accounts():
 
     # Our token check.
     def validateToken(self, jwt: str):
-        database = DatabaseHandler()
         creds = self.decodeToken(jwt)
         if creds == None:
             return None
         sub = creds['sub'].split('.')
-        sessions = database.getSession(Session(cid=ClientID(token=sub[0], uuid=sub[1])))
-        if sessions != None:
-            return sessions
+        session = schemas.SessionReturn(uid=sub[1], sid=sub[0])
+        session = self.database.getSession(session)
+        if session != None:
+            return session
         logger.info(f"Credential check failed: {sub}")
         self.helper.raiseError(401, "Invalid credentials", ErrorType.AUTH)
 
@@ -140,22 +136,14 @@ class Accounts():
     # Various functions for generating secrets and IDs.
     #
 
-    # Generates a ClientID (unique to each session).
-    def generateClientID(self, uuid: UUID):
-        return ClientID(token=secrets.token_hex(8), uuid=uuid)
-    
-    # Generates UUID for user management.
-    def generateUUID(self):
-        return uuid4()
-
     # Takes a ClientID and generates signed JWT for authentication purposes.
-    def generateToken(self, clientID: ClientID):
+    def generateToken(self, clientID: str):
         SECRET = open('.ssh/id_rsa', 'r').read()
         EXP_TIME = 600
         key = serialization.load_ssh_private_key(SECRET.encode(), password=None)
         payload = {
             "iss": "https://api.absent.cc",
-            "sub": str(clientID),
+            "sub": clientID,
             "exp": round(time.time()) + EXP_TIME,
             "iat": round(time.time()),
         }
@@ -168,7 +156,7 @@ class Accounts():
         return webtoken
 
     # Takes a ClientID and generates signed JWT for authentication purposes.
-    def generateRefreshToken(self, clientID: ClientID):
+    def generateRefreshToken(self, clientID: str):
         SECRET = open('.ssh/id_rsa', 'r').read()
         key = serialization.load_ssh_private_key(SECRET.encode(), password=None)
         payload = {
@@ -185,7 +173,7 @@ class Accounts():
 
         return webtoken
 
-    def updateSchedule(self, student, schedule: Schedule):
+    def updateSchedule(self, student, schedule: schemas.Schedule):
         return self.database.updateStudentClasses(student, schedule)
 
     def updateProfile(self, student, profile):

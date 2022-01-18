@@ -1,64 +1,74 @@
+import sched
 from fastapi import Depends, APIRouter
 from api.helper import HelperFunctions
 from dataStructs import *
-from database.databaseHandler import DatabaseHandler
+from database.crud import CRUD
 from api.accounts import Accounts 
 from loguru import logger
+from database import models, schemas
 
 router = APIRouter(prefix="/users", tags=["Users"])
 accounts = Accounts()
-database = DatabaseHandler()
 helper = HelperFunctions()
+database = CRUD()
 
-@router.get("/me/info", response_model=BasicInfo)
+@router.get("/me/info", response_model=schemas.UserReturn)
 async def returnUserInfo(
-    creds: Session = Depends(accounts.verifyCredentials), 
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), 
 ):
-    uuid = creds.cid.uuid
-    student = Student(uid=uuid)
-    student = database.getStudent(student)
-    if student.school != None:
-        schedule = database.getScheduleByStudent(student)
-    else:
-        return BasicInfo(profile=student)
-    return BasicInfo(profile=student, schedule=schedule)
+    uid = creds.uid
+    user = schemas.UserReturn(uid=uid)
+    user = database.getUser(user)
+    userReturn = schemas.UserReturn.from_orm(user)
+    print(schemas.Schedule.scheduleFromList(user.schedule))
+    userReturn.schedule = schemas.Schedule.scheduleFromList(user.schedule)
+
+    return userReturn
 
 @router.put("/me/delete", status_code=201)
 async def cancel(
-    creds: Session = Depends(accounts.verifyCredentials)
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials)
 ):
-    uuid = creds.cid.uuid
-    student = Student(uid=uuid)
-    if database.removeStudent(student):
-        database.removeUserSessions(student)
+    uid = creds.uid
+    user = schemas.User(uid=uid)
+    if database.removeUser(user):
+        database.removeUserSessions(user)
         return helper.returnStatus("Account deleted.")
     helper.raiseError(500, "Operation failed.", ErrorType.DB)
 
 @router.put("/me/update", status_code=201)
 async def updateUserInfo(
-    userInfo: BasicInfo,
-    creds: Session = Depends(accounts.verifyCredentials), 
+    user: schemas.UserInfo,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), 
 ):
-    uuid = creds.cid.uuid
-    student = Student(uid=uuid)
-    student = database.getStudent(student)
+    uid = creds.uid
+    user = schemas.UserReturn(uid=uid)
+    user = database.getUser(user)
 
-    profileSuccess = False
-    scheduleSuccess = False
+    database.updateProfile(user.profile)
+    database.updateSchedule(user, user.schedule)
 
-    if userInfo.profile != None:
-        profileSuccess = accounts.updateProfile(student, userInfo.profile)
-    else:
-        profileSuccess = True
+    return helper.returnStatus("Information updated.")
 
-    if userInfo.schedule != None and student.school != None:
-        scheduleSuccess = accounts.updateSchedule(student, userInfo.schedule)
-    elif userInfo.schedule != None: 
-        scheduleSuccess = False
-    else: 
-        scheduleSuccess = True
+@router.put("/me/update/profile", status_code=201)
+async def updateUserInfo(
+    profile: schemas.UserBase,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), 
+):
 
-    if profileSuccess and scheduleSuccess:
-        return helper.returnStatus("Information updated.")
-    else:
-        helper.raiseError(500, "Operation Failed", ErrorType.DB)
+    database.updateProfile(profile, creds.uid)
+
+    return helper.returnStatus("Information updated.")
+
+@router.put("/me/update/schedule", status_code=201)
+async def updateUserInfo(
+    schedule: schemas.Schedule,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), 
+):
+    uid = creds.uid
+    user = schemas.UserReturn(uid=uid)
+    user = database.getUser(user)
+
+    database.updateSchedule(user, schedule)
+
+    return helper.returnStatus("Information updated.")

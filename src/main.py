@@ -1,12 +1,8 @@
 import threading, time, yaml
 from dataStructs import *
 from schoology.schoologyListener import *
-from database.databaseHandler import *
+from database.database import *
 from datetime import timedelta, datetime, timezone
-from database.logger import Logger
-
-logger = Logger()
-logger.systemStartup()
 
 # Open files.
 with open('secrets.yml') as f:

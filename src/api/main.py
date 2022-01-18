@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from api.v1 import main as v1
 from dataStructs import *
+from database import models, schemas, database
 
 # All this fucking shit for the docs because I am legitimately this vain.
 
@@ -41,6 +42,8 @@ absent = FastAPI(
     },
     openapi_tags=tags_metadata
 )
+
+models.Base.metadata.create_all(bind=database.engine)
 
 absent.mount("/static", StaticFiles(directory="static"), name="static")
 
