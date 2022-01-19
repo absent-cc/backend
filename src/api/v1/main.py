@@ -9,7 +9,6 @@ from database.crud import CRUD
 accounts = Accounts()
 helper = HelperFunctions()
 router = APIRouter(prefix="/v1")
-database = CRUD()
 router.include_router(users.router)
 #absent.include_router(admin.router)
 
@@ -18,10 +17,10 @@ async def serviceInfo():
     return "This is the root page of the abSENT API, v1. Please call /login to get started."
 
 @router.post("/login/", status_code=201, response_model=schemas.SessionCredentials, tags=["Main"])
-async def authenticate(gToken: schemas.GToken): # GToken is expected in request body.
+async def authenticate(gToken: schemas.GToken, db: CRUD = Depends(helper.getDBSession)): # GToken is expected in request body.
     creds = accounts.validateGoogleToken(gToken) # Accounts code is used to validate the Google JWT, returns all the data from it.
     if creds != None:
-        res = database.getUser(schemas.UserReturn(gid=creds['sub'])) # SUB = GID, this is used as our external identifier. This code checks if the user is in the DB.
+        res = db.getUser(schemas.UserReturn(gid=creds['sub'])) # SUB = GID, this is used as our external identifier. This code checks if the user is in the DB.
         if res != None: 
             # Session is created, both tokens issued. Returned to user in body.
             details = accounts.initializeSession(res.uid) 

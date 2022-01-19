@@ -52,7 +52,7 @@ requests_toolbelt==0.9.1
 schoolopy==0.2.2
 setproctitle==1.2.2
 simplejson==3.17.6
-speedups==0.3.0
+speedups==0.7.0
 sqlcipher3==0.4.5
 Sybase==0.35
 toml==0.10.2

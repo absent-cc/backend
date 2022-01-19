@@ -11,6 +11,10 @@ class CRUD:
     def __init__(self):
         self.db = SessionLocal()
 
+    def terminate(self):
+        self.db.close()
+        return True
+
     def getUser(self, user: schemas.UserReturn):
         if user.uid != None:
             logger.info("User looked up: " + user.uid) # Logs lookup.
@@ -144,8 +148,6 @@ class CRUD:
         result = self.db.execute(q)
         self.db.commit()
         return result # Returns new profile.
-
-#crud = CRUD()
 
 #crud.removeUser(schemas.UserReturn(uid="afac7ce0-1ecf-49f1-b1b4-81876b288508"))
 # crud.addUser(schemas.StudentBase(first="Roshan", last="Karim", gid=12345, school=SchoolName.NEWTON_NORTH, grade=10))
