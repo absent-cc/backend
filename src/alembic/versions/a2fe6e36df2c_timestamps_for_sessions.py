@@ -1,8 +1,8 @@
-"""test revert
+"""timestamps for sessions
 
-Revision ID: 706ea55f30ef
-Revises: 60aaceeb96fd
-Create Date: 2022-01-18 21:22:21.037840
+Revision ID: a2fe6e36df2c
+Revises: 9dbdd3a263ba
+Create Date: 2022-01-19 17:07:00.741956
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '706ea55f30ef'
-down_revision = '60aaceeb96fd'
+revision = 'a2fe6e36df2c'
+down_revision = '9dbdd3a263ba'
 branch_labels = None
 depends_on = None
 

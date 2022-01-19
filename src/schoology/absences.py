@@ -107,7 +107,7 @@ class ContentParser:
             else:
                 note = rawTable[row*COLUMNS+5]
             # Generate AbsentTeacher for row.
-            teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=rawTable[row*COLUMNS+1], last=rawTable[row*COLUMNS], school=structs.SchoolName.NEWTON_NORTH), rawTable[row*COLUMNS+2], rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
+            teacher = schemas.AbsenceCreate(schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), length=rawTable[row*COLUMNS+3], note=note)
             absences.append(teacher)
 
         return absences
@@ -139,7 +139,7 @@ class ContentParser:
                 # Split the name.
                 name = rawTable[row*COLUMNS].split(", ")
                 # Generate AbsentTeacher object for row.
-                teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=name[1], last=name[0], school=structs.SchoolName.NEWTON_NORTH), rawTable[row*COLUMNS+3], str(self.date.strftime("%m/%-d/%Y")), note)
+                teacher = schemas.AbsenceCreate(schemas.TeacherCreate(first=name[1], last=name[0], school=structs.SchoolName.NEWTON_NORTH), length=rawTable[row*COLUMNS+3], note=note)
                 absences.append(teacher)
 
         # Clause #2 - Standard, with position as first column, 8 columns, and DoW as last.
@@ -158,7 +158,7 @@ class ContentParser:
                 else:
                     note = rawTable[row*COLUMNS+3]
                 # Generate AbsentTeacher object for row.
-                teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
+                teacher = schemas.AbsenceCreate(schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), length=rawTable[row*COLUMNS+4], note=note)
                 absences.append(teacher)
         
         # Clause #3 - Short, same as #2 without DoW.
@@ -177,7 +177,7 @@ class ContentParser:
                 else:
                     note = rawTable[row*COLUMNS+3]
                 # Generate AbsentTeacher object for row.
-                teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), rawTable[row*COLUMNS+4], str(self.date.strftime("%m/%-d/%Y")), note)
+                teacher = schemas.AbsenceCreate(schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), length=rawTable[row*COLUMNS+4], note=note)
                 absences.append(teacher)
 
         return absences
@@ -197,7 +197,7 @@ class ContentParser:
             else:
                 note = rawTable[row*COLUMNS+4]
             # Generate AbsentTeacher for row.
-            teacher = structs.AbsentTeacher(schemas.TeacherCreate(first=rawTable[row*COLUMNS+1], last=rawTable[row*COLUMNS], school=structs.SchoolName.NEWTON_SOUTH), rawTable[row*COLUMNS+2], str(self.date.strftime("%m/%-d/%Y")), note)
+            teacher = schemas.AbsenceCreate(teacher=schemas.TeacherCreate(first=rawTable[row*COLUMNS+1], last=rawTable[row*COLUMNS], school=structs.SchoolName.NEWTON_SOUTH), length=rawTable[row*COLUMNS+2], note=note)
             absences.append(teacher)
 
         return absences

@@ -2,9 +2,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from api.v1 import main as v1
-from dataTypes import structs, models, schemas
-from database import database
-
+from database.crud import CRUD
+from dataTypes import models, schemas, structs
 # All this fucking shit for the docs because I am legitimately this vain.
 
 description = "The abSENT API powers the mobile app you love. Here, you can interact with it and implement it into your own applications if you so desire. All documentation is open; feel free to reach out to us for help if you're unsure about how something works."

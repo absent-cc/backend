@@ -1,3 +1,4 @@
+from datetime import datetime
 import time
 import secrets
 from typing import List
@@ -34,7 +35,7 @@ class CRUD:
 
     def getSession(self, session: schemas.SessionReturn) -> models.UserSession:
         if session.sid != None and session.uid != None: # These two values are used to look up sessions, much exist.
-            q = update(models.UserSession).where(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).values(last_accessed=round(time.time())).\
+            q = update(models.UserSession).where(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).values(last_accessed=datetime.now()).\
             execution_options(synchronize_session="fetch") # Updates last accessed time.
             self.db.execute(q)
             self.db.commit()
@@ -42,6 +43,10 @@ class CRUD:
             logger.info("Session looked up: " + session.sid + '.' + session.uid) # Logs the lookup. This essentially behaves as an access log as the accounts code calls this to verify sessions.
             return self.db.query(models.UserSession).filter(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).first() # Returns session information.
         return None
+
+    def getAbsenceList(self) -> tuple:
+        absences = self.db.query(models.Absence).filter(models.Absence.date == datetime.today()).all()
+        return absences
 
     # def getClass(self, cls: schemas.Class): # Completely useless function. DEP.
     #     if cls.tid != None and cls.uid != None and cls.block != None: 
@@ -73,12 +78,24 @@ class CRUD:
 
     def addTeacher(self, newTeacher: schemas.TeacherCreate) -> models.Teacher:
         if newTeacher.first != None and newTeacher.last != None and newTeacher.school != None: # Checks for required fields.
-            tid = secrets.token_hex(8) # Generates hexadecimal TID.
+            tid = secrets.token_hex(4) # Generates hexadecimal TID.
             teacherModel = models.Teacher(tid=tid, first=newTeacher.first.upper(), last=newTeacher.last.upper(), school=newTeacher.school) # Creates a model.
             self.db.add(teacherModel) # Adds teacher.
             self.db.commit()
             logger.info("Teacher added: " + tid) # Logs the action.
             return teacherModel
+        return None
+
+    def addAbsence(self, absence: schemas.AbsenceCreate) -> models.Absence:
+        if absence.teacher.tid != None:
+            tid = absence.teacher.tid
+        elif absence.teacher.first != None and absence.teacher.last != None and absence.teacher.school != None:
+            tid = self.getTeacher(absence.teacher)
+        if tid != None:
+            absenceModel = models.Absence(date=datetime.today(), tid=tid, note=absence.note)
+            self.db.add(absenceModel)
+            self.db.commit()
+            return absenceModel
         return None
 
     def addSession(self, newSession: schemas.SessionCreate) -> models.UserSession:
@@ -90,7 +107,7 @@ class CRUD:
                 self.removeSession(schemas.SessionReturn.from_orm(oldestSession))
 
             sid = secrets.token_hex(8) # Generates SID.
-            sessionModel = models.UserSession(uid=newSession.uid, sid=sid, last_accessed=round(time.time())) # Creates object including timestamp, makes model.
+            sessionModel = models.UserSession(uid=newSession.uid, sid=sid, last_accessed=datetime.now()) # Creates object including timestamp, makes model.
             self.db.add(sessionModel) # Adds model.
             self.db.commit()
             logger.info("Session added: " + sid + '.' + newSession.uid) # Logs actions.
@@ -129,7 +146,11 @@ class CRUD:
         return True
 
     def updateSchedule(self, user: schemas.UserReturn, schedule: schemas.Schedule) -> bool:
-        if user.school != None and user.uid != None:
+        if user.school == None:
+            user = self.getUser(user)
+            if user.school == None:
+                return False
+        if user.uid != None:
             self.removeClassesByUser(user) # Removes all old classes.
             for cls in schedule:
                 if cls[1] != None:
@@ -153,11 +174,11 @@ class CRUD:
 #crud.removeUser(schemas.UserReturn(uid="afac7ce0-1ecf-49f1-b1b4-81876b288508"))
 # crud.addUser(schemas.StudentBase(first="Roshan", last="Karim", gid=12345, school=SchoolName.NEWTON_NORTH, grade=10))
 
-#t = schemas.TeacherCreate(first="James", last="Black", school=SchoolName.NEWTON_SOUTH)
 
-#crud.addTeacher(t)
 
 # print(crud.getTeacher(t))
+
+
 
 #crud.addClass(schemas.Class(tid="261d5388a79592a3", block=SchoolBlock.B, uid="44cadd4a-a51b-43f1-be10-dcb0bb7cc964"))
 # #print(getUser(SessionLocal(), "bbd06f42-990d-48de-a7bb-ee98717d4c5d").schedule[0])

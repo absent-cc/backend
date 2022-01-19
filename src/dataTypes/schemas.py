@@ -1,10 +1,8 @@
-import sched
 from typing import List, Literal, Optional
 from uuid import UUID
 from pydantic import BaseModel, validator
 from dataTypes import structs
-
-
+from datetime import datetime
 
 class UserBase(BaseModel):
     first: str = None
@@ -101,7 +99,7 @@ class SessionCreate(BaseModel):
 
 class SessionReturn(SessionCreate):
     sid: str = None
-    last_accessed: int = None
+    last_accessed: datetime = None
 
     @validator('sid')
     def checkSIDLength(cls, v):
@@ -119,3 +117,14 @@ class GToken(BaseModel):
 class SessionCredentials(BaseModel):
     token: str | None = None
     refresh: str | None = None
+
+class AbsenceBase(BaseModel):
+    length: str
+    note: str
+
+class AbsenceCreate(AbsenceBase):
+    teacher: TeacherCreate
+
+class AbsenceReturn(AbsenceBase):
+    teacher: TeacherReturn
+    date: datetime
