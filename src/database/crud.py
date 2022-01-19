@@ -34,7 +34,7 @@ class CRUD:
             self.db.execute(q)
             self.db.commit()
             
-            logger.info("Session looked up:" + session.sid + '.' + session.uid) # Logs the lookup. This essentially behaves as an access log as the accounts code calls this to verify sessions.
+            logger.info("Session looked up: " + session.sid + '.' + session.uid) # Logs the lookup. This essentially behaves as an access log as the accounts code calls this to verify sessions.
             return self.db.query(models.UserSession).filter(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).first() # Returns session information.
         return None
 
@@ -54,7 +54,7 @@ class CRUD:
             userModel = models.User(uid=uid, **user.dict()) # Creates model from dict of input values.
             self.db.add(userModel)
             self.db.commit()
-            logger.info("User added:" + uid) # Logs the addition.
+            logger.info("User added: " + uid) # Logs the addition.
             return userModel # Returns user details, import as many details are generated here.
         return None
 
@@ -72,7 +72,7 @@ class CRUD:
             teacherModel = models.Teacher(tid=tid, first=newTeacher.first.upper(), last=newTeacher.last.upper(), school=newTeacher.school) # Creates a model.
             self.db.add(teacherModel) # Adds teacher.
             self.db.commit()
-            logger.info("Teacher added:" + tid) # Logs the action.
+            logger.info("Teacher added: " + tid) # Logs the action.
             return teacherModel
         return None
 
@@ -101,7 +101,7 @@ class CRUD:
 
     def removeUser(self, user: schemas.UserReturn):
         if user.uid != None: # Checks for required fields.
-            self.removeClassesByUser(user) # Removes all of a user's classes.
+            # self.removeClassesByUser(user) # Removes all of a user's classes.
             self.db.query(models.User).filter(models.User.uid == user.uid).delete() # Removes the user.
             self.db.commit()
             logger.info("Student removed: " + user.uid) # Logs the action.
@@ -124,17 +124,19 @@ class CRUD:
         return True
 
     def updateSchedule(self, user: schemas.UserReturn, schedule: schemas.Schedule):
-        self.removeClassesByUser(user) # Removes all old classes.
-        for cls in schedule:
-            for teacher in cls[1]: # This loops through all the teachers for a given block.
-                resTeacher = self.getTeacher(schemas.TeacherReturn(first=teacher.first, last=teacher.last, school=teacher.school))
-                print(resTeacher)
-                if resTeacher == None:
-                    tid = self.addTeacher(schemas.TeacherCreate(first=teacher.first, last=teacher.last, school=user.school)).tid # Adds them to DB if they don't exist.
-                else:
-                    tid = resTeacher.tid # Else, just reference them.
-                self.addClass(schemas.Class(tid=tid, block=structs.ReverseBlockMapper()[cls[0]], uid=user.uid)) # Creates class entry.
-        return True
+        if user.school != None and user.uid != None:
+            self.removeClassesByUser(user) # Removes all old classes.
+            for cls in schedule:
+                if cls[1] != None:
+                    for teacher in cls[1]: # This loops through all the teachers for a given block.
+                        resTeacher = self.getTeacher(schemas.TeacherReturn(first=teacher.first, last=teacher.last, school=teacher.school))
+                        if resTeacher == None:
+                            tid = self.addTeacher(schemas.TeacherCreate(first=teacher.first, last=teacher.last, school=user.school)).tid # Adds them to DB if they don't exist.
+                        else:
+                            tid = resTeacher.tid # Else, just reference them.
+                        self.addClass(schemas.Class(tid=tid, block=structs.ReverseBlockMapper()[cls[0]], uid=user.uid)) # Creates class entry.
+            return True
+        return False
     
     def updateProfile(self, profile: schemas.UserBase, uid: str):
         q = update(models.User).where(models.User.uid == uid).values(**profile.dict()).\

@@ -43,8 +43,6 @@ absent = FastAPI(
     openapi_tags=tags_metadata
 )
 
-models.Base.metadata.create_all(bind=database.engine)
-
 absent.mount("/static", StaticFiles(directory="static"), name="static")
 
 @absent.get("/docs", include_in_schema=False)

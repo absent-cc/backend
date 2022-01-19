@@ -18,7 +18,6 @@ async def returnUserInfo(
     user = schemas.UserReturn(uid=uid)
     user = database.getUser(user)
     userReturn = schemas.UserReturn.from_orm(user)
-    print(schemas.Schedule.scheduleFromList(user.schedule))
     userReturn.schedule = schemas.Schedule.scheduleFromList(user.schedule)
 
     return userReturn
@@ -28,9 +27,8 @@ async def cancel(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials)
 ):
     uid = creds.uid
-    user = schemas.User(uid=uid)
+    user = schemas.UserReturn(uid=uid)
     if database.removeUser(user):
-        database.removeUserSessions(user)
         return helper.returnStatus("Account deleted.")
     helper.raiseError(500, "Operation failed.", structs.ErrorType.DB)
 
@@ -39,12 +37,9 @@ async def updateUserInfo(
     user: schemas.UserInfo,
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), 
 ):
-    uid = creds.uid
-    user = schemas.UserReturn(uid=uid)
-    user = database.getUser(user)
 
-    database.updateProfile(user.profile)
-    database.updateSchedule(user, user.schedule)
+    database.updateProfile(user.profile, creds.uid)
+    database.updateSchedule(schemas.UserReturn(uid=creds.uid, school=user.profile.school), user.schedule)
 
     return helper.returnStatus("Information updated.")
 

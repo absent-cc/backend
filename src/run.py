@@ -59,8 +59,6 @@ class StandaloneApplication(BaseApplication):
 
 if __name__ == '__main__':
     intercept_handler = InterceptHandler()
-    # logging.basicConfig(handlers=[intercept_handler], level=LOG_LEVEL)
-    # logging.root.handlers = [intercept_handler]
     logging.root.setLevel(LOG_LEVEL)
 
     seen = set()
