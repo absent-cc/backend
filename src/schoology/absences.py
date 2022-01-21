@@ -1,5 +1,4 @@
 from datetime import datetime
-from turtle import up, update
 from dataTypes import structs, schemas, models
 import schoolopy
 

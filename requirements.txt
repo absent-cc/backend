@@ -20,11 +20,11 @@ gmpy==1.17
 gmpy2==2.1.2
 hiredis==2.0.0
 HTMLParser==0.0.2
-hypothesis==6.35.1
+hypothesis==6.36.0
 importlib_metadata==4.8.1
 importlib_resources==5.4.0
 inotify==0.2.10
-ipython==8.0.0
+ipython==8.0.1
 keyring==23.4.0
 lingua==4.14
 lockfile==0.12.2
@@ -49,10 +49,9 @@ python_bcrypt==0.3.2
 python_dateutil==2.8.2
 pyu2f==0.1.5
 requests_toolbelt==0.9.1
-schoolopy==0.2.2
 setproctitle==1.2.2
 simplejson==3.17.6
-speedups==0.7.0
+speedups==1.0.0
 sqlcipher3==0.4.5
 Sybase==0.35
 toml==0.10.2
