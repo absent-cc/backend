@@ -2,12 +2,13 @@ from datetime import datetime, timedelta, timezone
 import yaml
 from dataTypes import structs
 from notifications.firebase import *
-
+from .absences import Absences
 class SchoologyListener:
-    def __init__(self, SCHOOLOGYCREDS, ):
+    def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
         self.south = structs.SchoolName.NEWTON_SOUTH
         self.restTime = timedelta(seconds=10)
+        self.sc = Absences(SCHOOLOGYCREDS)
 
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
@@ -18,17 +19,18 @@ class SchoologyListener:
         
         # NNHS Runtime.
         if states[self.north] == False:
-            update = self.notifications.run(date, self.north) # Sends notifications, checks sucess.
-            if update:
-                self.writeState(self.north, date) # Update statefile and var.
-                self.logger.sentAbsencesSuccess(structs.SchoolName.NEWTON_NORTH)
+            self.sc.filterAbsencesNorth(date)
+            #update = self.notifications.run(date, self.north) # Sends notifications, checks sucess.
+            #if update:
+            #    self.writeState(self.north, date) # Update statefile and var.
 
         # NSHS Runtime
         if states[self.south] == False:
-            update = self.notifications.run(date, self.south) # Sends notifications, check sucess.
-            if update:
-                self.writeState(self.south, date) # Update statefile and var.
-                self.logger.sentAbsencesSuccess(structs.SchoolName.NEWTON_SOUTH)
+            self.sc.filterAbsencesSouth(date)
+            #update = self.notifications.run(date, self.south) # Sends notifications, check sucess.
+            
+            #if update:
+            #    self.writeState(self.south, date) # Update statefile and var.
         
         states = self.fetchStates(date)
         

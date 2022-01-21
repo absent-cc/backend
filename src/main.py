@@ -42,7 +42,7 @@ def sc_listener():
     holidays = []
 
     # debug mode
-    debugMode = False
+    debugMode = True
 
     dailyCheckTimeStart = 7 # hour
     dailyCheckTimeEnd = 12 # hour
@@ -60,7 +60,6 @@ def sc_listener():
 
         if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
             if dayoffLatch == False:
-                logger.schoologyOffDay(currentDate)
                 print("abSENT DAY OFF")
                 dayoffLatch = True
         else:
@@ -68,7 +67,7 @@ def sc_listener():
             belowEndTime: bool = currentTime.hour <= dailyCheckTimeEnd
             if (aboveStartTime and belowEndTime and not schoologySuccessCheck) or debugMode:
                 print("CHECKING SCHOOLOGY.")
-                sc = SchoologyListener(textnowCreds, SCHOOLOGYCREDS)
+                sc = SchoologyListener(SCHOOLOGYCREDS)
                 schoologySuccessCheck = sc.run()
                 print("CHECK COMPLETE.")
         
@@ -77,7 +76,6 @@ def sc_listener():
             # Only change value when it is latched (true)
             if schoologySuccessCheck == True:
                 print("RESTART")
-                logger.resetSchoologySuccessCheck()
                 dayoffLatch = False
                 schoologySuccessCheck = False
 
@@ -88,4 +86,5 @@ threads = {
         'sc': threading.Thread(target=threadwrapper(sc_listener), name='sc listener'),
 }
 
-threads['sc'].start()
+#threads['sc'].start()
+sc_listener()

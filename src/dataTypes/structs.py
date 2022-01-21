@@ -102,6 +102,10 @@ class SchoologyCreds:
     keys: dict[SchoolName: str, SchoolName: str]
     secrets: dict[SchoolName: str, SchoolName: str]
 
+class RawUpdate(BaseModel):
+    poster: str
+    content: list[str]
+    columns: int = None
 #
 # SESSION AND TOKEN OBJECTS
 #

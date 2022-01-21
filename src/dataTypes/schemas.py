@@ -1,8 +1,10 @@
-from typing import List, Literal, Optional
+from typing import List, Literal
 from uuid import UUID
 from pydantic import BaseModel, validator
 from dataTypes import structs
 from datetime import datetime
+
+from database.database import Base
 
 class UserBase(BaseModel):
     first: str = None
@@ -109,10 +111,8 @@ class SessionReturn(SessionCreate):
     class Config:
         orm_mode = True
 
-class GToken(BaseModel):
-    gToken: str
-    def __str__(self):
-        return self.gToken
+class Token(BaseModel):
+    token: str
 
 class SessionCredentials(BaseModel):
     token: str | None = None
@@ -120,7 +120,7 @@ class SessionCredentials(BaseModel):
 
 class AbsenceBase(BaseModel):
     length: str
-    note: str
+    note: str | None = None
 
 class AbsenceCreate(AbsenceBase):
     teacher: TeacherCreate
@@ -128,3 +128,7 @@ class AbsenceCreate(AbsenceBase):
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
     date: datetime
+
+class RawUpdate(BaseModel):
+    poster: str
+    content: list[str]

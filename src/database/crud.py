@@ -166,20 +166,14 @@ class CRUD:
     
     def updateProfile(self, profile: schemas.UserBase, uid: str) -> models.User:
         q = update(models.User).where(models.User.uid == uid).values(**profile.dict()).\
-        execution_options(synchronize_session="fetch") # This is the update query, just sets the values to those of the profile dict.
+            execution_options(synchronize_session="fetch") # This is the update query, just sets the values to those of the profile dict.
         result = self.db.execute(q)
         self.db.commit()
         return result # Returns new profile.
 
-#crud.removeUser(schemas.UserReturn(uid="afac7ce0-1ecf-49f1-b1b4-81876b288508"))
-# crud.addUser(schemas.StudentBase(first="Roshan", last="Karim", gid=12345, school=SchoolName.NEWTON_NORTH, grade=10))
-
-
-
-# print(crud.getTeacher(t))
-
-
-
-#crud.addClass(schemas.Class(tid="261d5388a79592a3", block=SchoolBlock.B, uid="44cadd4a-a51b-43f1-be10-dcb0bb7cc964"))
-# #print(getUser(SessionLocal(), "bbd06f42-990d-48de-a7bb-ee98717d4c5d").schedule[0])
-
+    def updateFCMToken(self, token: schemas.Token, uid: str, sid: str) -> models.UserSession:
+        q = update(models.UserSession).where(models.UserSession.uid == uid, models.UserSession.sid == sid).values(fcm_token = token.token, fcm_timestamp = datetime.now()).\
+            execution_options(synchronize_session="fetch")
+        result = self.db.execute(q)
+        self.db.commit()
+        return result

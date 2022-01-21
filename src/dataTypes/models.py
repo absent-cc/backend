@@ -12,7 +12,7 @@ class User(Base):
     grade = Column(Integer)
 
     schedule = relationship("Class", back_populates="user")
-    sessions = relationship("UserSession")
+    sessions = relationship("UserSession", back_populates="user")
 
 class Teacher(Base):
     __tablename__ = "teachers"
@@ -29,6 +29,10 @@ class UserSession(Base):
     sid = Column(String(16), primary_key=True)
     uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'), primary_key=True)
     last_accessed = Column(TIMESTAMP)
+    fcm_token = Column(String(255))
+    fcm_timestamp = Column(TIMESTAMP)
+
+    user = relationship("User")
 
 class Class(Base):
     __tablename__ = "classes"

@@ -76,7 +76,7 @@ class Accounts():
         CLIENT_ID = "349911558418-9d07ptkk7pg7aqq58qkj5tshi8bq9s5v.apps.googleusercontent.com"
         NEWTON = "newton.k12.ma.us"
         try:
-            idInfo = id_token.verify_oauth2_token(str(token), requests.Request(), CLIENT_ID)
+            idInfo = id_token.verify_oauth2_token(token.token, requests.Request(), CLIENT_ID)
             logger.info(f"Sucessful Google login: {idInfo['sub']}")
         except BaseException as error:
             logger.info(f"Invalid Google token POSTed.")

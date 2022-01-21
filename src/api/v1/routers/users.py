@@ -65,3 +65,13 @@ async def updateUserInfo(
     db.updateSchedule(user, schedule) # Updates schedule.
 
     return helper.returnStatus("Information updated.") # Returns success.
+
+@router.put("/me/update/fcm", status_code=201)
+async def updateFirebaseToken(
+    token: schemas.Token,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
+    db: CRUD = Depends(accounts.getDBSession)
+):
+    db.updateFCMToken(token, creds.uid, creds.sid)
+
+    return helper.returnStatus("Information updated.")
