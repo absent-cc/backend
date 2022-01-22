@@ -5,7 +5,7 @@ import sys
 from gunicorn.app.base import BaseApplication
 from gunicorn.glogging import Logger
 from loguru import logger
-from api.v1 import absent as app
+from api.main import absent as app
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
@@ -59,8 +59,6 @@ class StandaloneApplication(BaseApplication):
 
 if __name__ == '__main__':
     intercept_handler = InterceptHandler()
-    # logging.basicConfig(handlers=[intercept_handler], level=LOG_LEVEL)
-    # logging.root.handlers = [intercept_handler]
     logging.root.setLevel(LOG_LEVEL)
 
     seen = set()
@@ -87,7 +85,7 @@ if __name__ == '__main__':
     logger.add("logs/latest.log", rotation="4 hours", retention=1)   
 
     options = {
-        "bind": "0.0.0.0",
+        "bind": "0.0.0.0:8000",
         "workers": WORKERS,
         "accesslog": "-",
         "errorlog": "-",
