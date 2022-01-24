@@ -61,26 +61,17 @@ class ColumnDetection:
                 return True
         return False
 
-    def columnConfidence(self, column: list):
+    def columnConfidence(self, column: list) -> dict[structs.TableColumn: int]:
         confidence = {
-            "first": 0,
-            "last": 0,
-            "cs": 0,
-            "weekday": 0,
-            "date": 0,
-            "note": 0,
-            "length": 0,
-            "position": 0,
+            structs.TableColumn.FIRST_NAME: 0,
+            structs.TableColumn.LAST_NAME: 0,
+            structs.TableColumn.CS_NAME: 0,
+            structs.TableColumn.WEEKDAY: 0,
+            structs.TableColumn.DATE: 0,
+            structs.TableColumn.NOTE: 0,
+            structs.TableColumn.LENGTH: 0,
+            structs.TableColumn.POSITION: 0,
         }
-
-        DATE_TITLE = ["Date"]
-        POSITION_TITLE = ["Position"]
-        NOTE_TITLE = ["Notes", "Notes to Student"]
-        CS_TITLE = ["Name"]
-        FIRST_TITLE = ["First Name", "First"]
-        LAST_TITLE = ["Last Name", "Last"]
-        LENGTH_TITLE = ["Day"]
-        WEEKDAY_TITLE = ["DoW", "Day of Week", "D o W", "D of W"]
 
         NOTE_KEYWORDS = ["cancelled", "canceled", "block", "schoology", "classes", "as usual", ""]
         POSITION_KEYWORDS = ["Teacher", "Counselor"]
@@ -92,71 +83,89 @@ class ColumnDetection:
         # TITLE CHECKS
         for i, item in enumerate(column):
             if i == 0:
-                points = 1.5
+                points = 2.5
             else:
-                points = 1
+                points = 1.0
 
-            for entry in FIRST_TITLE:
-                if self.isFuzzyMatch(item, entry):
-                    confidence["first"] += points
-            for entry in LAST_TITLE:
-                if self.isFuzzyMatch(item, entry):
-                    confidence["last"] += points
-            for entry in POSITION_TITLE:
-                if self.isFuzzyMatch(item, entry):
-                    confidence["position"] += points
-            for entry in CS_TITLE:
-                if self.isFuzzyMatch(item, entry):
-                    confidence["cs"] += points
-            for entry in LENGTH_TITLE:
-                if self.isFuzzyMatch(item, entry):
-                    confidence["length"] += points
-            for entry in WEEKDAY_TITLE:
-                if self.isFuzzyMatch(item, entry):
-                    confidence["weekday"] += points
-            for entry in NOTE_TITLE:
-                if self.isFuzzyMatch(item, entry):
-                    confidence["note"] += points
-            for entry in DATE_TITLE:
-                if self.isFuzzyMatch(item, entry):
-                    confidence["date"] += points
+            if item == structs.TableColumn.FIRST_NAME:
+                confidence[structs.TableColumn.FIRST_NAME] += points
+            if item == structs.TableColumn.LAST_NAME:
+                confidence[structs.TableColumn.LAST_NAME] += points
+            if item == structs.TableColumn.POSITION:
+                confidence[structs.TableColumn.POSITION] += points 
+            if item == structs.TableColumn.CS_NAME:
+                confidence[structs.TableColumn.CS_NAME] += points 
+            if item == structs.TableColumn.WEEKDAY:
+                confidence[structs.TableColumn.WEEKDAY] += points 
+            if item == structs.TableColumn.NOTE:
+                confidence[structs.TableColumn.NOTE] += points
+            if item == structs.TableColumn.DATE:
+                confidence[structs.TableColumn.DATE] += points 
+            if item == structs.TableColumn.LENGTH:
+                confidence[structs.TableColumn.LENGTH] += points 
 
             # CONTENT CHECKS
             if self.isFirst(item):
-                confidence["first"] += contentPoints
+                confidence[structs.TableColumn.FIRST_NAME] += contentPoints
             if self.isLast(item):
-                confidence["last"] += contentPoints
+                confidence[structs.TableColumn.LAST_NAME] += contentPoints
             if self.isDate(item):
-                confidence["date"] += contentPoints
+                confidence[structs.TableColumn.DATE] += contentPoints
             for entry in POSITION_KEYWORDS:
                 if entry in item:
-                    confidence["position"] += contentPoints
+                    confidence[structs.TableColumn.POSITION] += contentPoints
             for entry in NOTE_KEYWORDS:
                 if self.isFuzzyMatch(item, entry):
-                    confidence["note"] += contentPoints
+                    confidence[structs.TableColumn.NOTE] += contentPoints
             for entry in LENGTH_KEYWORDS:
                 if self.isFuzzyMatch(item, entry):
-                    confidence["length"] += contentPoints
+                    confidence[structs.TableColumn.LENGTH] += contentPoints
             for entry in WEEKDAY_KEYWORDS:
                 if self.isFuzzyMatch(item, entry):
-                    confidence["weekday"] += contentPoints
+                    confidence[structs.TableColumn.WEEKDAY] += contentPoints
         return confidence
 
-    def mapColums(self, table: structs.RawUpdate):
+    def mapColumns(self, table: structs.RawUpdate) -> dict[tuple]:
         #print(table.content)
         
-        confidences = {}
-        map = {}
+        confidences = []
+        map = {
+            structs.TableColumn.FIRST_NAME: (-1, -1),
+            structs.TableColumn.LAST_NAME: (-1, -1),
+            structs.TableColumn.CS_NAME: (-1, -1),
+            structs.TableColumn.WEEKDAY: (-1, -1),
+            structs.TableColumn.DATE: (-1, -1),
+            structs.TableColumn.NOTE: (-1, -1),
+            structs.TableColumn.LENGTH: (-1, -1),
+            structs.TableColumn.POSITION: (-1, -1),
+        }
+
         for col in range(table.columns - 2):
             
             column = []
             for row in table.content:
-                print(row, col)
-                column.append(row[col]) 
+                try:
+                    column.append(row[col])
+                except IndexError:
+                    print("LAST ITEM.") 
 
             colConfidence = self.columnConfidence(column)
-            confidences[col] = colConfidence
+            confidences.append(colConfidence)
 
+        oldMap = None
+        while map != oldMap:
+            oldMap = map
+            for i, col in enumerate(confidences):
+                for _ in range(8):
+                    maxKey = max(col, key=col.get)
+                    if col[maxKey] != 0 and col[maxKey] > map[maxKey][1]:
+                        map[maxKey] = (i, col[maxKey])
+                        break
+                    else:
+                        del col[maxKey]
+        return map
+        
+        
         
         
 

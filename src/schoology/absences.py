@@ -1,7 +1,7 @@
 from datetime import datetime
+from typing import List
 from dataTypes import structs, schemas, models
 import schoolopy
-import statistics
 from .parsing.columnDetection import ColumnDetection
 
 class Absences:
@@ -57,72 +57,57 @@ class ContentParser:
     def __init__(self, date):
         self.date = date
     
-    def parse(self, update: structs.RawUpdate, school: structs.SchoolName):
-        parsed = None
+    def parse(self, update: structs.RawUpdate, school: structs.SchoolName) -> List[schemas.AbsenceCreate]:
 
-        if update == []:
+        if update == [] or None:
             return None
         if school == structs.SchoolName.NEWTON_NORTH:
-            # col = ColumnDetection(structs.SchoolName.NEWTON_NORTH)
-            # update = self.deriveTable(update)
-            # cols = self.calculateColumns(update.content)
-            # update.columns = cols[0]
-            # update.content = [update.content[i:i+update.columns] for i in range(0,len(update.content),update.columns)]
-            # col.titleDetector(update)
-            # #map = self.mapNorth(update)
-            pass
-        else:
-            col = ColumnDetection(structs.SchoolName.NEWTON_SOUTH)
-            cols = self.calculateColumns(update.content)
-            print(cols)
-            update.columns = cols[0]
+            detection = ColumnDetection(structs.SchoolName.NEWTON_NORTH)
+            update = self.deriveTable(update)
+            update.columns = detection.countColumns(update.content)[0]
             update.content = [update.content[i:i+update.columns] for i in range(0,len(update.content),update.columns)]
-            col.titleDetector(update)
-        
-        # rows = int(len(update.content)/update.columns)
-        # absences = []
-        # for row in range(rows):
-        #     base = (row*update.columns)
-        #     if update.content[base + map['NOTE']] == '':
-        #         note = None
-        #     else:
-        #         note = update.content[base + map['NOTE']]
-        #     # Define vars of important values.
-        #     if 'FULLNAME' in map.keys():
-        #         name = update.content[base + map['FULLNAME']].split(', ')
-        #         first = name[1]
-        #         last = name[0]
-        #     else:
-        #         first = update.content[base + map['FIRST']]
-        #         last = update.content[base + map['LAST']]
-        #     length = update.content[base + map['LENGTH']]
-            
-        #     teacher = schemas.TeacherCreate(first=first, last=last, school=school)
-        #     object = schemas.AbsenceCreate(teacher=teacher, length=length, note=note)
-        #     absences.append(object)
-        
-        # for absence in absences:
-        #     print(absence.teacher.first, absence.teacher.last, absence.length, absence.note)
-        # print("\n\n\n")
+            map = detection.mapColumns(update)
+            obj = self.constructObject(update, map, structs.SchoolName.NEWTON_NORTH)
+            return obj
 
-    def deriveTable(self, update: structs.RawUpdate):
+        elif school == structs.SchoolName.NEWTON_SOUTH:
+            detection = ColumnDetection(structs.SchoolName.NEWTON_SOUTH)
+            update.columns = detection.countColumns(update.content)[0]
+            update.content = [update.content[i:i+update.columns] for i in range(0,len(update.content),update.columns)]
+            map = detection.mapColumns(update)
+            obj = self.constructObject(update, map, structs.SchoolName.NEWTON_SOUTH)
+            return obj
+
+    def constructObject(self, update: structs.RawUpdate, map: dict, school: structs.SchoolName) -> List[schemas.AbsenceCreate]:
+        objList = []
+        for row in update.content:
+            try:
+                teacher = schemas.TeacherCreate(first=row[map[structs.TableColumn.FIRST_NAME][0]], last=row[map[structs.TableColumn.LAST_NAME][0]], school=school)
+            except IndexError:
+                teacher = None
+
+            try:
+                length = row[map[structs.TableColumn.LENGTH][0]]
+            except IndexError:
+                length = None
+
+            try:
+                note = row[map[structs.TableColumn.NOTE][0]]
+                if note == "":
+                    note = None
+            except IndexError:
+                note = None
+
+            object = schemas.AbsenceCreate(
+                teacher = teacher,
+                length = length,
+                note = note
+                )
+
+            objList.append(object)
+        return objList
+
+    def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
         while update.content[0].lower() != ('position' or 'name'):
             update.content.pop(0)
         return update
-
-    def calculateColumns(self, table: list):
-        lineBreaks = [i for i, x in enumerate(table) if x == ""] # Generates list of linebreaks and their indexes.
-        possibleColumns = []
-        index = 1 # Counter for rows counted.
-        for i, lineBreak in enumerate(lineBreaks): # Iterates through a list of linebreaks and their indexes.
-            try:
-                if lineBreak + 1 == lineBreaks[i+1]: # Checks for double space.
-                    if lineBreaks[i+1] + 1 == lineBreaks[i+2]: # Checks if this is a triple set of spaces. 
-                        continue # If it is, ignore it.
-                    possibleColumns.append(int((lineBreak + 2) / index)) # Appends this rows column calculation.
-                    index += 1 # Tracks # of rows counted.
-            except IndexError:
-                break
-        mode = statistics.mode(possibleColumns) # Gets most common value of column count.
-        confidence = possibleColumns.count(mode) / len(possibleColumns) # Gets confidence.
-        return mode, confidence

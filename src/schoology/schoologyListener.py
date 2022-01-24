@@ -13,7 +13,7 @@ class SchoologyListener:
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
 
-        date = datetime.now(timezone.utc) - timedelta(hours=60) # Convert from UTC --> EST
+        date = datetime.now(timezone.utc) - timedelta(hours=5) # Convert from UTC --> EST
         # Reads from state file to determine whether notifications have been sent today.
         states = self.fetchStates(date)
         
