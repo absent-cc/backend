@@ -128,7 +128,3 @@ class AbsenceCreate(AbsenceBase):
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
     date: datetime
-
-class RawUpdate(BaseModel):
-    poster: str
-    content: list[str]

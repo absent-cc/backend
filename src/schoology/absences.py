@@ -1,6 +1,8 @@
 from datetime import datetime
 from dataTypes import structs, schemas, models
 import schoolopy
+import statistics
+from .parsing.columnDetection import ColumnDetection
 
 class Absences:
     # Sets up the two API objects as entries within a list 'api' . 
@@ -49,7 +51,6 @@ class Absences:
         table = self.getCurrentTable(structs.SchoolName.NEWTON_SOUTH)    
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_SOUTH)
 
-        #print(absences)
         return absences
 
 class ContentParser:
@@ -62,212 +63,66 @@ class ContentParser:
         if update == []:
             return None
         if school == structs.SchoolName.NEWTON_NORTH:
-            update = self.deriveTable(update)
-            update.columns = self.calculateColumns(update.content)
-            map = self.mapNorth(update)
+            # col = ColumnDetection(structs.SchoolName.NEWTON_NORTH)
+            # update = self.deriveTable(update)
+            # cols = self.calculateColumns(update.content)
+            # update.columns = cols[0]
+            # update.content = [update.content[i:i+update.columns] for i in range(0,len(update.content),update.columns)]
+            # col.titleDetector(update)
+            # #map = self.mapNorth(update)
+            pass
         else:
-            update.columns = self.calculateColumns(update.content)
-            map = self.mapSouth(update)
+            col = ColumnDetection(structs.SchoolName.NEWTON_SOUTH)
+            cols = self.calculateColumns(update.content)
+            print(cols)
+            update.columns = cols[0]
+            update.content = [update.content[i:i+update.columns] for i in range(0,len(update.content),update.columns)]
+            col.titleDetector(update)
         
-        rows = int(len(update.content)/update.columns)
-        absences = []
-        for row in range(rows):
-            base = (row*update.columns)
-            if update.content[base + map['NOTE']] == '':
-                note = None
-            else:
-                note = update.content[base + map['NOTE']]
-            # Define vars of important values.
-            if 'FULLNAME' in map.keys():
-                name = update.content[base + map['FULLNAME']].split(', ')
-                first = name[1]
-                last = name[0]
-            else:
-                first = update.content[base + map['FIRST']]
-                last = update.content[base + map['LAST']]
-            length = update.content[base + map['LENGTH']]
+        # rows = int(len(update.content)/update.columns)
+        # absences = []
+        # for row in range(rows):
+        #     base = (row*update.columns)
+        #     if update.content[base + map['NOTE']] == '':
+        #         note = None
+        #     else:
+        #         note = update.content[base + map['NOTE']]
+        #     # Define vars of important values.
+        #     if 'FULLNAME' in map.keys():
+        #         name = update.content[base + map['FULLNAME']].split(', ')
+        #         first = name[1]
+        #         last = name[0]
+        #     else:
+        #         first = update.content[base + map['FIRST']]
+        #         last = update.content[base + map['LAST']]
+        #     length = update.content[base + map['LENGTH']]
             
-            teacher = schemas.TeacherCreate(first=first, last=last, school=school)
-            object = schemas.AbsenceCreate(teacher=teacher, length=length, note=note)
-            absences.append(object)
+        #     teacher = schemas.TeacherCreate(first=first, last=last, school=school)
+        #     object = schemas.AbsenceCreate(teacher=teacher, length=length, note=note)
+        #     absences.append(object)
         
-        for absence in absences:
-            print(absence.teacher.first, absence.teacher.last, absence.length, absence.note)
-        print("\n\n\n")
+        # for absence in absences:
+        #     print(absence.teacher.first, absence.teacher.last, absence.length, absence.note)
+        # print("\n\n\n")
 
     def deriveTable(self, update: structs.RawUpdate):
         while update.content[0].lower() != ('position' or 'name'):
             update.content.pop(0)
         return update
 
-    def mapNorth(self, update: structs.RawUpdate):
-        map = {}
-        for i in range(update.columns):
-            if "position" in update.content[i].lower():
-                map["POSITION"] = i
-                continue
-            if "first" in update.content[i].lower():
-                map["FIRST"] = i
-                continue
-            if "last" in update.content[i].lower():
-                map["LAST"] = i
-                continue
-            if "note" in update.content[i].lower():
-                map["NOTE"] = i
-                continue
-            if "day" in update.content[i].lower():
-                map["LENGTH"] = i
-                continue
-            if "name" in update.content[i].lower():
-                map["FULLNAME"] = i
-                continue
-        return map
-
-    def mapSouth(self, update: structs.RawUpdate):
-        map = {}
-
-        weekdays = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
-
-        for i in range(update.columns):
-            for weekday in weekdays:
-                if weekday.lower() in update.content[i].lower():
-                    map["DOW"] = i
-        for i in range(update.columns):
-            if "day" in update.content[i].lower() and i not in map.values():
-                map["LENGTH"] = i
-        for i in range(update.columns):
-            if self.date.strftime("%-m/%-d/%Y") in update.content[i].lower() and i not in map.values():
-                map["DATE"] = i
-        map["FIRST"] = 1
-        map["LAST"] = 0   
-        for i in range(update.columns):
-            if i not in map.values() and "NOTE" not in map.keys():
-                map["NOTE"] = i
-        return map
-
     def calculateColumns(self, table: list):
         lineBreaks = [i for i, x in enumerate(table) if x == ""] # Generates list of linebreaks and their indexes.
-        for i, lineBreak in enumerate(lineBreaks):
-            if lineBreak + 1 == lineBreaks[i+1]:
-                columns = lineBreak/(i+1)
-                if lineBreaks[i+1] + 1 == lineBreaks[i+2]:
-                    columns = (lineBreak + 1)/(i+1)
-                break;
-        return int(columns+2)
-
-    # def susanSpirito(self, rawTable: list):
-    #     # Absence list.
-    #     absences = []
-
-    #     # Pop until correct position.
-    #     while rawTable[0] != "Position":
-    #         rawTable.pop(0)
-
-    #     # Set number of COLUMNS
-    #     COLUMNS = self.calculateColumns(rawTable)
-    #     for _ in range(COLUMNS):
-    #         rawTable.pop(0)
-
-    #     # Calculate number of rows.
-    #     rows = int(len(rawTable)/COLUMNS)
-
-    #     # Generate correct object for row in table.
-    #     for row in range(rows):
-    #         # Set the note correctly.
-    #         if rawTable[row*COLUMNS+5] == '':
-    #             note = None
-    #         else:
-    #             note = rawTable[row*COLUMNS+5]
-    #         # Generate AbsentTeacher for row.
-    #         teacher = schemas.AbsenceCreate(teacher=schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), length=rawTable[row*COLUMNS+3], note=note)
-    #         absences.append(teacher)
-
-    #     return absences
-
-    # def caseyFriend(self, rawTable: list):
-    #     # Set absences.
-    #     absences = []
-
-    #     while rawTable[0] != 'Name' and rawTable[0] != 'Position':
-    #         rawTable.pop(0)
-
-    #     COLUMNS = self.calculateColumns(rawTable)
-
-    #     # Clause #1 - Compact, when name is first column.
-    #     if rawTable[0] == 'Name':
-    #         # Pop label row.
-    #         for _ in range(COLUMNS):
-    #             rawTable.pop(0)
-    #         # Set number of rows.
-    #         rows = int(len(rawTable)/COLUMNS)
-
-    #         for row in range(rows):
-    #             # Set note correctly.
-    #             if rawTable[row*COLUMNS+1] == '':
-    #                 note = None
-    #             else:
-    #                 note = rawTable[row*COLUMNS+1]
-    #             # Split the name.
-    #             name = rawTable[row*COLUMNS].split(", ")
-    #             # Generate AbsentTeacher object for row.
-    #             teacher = schemas.AbsenceCreate(teacher=schemas.TeacherCreate(first=name[1], last=name[0], school=structs.SchoolName.NEWTON_NORTH), length=rawTable[row*COLUMNS+3], note=note)
-    #             absences.append(teacher)
-
-    #     # Clause #2 - Standard, with position as first column, 8 columns, and DoW as last.
-    #     elif rawTable[0] == 'Position' and rawTable[5] == 'DoW':
-    #         # Pop label row.
-    #         for _ in range(COLUMNS):
-    #             rawTable.pop(0)
-    #         # Set number of rows.
-    #         rows = int(len(rawTable)/COLUMNS)
-    #         for row in range(rows):
-    #             # Set note correctly.
-    #             if rawTable[row*COLUMNS+3] == '':
-    #                 note = None
-    #             else:
-    #                 note = rawTable[row*COLUMNS+3]
-    #             # Generate AbsentTeacher object for row.
-    #             teacher = schemas.AbsenceCreate(teacher=schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), length=rawTable[row*COLUMNS+4], note=note)
-    #             absences.append(teacher)
-        
-    #     # Clause #3 - Short, same as #2 without DoW.
-    #     elif rawTable[0] == 'Position' and rawTable[4] == 'Day':
-    #         # Pop label row.
-    #         for _ in range(COLUMNS):
-    #             rawTable.pop(0)
-    #         # Set number of rows.
-    #         rows = int(len(rawTable)/COLUMNS)
-    #         for row in range(rows):
-    #             # Set the note correctly.
-    #             if rawTable[row*COLUMNS+3] == '':
-    #                 note = None
-    #             else:
-    #                 note = rawTable[row*COLUMNS+3]
-    #             # Generate AbsentTeacher object for row.
-    #             teacher = schemas.AbsenceCreate(teacher=schemas.TeacherCreate(first=rawTable[row*COLUMNS+2], last=rawTable[row*COLUMNS+1], school=structs.SchoolName.NEWTON_NORTH), length=rawTable[row*COLUMNS+4], note=note)
-    #             absences.append(teacher)
-
-    #     return absences
-
-    # def tracyConnolly(self, rawTable: list):
-    #     # Set number of columns.
-    #     COLUMNS = self.calculateColumns(rawTable)
-    #     # Absence list.
-    #     absences = []
-    #     # Calculate number of rows.
-    #     rows = int(len(rawTable)/COLUMNS)
-
-    #     for row in range(rows):
-    #         # Set the note correctly.
-    #         if rawTable[row*COLUMNS+4] == '':
-    #             note = None
-    #         else:
-    #             note = rawTable[row*COLUMNS+4]
-    #         # Generate AbsentTeacher for row.
-    #         teacher = schemas.AbsenceCreate(teacher=schemas.TeacherCreate(first=rawTable[row*COLUMNS+1], last=rawTable[row*COLUMNS], school=structs.SchoolName.NEWTON_SOUTH), length=rawTable[row*COLUMNS+2], note=note)
-    #         absences.append(teacher)
-
-    #     return absences
-
-
-                
+        possibleColumns = []
+        index = 1 # Counter for rows counted.
+        for i, lineBreak in enumerate(lineBreaks): # Iterates through a list of linebreaks and their indexes.
+            try:
+                if lineBreak + 1 == lineBreaks[i+1]: # Checks for double space.
+                    if lineBreaks[i+1] + 1 == lineBreaks[i+2]: # Checks if this is a triple set of spaces. 
+                        continue # If it is, ignore it.
+                    possibleColumns.append(int((lineBreak + 2) / index)) # Appends this rows column calculation.
+                    index += 1 # Tracks # of rows counted.
+            except IndexError:
+                break
+        mode = statistics.mode(possibleColumns) # Gets most common value of column count.
+        confidence = possibleColumns.count(mode) / len(possibleColumns) # Gets confidence.
+        return mode, confidence
