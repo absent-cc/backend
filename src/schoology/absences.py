@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 from dataTypes import structs, schemas, models
 import schoolopy
-from .parsing.columnDetection import ColumnDetection
+from .columnDetection import ColumnDetection
 
 class Absences:
     # Sets up the two API objects as entries within a list 'api' . 
@@ -11,6 +11,7 @@ class Absences:
         northsecret = scCreds.secrets[structs.SchoolName.NEWTON_NORTH]
         southkey = scCreds.keys[structs.SchoolName.NEWTON_SOUTH]
         southsecret = scCreds.secrets[structs.SchoolName.NEWTON_SOUTH]
+
         self.api = {
             structs.SchoolName.NEWTON_NORTH: schoolopy.Schoology(schoolopy.Auth(northkey, northsecret)),
             structs.SchoolName.NEWTON_SOUTH: schoolopy.Schoology(schoolopy.Auth(southkey, southsecret))
@@ -22,7 +23,7 @@ class Absences:
     def getFeed(self, school: structs.SchoolName):
         teachers = ["Tracy Connolly", "Casey Friend", "Suzanne Spirito"]
         feed = []
-        for update in self.api[school].get_feed():
+        for update in reversed(self.api[school].get_feed()):
             user = self.api[school].get_user(update.uid)
             if user.name_display in teachers:
                 feed.append((user.name_display, update.body, update.last_updated))
@@ -31,10 +32,10 @@ class Absences:
     # Gets the absence table for the date requested as defined by 'date'. Returns just this update for furthing processing. The date argument ultimately comes from the call of this function in main.py.
     def getCurrentTable(self, school: structs.SchoolName):
         feed = self.getFeed(school)
-        for update in feed:
-            postDate = datetime.utcfromtimestamp(int(update[2]))
+        for poster, body, date in feed:
+            postDate = datetime.utcfromtimestamp(int(date))
             if self.date.date() == postDate.date():
-                return structs.RawUpdate(content=update[1].split("\n"), poster=update[0])
+                return structs.RawUpdate(content=body.split("\n"), poster=poster)
         return None
 
     # Takes the raw North attendance table from the prior function and parses it, using the AbsentTeacher dataclass. Returns an array of entries utilizing this class. 
@@ -42,7 +43,8 @@ class Absences:
         self.date = date
         table = self.getCurrentTable(structs.SchoolName.NEWTON_NORTH)  
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_NORTH)
-
+        for absence in absences:
+            print(absence.teacher.first, absence.teacher.last, absence.length, absence.note)
         return absences
 
     # Same as the above, but the parsing is handled slightly differently due to the South absence table being differenct in formatting.
@@ -50,7 +52,8 @@ class Absences:
         self.date = date
         table = self.getCurrentTable(structs.SchoolName.NEWTON_SOUTH)    
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_SOUTH)
-
+        for absence in absences:
+            print(absence.teacher.first, absence.teacher.last, absence.length, absence.note)
         return absences
 
 class ContentParser:
@@ -84,7 +87,7 @@ class ContentParser:
             try:
                 teacher = schemas.TeacherCreate(first=row[map[structs.TableColumn.FIRST_NAME][0]], last=row[map[structs.TableColumn.LAST_NAME][0]], school=school)
             except IndexError:
-                teacher = None
+                continue
 
             try:
                 length = row[map[structs.TableColumn.LENGTH][0]]

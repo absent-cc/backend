@@ -84,11 +84,6 @@ class UserReturn(UserCreate):
     class Config:
         orm_mode = True
 
-class UserInfo(BaseModel):
-    profile: UserBase
-    schedule: Schedule
-
-
 class SessionCreate(BaseModel):
     uid: str
     @validator('uid')
@@ -114,16 +109,21 @@ class SessionReturn(SessionCreate):
 class Token(BaseModel):
     token: str
 
+class UserInfo(BaseModel):
+    profile: UserBase
+    schedule: Schedule
+    fcm: Token
+
 class SessionCredentials(BaseModel):
     token: str | None = None
     refresh: str | None = None
 
 class AbsenceBase(BaseModel):
-    length: str
+    length: str | None = None
     note: str | None = None
 
 class AbsenceCreate(AbsenceBase):
-    teacher: TeacherCreate
+    teacher: TeacherCreate | None = None
 
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn

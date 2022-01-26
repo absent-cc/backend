@@ -147,8 +147,7 @@ class ColumnDetection:
                 try:
                     column.append(row[col])
                 except IndexError:
-                    print("LAST ITEM.") 
-
+                    continue 
             colConfidence = self.columnConfidence(column)
             confidences.append(colConfidence)
 
