@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import List, Literal, Optional, Union
 from uuid import UUID
 from pydantic import BaseModel, validator
 from dataTypes import structs
@@ -79,7 +79,7 @@ class TeacherFull(TeacherReturn):
 
 class UserReturn(UserCreate):
     uid: str = None
-    schedule: Schedule | List[Class] = [] 
+    schedule: Union[Schedule, List[Class]] = [] 
 
     class Config:
         orm_mode = True
@@ -115,15 +115,15 @@ class UserInfo(BaseModel):
     fcm: Token
 
 class SessionCredentials(BaseModel):
-    token: str | None = None
-    refresh: str | None = None
+    token: Optional[str] = None
+    refresh: Optional[str] = None
 
 class AbsenceBase(BaseModel):
-    length: str | None = None
-    note: str | None = None
+    length: Optional[str] = None
+    note: Optional[str] = None
 
 class AbsenceCreate(AbsenceBase):
-    teacher: TeacherCreate | None = None
+    teacher: TeacherCreate
 
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
