@@ -2,6 +2,7 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import List
 from pydantic import BaseModel
+from itertools import chain
 
 #
 # SCHOOL ENUMS (BLOCK AND NAME) 
@@ -29,6 +30,25 @@ class SchoolBlock(str, Enum):
     E: str = "E"
     F: str = "F"
     G: str = "G"
+
+class TableColumn(str, Enum):
+    POSITION = ["Position",]
+    CS_NAME = ["Name",]
+    FIRST_NAME = ["First", "First Name"]
+    LAST_NAME = ["Last", "Last Name"]
+    LENGTH = ["Day",]
+    WEEKDAY= ["Day of Week", "DoW", "D o W", "D of Week"]
+    NOTE = ["Notes", "Notes to Student"]
+    DATE = ["Date",]
+     
+    def __eq__(self, val):
+        if val != "":
+            return val in self.__dict__['_value_']
+        else:
+            return False
+
+    def __hash__(self) -> int:
+        return super().__hash__()
 
 class BlockMapper(dict):
     def __init__(self, *args, **kwargs):
@@ -83,9 +103,6 @@ class ErrorType(Enum):
 #
 # STUDENT, TEACHER, CLASSTEACHERS(CUSTOM SET), ABSENTTEACHER, AND SCHEDULE OBJECTS
 #
-
-class NotPresent(Enum):
-    TRUE = None
 
 @dataclass
 class AbsentTeacher:

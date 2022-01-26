@@ -29,7 +29,7 @@ async def cancel(
     user = schemas.UserReturn(uid=creds.uid) # Creates husk user.
     if db.removeUser(user): # Attemps remove.
         return helper.returnStatus("Account deleted.") # Sends sucess.
-    helper.raiseError(500, "Operation failed.", structs.ErrorType.DB) # Else, errors.
+    helper.raiseError(500, "Operation failed", structs.ErrorType.DB) # Else, errors.
 
 @router.put("/me/update", status_code=201) # Update endpoint, main.
 async def updateUserInfo(
@@ -38,10 +38,14 @@ async def updateUserInfo(
     db: CRUD = Depends(accounts.getDBSession) # Initializes a DB.
 ):
 
-    db.updateProfile(user.profile, creds.uid) # Updates the profile info (everything save the schedule). 
-    db.updateSchedule(schemas.UserReturn(uid=creds.uid, school=user.profile.school), user.schedule) # Updates the schedule.
+    profile = db.updateProfile(user.profile, creds.uid) # Updates the profile info (everything save the schedule). 
+    schedule = db.updateSchedule(schemas.UserReturn(uid=creds.uid, school=user.profile.school), user.schedule) # Updates the schedule.
+    token = db.updateFCMToken(user.fcm, creds.uid, creds.sid)
 
-    return helper.returnStatus("Information updated.") # Returns success.
+    if (profile, token) != None and schedule:
+        return helper.returnStatus("Information updated") # Returns success.
+    else:
+        helper.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 @router.put("/me/update/profile", status_code=201) # Update endpoint, profile.
 async def updateUserInfo(
@@ -50,9 +54,12 @@ async def updateUserInfo(
     db: CRUD = Depends(accounts.getDBSession) # Initializes a DB.
 ):
 
-    db.updateProfile(profile, creds.uid) # Updates the profile info.
+    result = db.updateProfile(profile, creds.uid) # Updates the profile info.
 
-    return helper.returnStatus("Information updated.") # Returns success.
+    if result != None:
+        return helper.returnStatus("Information updated") # Returns success.
+    else:
+        helper.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 @router.put("/me/update/schedule", status_code=201) # Update endpoint, schedule.
 async def updateUserInfo(
@@ -62,9 +69,12 @@ async def updateUserInfo(
 ):
     user = schemas.UserReturn(uid=creds.uid) # Creates husk user. 
 
-    db.updateSchedule(user, schedule) # Updates schedule.
-
-    return helper.returnStatus("Information updated.") # Returns success.
+    result = db.updateSchedule(user, schedule) # Updates schedule.
+    
+    if result:
+        return helper.returnStatus("Information updated") # Returns success.
+    else:
+        helper.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 @router.put("/me/update/fcm", status_code=201)
 async def updateFirebaseToken(
@@ -72,6 +82,9 @@ async def updateFirebaseToken(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
     db: CRUD = Depends(accounts.getDBSession)
 ):
-    db.updateFCMToken(token, creds.uid, creds.sid)
+    result = db.updateFCMToken(token, creds.uid, creds.sid)
 
-    return helper.returnStatus("Information updated.")
+    if result != None:
+        return helper.returnStatus("Information updated") # Returns success.
+    else:
+        helper.raiseError(500, "Operation failed", structs.ErrorType.DB)
