@@ -85,7 +85,7 @@ if __name__ == '__main__':
     logger.add("logs/latest.log", rotation="4 hours", retention=1)   
 
     options = {
-        "bind": "0.0.0.0:8000",
+        "bind": "unix:/opt/absent-sock/absent.sock",
         "workers": WORKERS,
         "accesslog": "-",
         "errorlog": "-",
