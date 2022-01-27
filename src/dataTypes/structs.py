@@ -1,6 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List
 from pydantic import BaseModel
 from itertools import chain
 
@@ -116,12 +116,12 @@ class AbsentTeacher:
 
 @dataclass
 class SchoologyCreds:
-    keys: dict[SchoolName: str, SchoolName: str]
-    secrets: dict[SchoolName: str, SchoolName: str]
+    keys: dict
+    secrets: dict
 
 class RawUpdate(BaseModel):
     poster: str
-    content: list[str]
+    content: List[str]
     columns: int = None
 #
 # SESSION AND TOKEN OBJECTS
