@@ -11,7 +11,6 @@ from fastapi import Depends
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from loguru import logger
 from database.crud import CRUD
-from database.database import SessionLocal
 
 class Accounts():
 

@@ -1,7 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+import yaml
 
-SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://abSENT:password@localhost/abSENT"
+with open('secrets.yml') as f:
+    cfg = yaml.safe_load(f)
+
+SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{cfg['DB']['user']}:{cfg['DB']['password']}@localhost/{cfg['DB']['name']}"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
 )

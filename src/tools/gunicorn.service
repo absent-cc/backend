@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve the abSENT API
+After=network.target
+
+[Service]
+User=absent
+Group=www-data
+WorkingDirectory=/home/absent/backend
+Environment="PATH=/home/absent/backend/backend"
+ExecStart=/home/absent/backend/backend/python /home/absent/backend/src/run.py
+
+[Install]
+WantedBy=multi-user.target
