@@ -47,7 +47,7 @@ class Schedule(BaseModel):
         schedule = Schedule()
         for cls in classes:
             current = getattr(schedule, cls.block)
-            if current != None and current != structs.NotPresent.TRUE:
+            if current != None:
                 current.append(cls.teacher)
                 setattr(schedule, cls.block, current)
             else:

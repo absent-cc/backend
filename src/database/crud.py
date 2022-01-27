@@ -155,7 +155,7 @@ class CRUD:
             for cls in schedule:
                 if cls[1] != None:
                     for teacher in cls[1]: # This loops through all the teachers for a given block.
-                        resTeacher = self.getTeacher(schemas.TeacherReturn(first=teacher.first, last=teacher.last, school=teacher.school))
+                        resTeacher = self.getTeacher(schemas.TeacherReturn(first=teacher.first.upper(), last=teacher.last.upper(), school=user.school))
                         if resTeacher == None:
                             tid = self.addTeacher(schemas.TeacherCreate(first=teacher.first, last=teacher.last, school=user.school)).tid # Adds them to DB if they don't exist.
                         else:
