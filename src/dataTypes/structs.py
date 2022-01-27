@@ -116,8 +116,8 @@ class AbsentTeacher:
 
 @dataclass
 class SchoologyCreds:
-    keys: Dict[SchoolName: str, SchoolName: str]
-    secrets: Dict[SchoolName: str, SchoolName: str]
+    keys: dict
+    secrets: dict
 
 class RawUpdate(BaseModel):
     poster: str
