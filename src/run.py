@@ -1,3 +1,4 @@
+import csv
 import os
 import logging
 import sys
@@ -58,6 +59,7 @@ class StandaloneApplication(BaseApplication):
 
 
 if __name__ == '__main__':
+
     intercept_handler = InterceptHandler()
     logging.root.setLevel(LOG_LEVEL)
 

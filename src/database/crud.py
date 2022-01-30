@@ -99,13 +99,11 @@ class CRUD:
         return None
 
     def addSession(self, newSession: schemas.SessionCreate) -> models.UserSession:
-        if newSession.uid != None: # Checks for required fields.
-            
+        if newSession.uid != None: # Checks for required fields    
             sessions = self.db.query(models.UserSession).filter(models.UserSession.uid == newSession.uid).all()
             if len(sessions) >= 6:
                 oldestSession = min(sessions, key = lambda t: t.last_accessed)
                 self.removeSession(schemas.SessionReturn.from_orm(oldestSession))
-
             sid = secrets.token_hex(8) # Generates SID.
             sessionModel = models.UserSession(uid=newSession.uid, sid=sid, last_accessed=datetime.now()) # Creates object including timestamp, makes model.
             self.db.add(sessionModel) # Adds model.

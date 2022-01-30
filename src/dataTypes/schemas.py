@@ -128,3 +128,22 @@ class AbsenceCreate(AbsenceBase):
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
     date: datetime
+
+class PartialName(BaseModel):
+    name: str 
+    school: str
+
+    @validator('name')
+    def checkPartialName(cls, v):
+        if (len(v)) < 3:
+            raise ValueError('Phrase too short.')
+        return v
+        
+    @validator('school')
+    def checkSchoolName(cls, v):
+        if v != ("NNHS" or "NSHS"):
+            raise ValueError('Invalid school.')
+        return v
+
+class AutoComplete(BaseModel):
+    suggestions: list

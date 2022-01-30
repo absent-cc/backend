@@ -4,13 +4,31 @@ from api.accounts import Accounts
 from api.v1.routers import users, admin
 from dataTypes import structs, schemas, models
 from database.crud import CRUD
-
+import csv as c
+from fuzzywuzzy import fuzz
 
 accounts = Accounts()
 helper = HelperFunctions()
 router = APIRouter(prefix="/v1")
 router.include_router(users.router)
-#absent.include_router(admin.router)
+
+NNHS_FIRSTS = []
+NNHS_LASTS = []
+
+NSHS_FIRSTS = []
+NSHS_LASTS = []
+
+def readCSV(school: structs.SchoolName) -> bool:
+    with open(f'data/{school}_teachers.csv') as f:
+        csv = c.DictReader(f)
+        print(f"{school}_FIRSTS")
+        for col in csv:
+            globals()[f"{school}_FIRSTS"].append(col['first'])
+            globals()[f"{school}_LASTS"].append(col['last'])
+    return True
+
+readCSV(structs.SchoolName.NEWTON_NORTH)
+readCSV(structs.SchoolName.NEWTON_SOUTH)
 
 @router.get("/", status_code=200, tags=["Main"])
 async def serviceInfo():
@@ -44,3 +62,15 @@ async def refresh(cid = Depends(accounts.verifyRefreshToken)): # Here, the refre
         return schemas.SessionCredentials(token=token) # Return this using our credentials schema.
     else:
         helper.raiseError(401, "Invalid refresh token provided", structs.ErrorType.AUTH) # Otherwise, raise an error of type AUTH, signifying an invalid token.
+
+@router.post("/autocomplete/", status_code=201, response_model=schemas.AutoComplete, tags=["Main"])
+async def autocomplete(partialName: schemas.PartialName):
+    if len(partialName.name) > 2:
+        matches = []
+        for index in range(len(globals()[f"{partialName.school}_FIRSTS"])):
+            str = globals()[f"{partialName.school}_FIRSTS"][index] + " " + globals()[f"{partialName.school}_LASTS"][index]
+            ratio = fuzz.partial_ratio(partialName.name.lower(), str.lower())
+            if ratio > 80:
+                matches.append(str)
+        return schemas.AutoComplete(suggestions=matches)
+    return None

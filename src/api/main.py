@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+import time
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from api.v1 import main as v1
@@ -43,6 +44,14 @@ absent = FastAPI(
 )
 
 absent.mount("/static", StaticFiles(directory="static"), name="static")
+
+@absent.middleware("http")
+async def addProcessTime(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
 
 @absent.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():

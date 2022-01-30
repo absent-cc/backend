@@ -1,21 +1,13 @@
 import statistics
 import csv
-import Levenshtein as lev
+from fuzzywuzzy import fuzz
 from typing import Tuple
 from dataTypes import structs
 
 class ColumnDetection:
     def __init__(self, school: structs.SchoolName):
-
-        self.teacherFirsts = set()
-        self.teacherLasts = set()
-
-        with open(f'data/{school}_teachers.csv', 'r') as f:
-            csvF = csv.DictReader(f)
-            for col in csvF:
-                self.teacherFirsts.add(col['first'])
-                self.teacherLasts.add(col['last'])
-
+        pass
+    
     def countColumns(self, table: list) -> Tuple[int, float]:
         lineBreaks = [i for i, x in enumerate(table) if x == ""] # Generates list of linebreaks and their indexes.
         possibleColumns = []
@@ -45,7 +37,7 @@ class ColumnDetection:
         return True
     
     def isFuzzyMatch(self, first: str, second: str) -> bool:
-        if lev.ratio(first.lower(), second.lower()) > .9:
+        if fuzz.ratio(first.lower(), second.lower()) > .9:
             return True
         return False
     
