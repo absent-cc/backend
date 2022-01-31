@@ -3,8 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from api.v1 import main as v1
-from database.crud import CRUD
-from dataTypes import models, schemas, structs
+
 # All this fucking shit for the docs because I am legitimately this vain.
 
 description = "The abSENT API powers the mobile app you love. Here, you can interact with it and implement it into your own applications if you so desire. All documentation is open; feel free to reach out to us for help if you're unsure about how something works."
@@ -43,8 +42,6 @@ absent = FastAPI(
     openapi_tags=tags_metadata
 )
 
-absent.mount("/static", StaticFiles(directory="static"), name="static")
-
 @absent.middleware("http")
 async def addProcessTime(request: Request, call_next):
     start_time = time.time()
@@ -52,6 +49,8 @@ async def addProcessTime(request: Request, call_next):
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
     return response
+
+absent.mount("/static", StaticFiles(directory="static"), name="static")
 
 @absent.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
