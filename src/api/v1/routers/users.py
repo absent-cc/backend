@@ -1,6 +1,5 @@
 from fastapi import Depends, APIRouter
 from dataTypes import structs, schemas
-from database.crud import *
 from loguru import logger
 from sqlalchemy.orm import Session
 import database.crud as crud
@@ -8,7 +7,8 @@ import api.utils as utils
 import api.accounts as accounts
 
 router = APIRouter(prefix="/users", tags=["Users"])
-@router.get("/me/info", response_model=schemas.UserReturn) # Info endpoint.
+
+@router.get("/me/info", response_model=schemas.UserReturn, status_code=200) # Info endpoint.
 async def returnUserInfo(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
     db: Session = Depends(accounts.getDBSession) # Initializes a DB.
@@ -19,6 +19,14 @@ async def returnUserInfo(
     userReturn.schedule = schemas.Schedule.scheduleFromList(user.schedule) # Converts list-schedule into Schedule object.
 
     return userReturn # Returns user.
+
+@router.get("/me/sessions", response_model=schemas.SessionList, status_code=200)
+async def getSessionList(
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
+    db: Session = Depends(accounts.getDBSession)
+):
+    sessions = crud.getSessionList(db, schemas.UserReturn(uid=creds.uid))
+    return schemas.SessionList(sessions=sessions)
 
 @router.put("/me/delete", status_code=201) # Cancellation endpoint.
 async def cancel(
@@ -87,3 +95,16 @@ async def updateFirebaseToken(
         return utils.returnStatus("Information updated") # Returns success.
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
+
+@router.put("/me/sessions/revoke", status_code=201)
+async def revokeSession(
+    session: schemas.SessionReturn,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
+    db: Session = Depends(accounts.getDBSession)
+):
+    session.uid = creds.uid
+    if crud.removeSession(db, session):
+        return utils.returnStatus("Session revoked")
+    else:
+        utils.raiseError(500, "Session deletion failed", structs.ErrorType.DB)
+

@@ -35,8 +35,14 @@ def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
         return db.query(models.UserSession).filter(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).first() # Returns session information.
     return None
 
+def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
+    if user.uid != None:
+        sessions = db.query(models.UserSession).filter(models.UserSession.uid == user.uid).all()
+        return sessions
+    return None
+
 def getAbsenceList(db) -> tuple:
-    absences = db.query(models.Absence).filter(models.Absence.date == datetime.today()).all()
+    absences = db.query(models.Absence).filter(models.Absence.date == datetime.today().date()).all()
     return absences
 
 def getClassesByUser(db, user: schemas.UserReturn) -> List[models.Class]: 
@@ -73,20 +79,18 @@ def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
     return None
 
 def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
-    if absence.teacher.tid != None:
-        tid = absence.teacher.tid
-    elif absence.teacher.first != None and absence.teacher.last != None and absence.teacher.school != None:
-        tid = getTeacher(absence.teacher)
-    if tid != None:
-        absenceModel = models.Absence(date=datetime.today(), tid=tid, note=absence.note)
-        db.add(absenceModel)
-        db.commit()
-        return absenceModel
-    return None
+    if absence.teacher.first != None and absence.teacher.last != None and absence.teacher.school != None:
+        teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
+    if teacher == None:
+        teacher = addTeacher(db, absence.teacher)
+    absenceModel = models.Absence(date=datetime.today().date(), tid=teacher.tid, note=absence.note)
+    db.add(absenceModel)
+    db.commit()
+    return absenceModel
 
 def addSession(db, newSession: schemas.SessionCreate) -> models.UserSession:
     if newSession.uid != None: # Checks for required fields    
-        sessions = db.query(models.UserSession).filter(models.UserSession.uid == newSession.uid).all()
+        sessions = getSessionList(db, schemas.UserReturn(uid=newSession.uid))
         if len(sessions) >= 6:
             oldestSession = min(sessions, key = lambda t: t.last_accessed)
             removeSession(db, schemas.SessionReturn.from_orm(oldestSession))

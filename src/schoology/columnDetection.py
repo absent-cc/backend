@@ -1,15 +1,23 @@
 import statistics
-import csv
+import csv as c
 from fuzzywuzzy import fuzz
 from typing import Tuple
 from dataTypes import structs
 
 class ColumnDetection:
     def __init__(self, school: structs.SchoolName):
-        pass
     
+        self.FIRSTS = []
+        self.LASTS = []
+
+        with open(f'data/{school}_teachers.csv') as f:
+            csv = c.DictReader(f)
+            for col in csv:
+                self.FIRSTS.append(col['first'])
+                self.LASTS.append(col['last'])
+
     def countColumns(self, table: list) -> Tuple[int, float]:
-        lineBreaks = [i for i, x in enumerate(table) if x == ""] # Generates list of linebreaks and their indexes.
+        lineBreaks = [i for i, x in enumerate(table) if x in ["", "\r", "\n"]] # Generates list of linebreaks and their indexes.
         possibleColumns = []
         index = 1 # Counter for rows counted.
         for i, lineBreak in enumerate(lineBreaks): # Iterates through a list of linebreaks and their indexes.
@@ -37,18 +45,18 @@ class ColumnDetection:
         return True
     
     def isFuzzyMatch(self, first: str, second: str) -> bool:
-        if fuzz.ratio(first.lower(), second.lower()) > .9:
+        if fuzz.ratio(first.lower(), second.lower()) > 90:
             return True
         return False
     
     def isFirst(self, name: str) -> bool:
-        for first in self.teacherFirsts:
+        for first in self.FIRSTS:
             if self.isFuzzyMatch(name, first):
                 return True
         return False
 
     def isLast(self, name: str) -> bool:
-        for last in self.teacherLasts:
+        for last in self.LASTS:
             if self.isFuzzyMatch(name, last):
                 return True
         return False
@@ -65,7 +73,7 @@ class ColumnDetection:
             structs.TableColumn.POSITION: 0,
         }
 
-        NOTE_KEYWORDS = ["cancelled", "canceled", "block", "schoology", "classes", "as usual", ""]
+        NOTE_KEYWORDS = ["cancelled", "canceled", "block", "schoology", "classes", "as usual", "", "\r", "\n", "\xa0"]
         POSITION_KEYWORDS = ["Teacher", "Counselor"]
         LENGTH_KEYWORDS = ["All Day", "Partial Day AM", "Partial Day PM", "Partial Day", "Partial AM", "Partial PM"]
         WEEKDAY_KEYWORDS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "MON", "TUES", "WEDS", "THURS", "FRI", "SAT", "SUN"]

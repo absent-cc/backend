@@ -16,9 +16,13 @@ tags_metadata = [
         "name": "Users",
         "description": "Endpoints for logged in users with credentials.",
     },
+    # {
+    #     "name": "Admin",
+    #     "description": "Endpoints for administration of the service, such as sending announcements and accessing private information. Unfortunately no one but us is cool enough to have access.",
+    # },
     {
-        "name": "Admin",
-        "description": "Endpoints for administration of the service, such as sending announcements and accessing private information. Unfortunately no one but us is cool enough to have access.",
+        "name": "Teachers",
+        "description": "Teacher related endpoints.",
     },
 
 ]

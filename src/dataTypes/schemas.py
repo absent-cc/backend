@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Optional, Tuple, Union
 from uuid import UUID
 from pydantic import BaseModel, validator
 from dataTypes import structs
@@ -85,7 +85,7 @@ class UserReturn(UserCreate):
         orm_mode = True
 
 class SessionCreate(BaseModel):
-    uid: str
+    uid: Optional[str] = None
     @validator('uid')
     def checkUIDLength(cls, v):
         try:
@@ -95,8 +95,8 @@ class SessionCreate(BaseModel):
             raise ValueError('Invalid UID.')
 
 class SessionReturn(SessionCreate):
-    sid: str = None
-    last_accessed: datetime = None
+    sid: Optional[str] = None
+    last_accessed: Optional[datetime] = None
 
     @validator('sid')
     def checkSIDLength(cls, v):
@@ -145,5 +145,14 @@ class PartialName(BaseModel):
             raise ValueError('Invalid school.')
         return v
 
+class SessionList(BaseModel):
+    sessions: List[SessionReturn]
+
+class AbsenceList(BaseModel):
+    absences: Tuple
+
 class AutoComplete(BaseModel):
     suggestions: list
+
+class Valid(BaseModel):
+    value: bool
