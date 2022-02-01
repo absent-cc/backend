@@ -1,24 +1,24 @@
 import threading, time, yaml
+from configparser import ConfigParser
 from dataTypes import structs
 from schoology.schoologyListener import *
 from database.database import *
 from datetime import timedelta, datetime, timezone
 
-# Open files.
-with open('secrets.yml') as f:
-    cfg = yaml.safe_load(f)
+cfg = ConfigParser()
+cfg.read("config.ini")
 
 # Define API variables.
 SCHOOLOGYCREDS = structs.SchoologyCreds(
     
     {
-    structs.SchoolName.NEWTON_NORTH: cfg['north']['key'],
-    structs.SchoolName.NEWTON_SOUTH: cfg['south']['key'] 
+    structs.SchoolName.NEWTON_NORTH: cfg['NNHS']['key'],
+    structs.SchoolName.NEWTON_SOUTH: cfg['NSHS']['key'] 
     }, 
     
     {
-    structs.SchoolName.NEWTON_NORTH: cfg['north']['secret'],
-    structs.SchoolName.NEWTON_SOUTH: cfg['south']['secret']
+    structs.SchoolName.NEWTON_NORTH: cfg['NNHS']['secret'],
+    structs.SchoolName.NEWTON_SOUTH: cfg['NSHS']['secret']
     }
     
     )
