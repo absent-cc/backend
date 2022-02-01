@@ -30,6 +30,7 @@ class SchoolBlock(str, Enum):
     E: str = "E"
     F: str = "F"
     G: str = "G"
+    EXTRA: str = "EXTRA"
 
 class TableColumn(str, Enum):
     POSITION = ["Position",]
@@ -77,6 +78,7 @@ class ReverseBlockMapper(dict):
             "E": SchoolBlock.E,
             "F": SchoolBlock.F,
             "G": SchoolBlock.G,
+            "EXTRA": SchoolBlock.EXTRA,
         })
 
 #

@@ -3,6 +3,8 @@ from typing import List
 from dataTypes import structs, schemas, models
 import schoolopy
 from .columnDetection import ColumnDetection
+from database.database import SessionLocal
+import database.crud as crud
 
 class Absences:
     # Sets up the two API objects as entries within a list 'api' . 
@@ -18,6 +20,7 @@ class Absences:
         }
         self.api[structs.SchoolName.NEWTON_NORTH].limit = 10
         self.api[structs.SchoolName.NEWTON_SOUTH].limit = 10
+        self.db = SessionLocal()
 
     # Gets the feed, accepting an argument 'school' which is either 0 or 1, 0 corresponding to North and 1 corresponding to South (this value being the same as the school's index within the API array). Grabs all updates posted by individuals of interest and saves them to an array 'feed', and returns that array.
     def getFeed(self, school: structs.SchoolName):
@@ -43,8 +46,9 @@ class Absences:
         self.date = date
         table = self.getCurrentTable(structs.SchoolName.NEWTON_NORTH)  
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_NORTH)
+        print(absences)
         for absence in absences:
-            print(absence.teacher.first, absence.teacher.last, absence.length, absence.note)
+            crud.addAbsence(self.db, absence)
         return absences
 
     # Same as the above, but the parsing is handled slightly differently due to the South absence table being differenct in formatting.
@@ -52,8 +56,9 @@ class Absences:
         self.date = date
         table = self.getCurrentTable(structs.SchoolName.NEWTON_SOUTH)    
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_SOUTH)
+        print(absences)
         for absence in absences:
-            print(absence.teacher.first, absence.teacher.last, absence.length, absence.note)
+            crud.addAbsence(self.db, absence)
         return absences
 
 class ContentParser:
@@ -83,7 +88,9 @@ class ContentParser:
 
     def constructObject(self, update: structs.RawUpdate, map: dict, school: structs.SchoolName) -> List[schemas.AbsenceCreate]:
         objList = []
+        print(update)
         for row in update.content:
+
             try:
                 teacher = schemas.TeacherCreate(first=row[map[structs.TableColumn.FIRST_NAME][0]], last=row[map[structs.TableColumn.LAST_NAME][0]], school=school)
             except IndexError:
@@ -96,7 +103,7 @@ class ContentParser:
 
             try:
                 note = row[map[structs.TableColumn.NOTE][0]]
-                if note == "":
+                if note in ["", "\r", "\n"]:
                     note = None
             except IndexError:
                 note = None
@@ -111,6 +118,6 @@ class ContentParser:
         return objList
 
     def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
-        while update.content[0].lower() != ('position' or 'name'):
+        while ('position' or 'name') not in update.content[0].lower():
             update.content.pop(0)
         return update
