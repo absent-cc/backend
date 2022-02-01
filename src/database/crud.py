@@ -127,7 +127,7 @@ def removeClass(db, cls: schemas.Class) -> bool:
     return False
 
 def removeClassesByUser(db, user: schemas.UserReturn) -> bool: # Used for updating schedule and cancellation.
-    classes = getClassesByUser(user) # Gets a student's classes.
+    classes = getClassesByUser(db, user) # Gets a student's classes.
     for cls in classes:
         db.delete(cls) # Deletes them all.
     db.commit()
@@ -135,20 +135,20 @@ def removeClassesByUser(db, user: schemas.UserReturn) -> bool: # Used for updati
 
 def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> bool:
     if user.school == None:
-        user = getUser(user)
+        user = getUser(db, user)
         if user.school == None:
             return False
     if user.uid != None:
-        removeClassesByUser(user) # Removes all old classes.
+        removeClassesByUser(db, user) # Removes all old classes.
         for cls in schedule:
             if cls[1] != None:
                 for teacher in cls[1]: # This loops through all the teachers for a given block.
-                    resTeacher = getTeacher(schemas.TeacherReturn(first=teacher.first.upper(), last=teacher.last.upper(), school=user.school))
+                    resTeacher = getTeacher(db, schemas.TeacherReturn(first=teacher.first.upper(), last=teacher.last.upper(), school=user.school))
                     if resTeacher == None:
-                        tid = addTeacher(schemas.TeacherCreate(first=teacher.first, last=teacher.last, school=user.school)).tid # Adds them to DB if they don't exist.
+                        tid = addTeacher(db, schemas.TeacherCreate(first=teacher.first, last=teacher.last, school=user.school)).tid # Adds them to DB if they don't exist.
                     else:
                         tid = resTeacher.tid # Else, just reference them.
-                    addClass(schemas.Class(tid=tid, block=structs.ReverseBlockMapper()[cls[0]], uid=user.uid)) # Creates class entry.
+                    addClass(db, schemas.Class(tid=tid, block=structs.ReverseBlockMapper()[cls[0]], uid=user.uid)) # Creates class entry.
         return True
     return False
 

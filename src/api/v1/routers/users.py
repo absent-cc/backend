@@ -9,7 +9,7 @@ import api.accounts as accounts
 router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/me/info", response_model=schemas.UserReturn, status_code=200) # Info endpoint.
-async def returnUserInfo(
+def returnUserInfo(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
     db: Session = Depends(accounts.getDBSession) # Initializes a DB.
 ):
@@ -21,7 +21,7 @@ async def returnUserInfo(
     return userReturn # Returns user.
 
 @router.get("/me/sessions", response_model=schemas.SessionList, status_code=200)
-async def getSessionList(
+def getSessionList(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
     db: Session = Depends(accounts.getDBSession)
 ):
@@ -29,7 +29,7 @@ async def getSessionList(
     return schemas.SessionList(sessions=sessions)
 
 @router.put("/me/delete", status_code=201) # Cancellation endpoint.
-async def cancel(
+def cancel(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
     db: Session = Depends(accounts.getDBSession) # Initializes a DB.
 ):
@@ -39,7 +39,7 @@ async def cancel(
     utils.raiseError(500, "Operation failed", structs.ErrorType.DB) # Else, errors.
 
 @router.put("/me/update", status_code=201) # Update endpoint, main.
-async def updateUserInfo(
+def updateUserInfo(
     user: schemas.UserInfo, # Takes a user object: this is the NEW info, not the current info.
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
     db: Session = Depends(accounts.getDBSession) # Initializes a DB.
@@ -55,7 +55,7 @@ async def updateUserInfo(
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 @router.put("/me/update/profile", status_code=201) # Update endpoint, profile.
-async def updateUserInfo(
+def updateUserInfo(
     profile: schemas.UserBase, # Takes just profile information.
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
     db: Session = Depends(accounts.getDBSession) # Initializes a DB.
@@ -69,7 +69,7 @@ async def updateUserInfo(
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 @router.put("/me/update/schedule", status_code=201) # Update endpoint, schedule.
-async def updateUserInfo(
+def updateUserInfo(
     schedule: schemas.Schedule, # Takes just a schedule.
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
     db: Session = Depends(accounts.getDBSession) # Initializes a DB.
@@ -84,7 +84,7 @@ async def updateUserInfo(
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 @router.put("/me/update/fcm", status_code=201)
-async def updateFirebaseToken(
+def updateFirebaseToken(
     token: schemas.Token,
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
     db: Session = Depends(accounts.getDBSession)
@@ -97,7 +97,7 @@ async def updateFirebaseToken(
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 @router.put("/me/sessions/revoke", status_code=201)
-async def revokeSession(
+def revokeSession(
     session: schemas.SessionReturn,
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
     db: Session = Depends(accounts.getDBSession)

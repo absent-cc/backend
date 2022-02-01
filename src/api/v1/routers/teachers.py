@@ -27,7 +27,7 @@ readCSV(structs.SchoolName.NEWTON_SOUTH)
 router = APIRouter(prefix="/teachers", tags=["Teachers"])
 
 @router.get("/absences", response_model=schemas.AbsenceList, status_code=200)
-async def getAbsenceList(
+def getAbsenceList(
     db: Session = Depends(accounts.getDBSession) # Initializes a DB. 
 ):
     list = crud.getAbsenceList(db)

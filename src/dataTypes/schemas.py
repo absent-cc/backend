@@ -41,6 +41,7 @@ class Schedule(BaseModel):
     E: List[TeacherReturn] = None
     F: List[TeacherReturn] = None
     G: List[TeacherReturn] = None 
+    EXTRA: List[TeacherReturn] = None
 
     @staticmethod
     def scheduleFromList(classes: list):
