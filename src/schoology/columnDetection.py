@@ -3,6 +3,9 @@ import csv as c
 from fuzzywuzzy import fuzz
 from typing import Tuple
 from dataTypes import structs
+from typing import Dict, Tuple
+
+import pretty_errors
 
 class ColumnDetection:
     def __init__(self, school: structs.SchoolName):
@@ -61,7 +64,7 @@ class ColumnDetection:
                 return True
         return False
 
-    def columnConfidence(self, column: list) -> dict[structs.TableColumn: int]:
+    def columnConfidence(self, column: list) -> Dict[structs.TableColumn, int]:
         confidence = {
             structs.TableColumn.FIRST_NAME: 0,
             structs.TableColumn.LAST_NAME: 0,
@@ -125,7 +128,7 @@ class ColumnDetection:
                     confidence[structs.TableColumn.WEEKDAY] += contentPoints
         return confidence
 
-    def mapColumns(self, table: structs.RawUpdate) -> dict[tuple]:
+    def mapColumns(self, table: structs.RawUpdate) -> Dict[structs.TableColumn, Tuple[int, int]]:
         #print(table.content)
         
         confidences = []
