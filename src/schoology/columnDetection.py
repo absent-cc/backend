@@ -16,8 +16,8 @@ class ColumnDetection:
         with open(f'data/{school}_teachers.csv') as f:
             csv = c.DictReader(f)
             for col in csv:
-                self.FIRSTS.append(col['first'])
-                self.LASTS.append(col['last'])
+                self.FIRSTS.append(col['First'])
+                self.LASTS.append(col['Last'])
 
     def countColumns(self, table: list) -> Tuple[int, float]:
         lineBreaks = [i for i, x in enumerate(table) if x in ["", "\r", "\n"]] # Generates list of linebreaks and their indexes.
