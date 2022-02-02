@@ -7,18 +7,22 @@ from typing import Dict, Tuple
 
 import pretty_errors
 
+FUZZY_MATCH_THRESHOLD = 90
+
 class ColumnDetection:
     def __init__(self, school: structs.SchoolName):
     
-        self.FIRSTS = []
-        self.LASTS = []
+        self.FIRSTS = [] # List that stores all FIRST names of teachers @ school
+        self.LASTS = [] # List that stores all LAST names of teachers @ school
 
+        # Get list of all teachers @ South or North
         with open(f'data/{school}_teachers.csv') as f:
             csv = c.DictReader(f)
             for col in csv:
                 self.FIRSTS.append(col['First'])
                 self.LASTS.append(col['Last'])
 
+    # Function that dynamically counts the number of columns in a schoology absence table
     def countColumns(self, table: list) -> Tuple[int, float]:
         lineBreaks = [i for i, x in enumerate(table) if x in ["", "\r", "\n"]] # Generates list of linebreaks and their indexes.
         possibleColumns = []
@@ -36,34 +40,39 @@ class ColumnDetection:
         confidence = possibleColumns.count(mode) / len(possibleColumns) # Gets confidence.
         return mode, confidence
 
+    # Checks if a string is a date.
     def isDate(self, dateStr: str) -> bool:
         splitDate = dateStr.split("/")
-        if len(splitDate) != 3:
+        if len(splitDate) != 3: # If there are not 3 parts, it is not a date.
             return False
 
         for segment in splitDate:
-            if not segment.isnumeric():
+            if not segment.isnumeric(): # Makes sure components are all numbers.
                 return False
 
         return True
     
+    # Checks if two strings are similar.
     def isFuzzyMatch(self, first: str, second: str) -> bool:
-        if fuzz.ratio(first.lower(), second.lower()) > 90:
+        if fuzz.ratio(first.lower(), second.lower()) > FUZZY_MATCH_THRESHOLD: # Threshold for fuzzy matching is 90%
             return True
         return False
     
+    # Calculates the confidence of whether or not a column is a bunch of FIRST names
     def isFirst(self, name: str) -> bool:
         for first in self.FIRSTS:
             if self.isFuzzyMatch(name, first):
                 return True
         return False
 
+    # Calculates the confidence of whether or not a column is a bunch of LAST names
     def isLast(self, name: str) -> bool:
         for last in self.LASTS:
             if self.isFuzzyMatch(name, last):
                 return True
         return False
 
+    # Gets the confidences of each column.
     def columnConfidence(self, column: list) -> Dict[structs.TableColumn, int]:
         confidence = {
             structs.TableColumn.FIRST_NAME: 0,
@@ -75,15 +84,15 @@ class ColumnDetection:
             structs.TableColumn.LENGTH: 0,
             structs.TableColumn.POSITION: 0,
         }
-
-        NOTE_KEYWORDS = ["cancelled", "canceled", "block", "schoology", "classes", "as usual", "", "\r", "\n", "\xa0"]
-        POSITION_KEYWORDS = ["Teacher", "Counselor"]
-        LENGTH_KEYWORDS = ["All Day", "Partial Day AM", "Partial Day PM", "Partial Day", "Partial AM", "Partial PM"]
-        WEEKDAY_KEYWORDS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "MON", "TUES", "WEDS", "THURS", "FRI", "SAT", "SUN"]
+        
+        NOTE_KEYWORDS = ["cancelled", "canceled", "block", "schoology", "classes", "as usual", "", "\r", "\n", "\xa0"] # Keywords that usually appear in notes
+        POSITION_KEYWORDS = ["Teacher", "Counselor"] # Keywords that usually appear in position
+        LENGTH_KEYWORDS = ["All Day", "Partial Day AM", "Partial Day PM", "Partial Day", "Partial AM", "Partial PM"] # Keywords that usually appear in length of absence
+        WEEKDAY_KEYWORDS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "MON", "TUES", "WEDS", "THURS", "FRI", "SAT", "SUN"] # Keywords that usually appear in weekday
         
         contentPoints = 5 / len(column)
 
-        # TITLE CHECKS
+        # Title Of Column Check
         for i, item in enumerate(column):
             if i == 0:
                 points = 2.5
@@ -107,7 +116,7 @@ class ColumnDetection:
             if item == structs.TableColumn.LENGTH:
                 confidence[structs.TableColumn.LENGTH] += points 
 
-            # CONTENT CHECKS
+            # Content Confidence Check
             if self.isFirst(item):
                 confidence[structs.TableColumn.FIRST_NAME] += contentPoints
             if self.isLast(item):
@@ -129,8 +138,6 @@ class ColumnDetection:
         return confidence
 
     def mapColumns(self, table: structs.RawUpdate) -> Dict[structs.TableColumn, Tuple[int, int]]:
-        #print(table.content)
-        
         confidences = []
         map = {
             structs.TableColumn.FIRST_NAME: (-1, -1),
@@ -143,8 +150,7 @@ class ColumnDetection:
             structs.TableColumn.POSITION: (-1, -1),
         }
 
-        for col in range(table.columns - 2):
-            
+       for col in range(table.columns - 2):
             column = []
             for row in table.content:
                 try:
