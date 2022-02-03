@@ -73,7 +73,7 @@ def validateRefreshToken(jwt: str) -> str:
 
 # Building block for our token check.
 def decodeToken(webtoken: str) -> dict:
-    SECRET = open('.ssh/id_rsa.pub', 'r').read()
+    SECRET = open('creds/id_rsa.pub', 'r').read()
     key = serialization.load_ssh_public_key(SECRET.encode())
     try:
         decoded = jwt.decode(
@@ -88,7 +88,7 @@ def decodeToken(webtoken: str) -> dict:
 
 # Building block for our token check.
 def decodeRefreshToken(webtoken: str) -> dict:
-    SECRET = open('.ssh/id_rsa.pub', 'r').read()
+    SECRET = open('creds/id_rsa.pub', 'r').read()
     key = serialization.load_ssh_public_key(SECRET.encode())
     try:
         decoded = jwt.decode(
@@ -107,7 +107,7 @@ def decodeRefreshToken(webtoken: str) -> dict:
 
 # Takes a ClientID and generates signed JWT for authentication purposes.
 def generateToken(clientID: str) -> str:
-    SECRET = open('.ssh/id_rsa', 'r').read()
+    SECRET = open('creds/id_rsa', 'r').read()
     EXP_TIME = 600
     key = serialization.load_ssh_private_key(SECRET.encode(), password=None)
     payload = {
@@ -126,7 +126,7 @@ def generateToken(clientID: str) -> str:
 
 # Takes a ClientID and generates signed JWT for authentication purposes.
 def generateRefreshToken(clientID: str) -> str:
-    SECRET = open('.ssh/id_rsa', 'r').read()
+    SECRET = open('creds/id_rsa', 'r').read()
     key = serialization.load_ssh_private_key(SECRET.encode(), password=None)
     payload = {
         "iss": "https://api.absent.cc",

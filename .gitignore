@@ -134,6 +134,6 @@ config.ini
 state.yml
 oauth/
 data/
-abSENT/
+.vscode/
 logs/
 creds
