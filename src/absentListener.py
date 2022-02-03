@@ -1,24 +1,29 @@
+import configparser
 import threading, time, yaml
-from dataTypes import structs
+from dataTypes import structs, tools
 from schoology.schoologyListener import *
 from database.database import *
 from datetime import timedelta, datetime, timezone
 
-# Open files.
-with open('secrets.yml') as f:
-    cfg = yaml.safe_load(f)
+
+# Get secrets info from config.ini
+config_path = 'config.ini'
+south_key = tools.read_config(config_path, 'NSHS', 'key')
+south_secret = tools.read_config(config_path, 'NSHS', 'secret')
+north_key = tools.read_config(config_path, 'NNHS', 'key')
+north_secret = tools.read_config(config_path, 'NNHS', 'secret')
 
 # Define API variables.
 SCHOOLOGYCREDS = structs.SchoologyCreds(
     
     {
-    structs.SchoolName.NEWTON_NORTH: cfg['north']['key'],
-    structs.SchoolName.NEWTON_SOUTH: cfg['south']['key'] 
+    structs.SchoolName.NEWTON_NORTH: north_key,
+    structs.SchoolName.NEWTON_SOUTH: south_key, 
     }, 
     
     {
-    structs.SchoolName.NEWTON_NORTH: cfg['north']['secret'],
-    structs.SchoolName.NEWTON_SOUTH: cfg['south']['secret']
+    structs.SchoolName.NEWTON_NORTH: north_secret,
+    structs.SchoolName.NEWTON_SOUTH: south_secret
     }
     
     )
@@ -60,7 +65,7 @@ def listener():
                 schoologySuccessCheck = sc.run()
                 print("CHECK COMPLETE.")
         
-        if (currentTime.hour == resetTime[0] or currentTime.hour == resetTime[0]):
+        if (currentTime.hour == resetTimeOne[0] or currentTime.hour == resetTimeTwo[0]):
             # Reset schoologySuccessCheck to false @ midnight
             # Only change value when it is latched (true)
             if schoologySuccessCheck == True:
