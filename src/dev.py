@@ -93,4 +93,5 @@ if __name__ == '__main__':
         "logger_class": StubbedGunicornLogger
     }
 
+    print("Go to: http://localhost:8000/docs")
     StandaloneApplication(app, options).run()
