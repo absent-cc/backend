@@ -5,7 +5,6 @@ from schoology.schoologyListener import *
 from database.database import *
 from datetime import timedelta, datetime, timezone
 
-
 # Get secrets info from config.ini
 config_path = 'config.ini'
 south_key = tools.read_config(config_path, 'NSHS', 'key')

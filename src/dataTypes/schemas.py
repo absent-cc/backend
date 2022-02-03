@@ -26,6 +26,9 @@ class TeacherCreate(BaseModel):
     last: str = None
     school: structs.SchoolName = None
 
+    def __repr__(self) -> str:
+        return f"{self.first} {self.last}"
+
 class TeacherReturn(TeacherCreate):
     tid: str = None
 
@@ -125,6 +128,9 @@ class AbsenceBase(BaseModel):
 
 class AbsenceCreate(AbsenceBase):
     teacher: TeacherCreate
+
+    def __repr__(self) -> str:
+        return super().__repr__()
 
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn

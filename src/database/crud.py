@@ -88,6 +88,11 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     db.commit()
     return absenceModel
 
+# Peek the top entry in the absences table by date.
+def peekAbsence(db, date: datetime) -> tuple:
+    query = db.query(models.Absence).filter(models.Absence.date == datetime.today().date()).first()
+    return query
+
 def addSession(db, newSession: schemas.SessionCreate) -> models.UserSession:
     if newSession.uid != None: # Checks for required fields    
         sessions = getSessionList(db, schemas.UserReturn(uid=newSession.uid))
