@@ -14,7 +14,7 @@ while True:
         try:
             p = Popen(["python3", subproccesses[process]])
             p.wait()
-        except subprocess.CalledProcessError as error:
+        except BaseException as error:
             print('abSENT - {!r}; restarting process'.format(error))
         else:
             print('abSENT - Exited normally, bad process, restarting')
