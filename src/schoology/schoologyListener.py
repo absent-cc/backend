@@ -55,34 +55,3 @@ class SchoologyListener:
                 print("ADD IN NOTIFY CODE HERE LATER")
         
         return southRun() and northRun()
-
-    # Function for fetching an up to date state file content.
-    def fetchStates(self, date, statePath: str= 'state.ini'):
-        stateDict = {
-            structs.SchoolName.NEWTON_NORTH: False,
-            structs.SchoolName.NEWTON_SOUTH: False
-        }
-        # Read state yaml file.
-
-        state = ConfigParser()
-        state.read(statePath)
-        if state[f"{structs.SchoolName.NEWTON_NORTH}"]['updated'] == date.strftime('%m/%-d/%Y'):
-            stateDict[structs.SchoolName.NEWTON_NORTH] = True
-        if state[f"{structs.SchoolName.NEWTON_SOUTH}"]['updated'] == date.strftime('%m/%-d/%Y'):
-            stateDict[structs.SchoolName.NEWTON_SOUTH] = True
-        return stateDict
-
-    # Function for writing state.
-    def writeState(self, school: structs.SchoolName, date, statePath = 'state.ini'):
-        state = ConfigParser()
-        state.read(statePath)
-        # Read state ini file.            
-        state[str(school)] = date.strftime('%m/%-d/%Y')
-        if school == structs.SchoolName.NEWTON_NORTH:
-            state[str(structs.SchoolName.NEWTON_SOUTH)] = state[str(structs.SchoolName.NEWTON_SOUTH)]
-        else:
-            state[str(structs.SchoolName.NEWTON_NORTH)] = state[str(structs.SchoolName.NEWTON_NORTH)]
-        # Write new state to state file
-        with open('state.yml', 'w') as f:
-            yaml.safe_dump(state, f)
-        return state

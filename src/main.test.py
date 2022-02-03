@@ -24,7 +24,7 @@ if len(sys.argv) > 1:
         id_token = googleAuth()
         write_secrets('Login', 'id_token', id_token)
 
-class TestMain(unittest.TestCase):
+class TestLogin(unittest.TestCase):
     def test_login(self):
         print(id_token)
         response = client.post("v1/login/",
@@ -44,5 +44,6 @@ class TestMain(unittest.TestCase):
         )
         assert response.status_code == 201
  
+    
 if __name__ == "__main__":
     unittest.main()
