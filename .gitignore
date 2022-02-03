@@ -138,3 +138,5 @@ data/
 logs/
 creds
 src/tools/googleTokenGen.py
+abSENT/
+secrets.ini
