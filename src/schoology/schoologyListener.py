@@ -3,6 +3,7 @@ import yaml
 from dataTypes import structs
 from notifications.firebase import *
 from .absences import Absences
+
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
@@ -12,7 +13,6 @@ class SchoologyListener:
 
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
-
         date = datetime.now(timezone.utc) - timedelta(hours=5) # Convert from UTC --> EST
         # Reads from state file to determine whether notifications have been sent today.
         states = self.fetchStates(date)

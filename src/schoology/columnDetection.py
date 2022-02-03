@@ -150,7 +150,7 @@ class ColumnDetection:
             structs.TableColumn.POSITION: (-1, -1),
         }
 
-       for col in range(table.columns - 2):
+        for col in range(table.columns - 2):
             column = []
             for row in table.content:
                 try:

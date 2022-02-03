@@ -17,8 +17,8 @@ def readCSV(school: structs.SchoolName) -> bool:
         csv = c.DictReader(f)
         print(f"{school}_FIRSTS")
         for col in csv:
-            globals()[f"{school}_FIRSTS"].append(col['first'])
-            globals()[f"{school}_LASTS"].append(col['last'])
+            globals()[f"{school}_FIRSTS"].append(col['First'])
+            globals()[f"{school}_LASTS"].append(col['Last'])
     return True
 
 readCSV(structs.SchoolName.NEWTON_NORTH)
