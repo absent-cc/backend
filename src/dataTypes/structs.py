@@ -128,5 +128,14 @@ class RawUpdate(BaseModel):
 # SESSION AND TOKEN OBJECTS
 #
 
+@dataclass
+class ListenerStatus:
+    # Represents if action has already been done or not
+    absences: bool = False 
+    notifications: bool = False
+
+    def __repr__(self) -> str:
+        return f"Statuses: \n\tAbsence: {self.absences}\n\tNotifications: {self.notifications}"
+
 
 

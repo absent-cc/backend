@@ -4,7 +4,7 @@ from dataTypes import structs
 from notifications.firebase import *
 from .absences import Absences
 from configparser import ConfigParser
-
+import database.crud as crud
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
@@ -16,29 +16,47 @@ class SchoologyListener:
     def run(self) -> bool:
         date = datetime.now(timezone.utc) - timedelta(hours=5) # Convert from UTC --> EST
         # Reads from state file to determine whether notifications have been sent today.
-        states = self.fetchStates(date)
         
-        # NNHS Runtime.
-        if states[self.north] == False:
-            self.sc.filterAbsencesNorth(date)
-            #update = self.notifications.run(date, self.north) # Sends notifications, checks sucess.
-            #if update:
-            #    self.writeState(self.north, date) # Update statefile and var.
+        statuses = {
+            # School : Tuple(pull status, notify status)
+            structs.SchoolName.NEWTON_SOUTH: structs.ListenerStatus(), # Default is False, False (Always pull, always notify)
+            structs.SchoolName.NEWTON_NORTH: structs.ListenerStatus()
+        }
 
-        # NSHS Runtime
-        if states[self.south] == False:
-            self.sc.filterAbsencesSouth(date)
-            #update = self.notifications.run(date, self.south) # Sends notifications, check sucess.
+        def southRun() -> bool:
+            # Get the absences
+            absences = self.sc.filterAbsencesSouth(date)
             
-            #if update:
-            #    self.writeState(self.south, date) # Update statefile and var.
+            # Add the absences to the database.
+            for absence in absences:
+                # Check if the absence is already in the database.
+                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                    print("Absence already in database.")
+                    statuses[self.south].absences = True # Update status that action was committed previously.
+                    break
+                
+            if not statuses[self.south].notifications:
+                print("ADD IN NOTIFY CODE HERE LATER")
+
+        def northRun() -> bool:
+            # Get the absences
+            absences = self.sc.filterAbsencesNorth(date)
+
+            # Add the absences to the database.
+            for absence in absences:
+                # Check if the absence is already in the database.
+                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                    print("Absence already in database.")
+                    statuses[self.north].absences = True # Update status that action was committed previously.
+                    break
+                
+            if not statuses[self.north].notifications:
+                print("ADD IN NOTIFY CODE HERE LATER")
         
-        states = self.fetchStates(date)
-        
-        return states[self.north] and states[self.south]
+        return southRun() and northRun()
 
     # Function for fetching an up to date state file content.
-    def fetchStates(self, date, statePath = 'state.ini'):
+    def fetchStates(self, date, statePath: str= 'state.ini'):
         stateDict = {
             structs.SchoolName.NEWTON_NORTH: False,
             structs.SchoolName.NEWTON_SOUTH: False
@@ -54,10 +72,10 @@ class SchoologyListener:
         return stateDict
 
     # Function for writing state.
-    def writeState(self, school: structs.SchoolName, date, statePath = 'state.yml'):
-        # Read state yaml file.
-        with open(statePath, 'r') as f:
-            state = yaml.safe_load(f)
+    def writeState(self, school: structs.SchoolName, date, statePath = 'state.ini'):
+        state = ConfigParser()
+        state.read(statePath)
+        # Read state ini file.            
         state[str(school)] = date.strftime('%m/%-d/%Y')
         if school == structs.SchoolName.NEWTON_NORTH:
             state[str(structs.SchoolName.NEWTON_SOUTH)] = state[str(structs.SchoolName.NEWTON_SOUTH)]
