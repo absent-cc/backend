@@ -57,7 +57,8 @@ class StandaloneApplication(BaseApplication):
     def load(self):
         return self.application
 
-
+def run():
+    
 if __name__ == '__main__':
 
     intercept_handler = InterceptHandler()
