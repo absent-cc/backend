@@ -27,6 +27,7 @@ tags_metadata = [
 
 ]
 
+# Initalize the API
 absent = FastAPI(
     title="abSENT",
     description=description,
@@ -65,5 +66,5 @@ async def custom_swagger_ui_html():
         swagger_css_url="/static/swagger-ui.css",
     )
 
-absent.include_router(v1.router)
+absent.include_router(v1.router) # Include routers for V1 API
 
