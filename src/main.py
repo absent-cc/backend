@@ -9,18 +9,19 @@ subproccesses = {
     "listener": listener_path
 }
 
-def processWrapper(func):
-    def wrapper():
-        while True:
-            try:
-                func()
-            except BaseException as error:
-                print('abSENT - {!r}; restarting process'.format(error))
-            else:
-                print('abSENT - Exited normally, bad process, restarting')
-            print("RESTARTING PROCESS")
-    return wrapper
+# def processWrapper(func):
+#     def wrapper():
+#         while True:
+#             try:
+#                 func()
+#             except subprocess.CalledProcessError as error:
+#                 print('abSENT - {!r}; restarting process'.format(error))
+#             else:
+#                 print('abSENT - Exited normally, bad process, restarting')
+#             print("RESTARTING PROCESS")
+#     return wrapper
 
+# processWrapper(Popen(["python3", subproccesses["listener"]]))
 while True:
     for process in subproccesses:
         print("RESTARTING PROCESS:", process)
