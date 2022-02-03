@@ -60,6 +60,7 @@ class Absences:
 
     # Wrapper to add in absences to the database.
     # Returns success of the action
+    # Meant to avoid the need for ENV variables
     def addAbsence(self, absence) -> bool:
         try:
             crud.addAbsence(self.db, absence)

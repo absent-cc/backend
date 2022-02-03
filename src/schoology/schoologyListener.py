@@ -4,7 +4,6 @@ from dataTypes import structs
 from notifications.firebase import *
 from .absences import Absences
 from configparser import ConfigParser
-import database.crud as crud
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
@@ -15,8 +14,10 @@ class SchoologyListener:
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
         date = datetime.now(timezone.utc) - timedelta(hours=5) # Convert from UTC --> EST
-        # Reads from state file to determine whether notifications have been sent today.
-        
+
+        # These statuses get updated when the listern is run.
+        ## What happens is that each run function sees if the absent teachers have already been added to the database.
+        ## They then update the statuses to reflect that, so in essence the state is now stored as a computed property of the absences table in the database.
         statuses = {
             # School : Tuple(pull status, notify status)
             structs.SchoolName.NEWTON_SOUTH: structs.ListenerStatus(), # Default is False, False (Always pull, always notify)
