@@ -5,7 +5,7 @@ from configparser import ConfigParser
 cfg = ConfigParser()
 cfg.read("config.ini")
 
-SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{cfg['PostgreSQL']['user']}:{cfg['PostgreSQL']['password']}@127.0.0.1/{cfg['PostgreSQL']['name']}"
+SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{cfg['PostgreSQL']['user']}:{cfg['PostgreSQL']['password']}@localhost:5433/{cfg['PostgreSQL']['name']}"
 print(SQLALCHEMY_DATABASE_URL)
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL

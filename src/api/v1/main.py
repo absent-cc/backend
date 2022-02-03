@@ -37,8 +37,8 @@ def authenticate(gToken: schemas.Token, db: Session = Depends(accounts.getDBSess
             user = crud.addUser(db, user)
             # Session is created, both tokens issued. Returned to user in body.
             session = crud.addSession(db, schemas.SessionCreate(uid=user.uid))
-            token = accounts.generateToken(f"{session.sid}.{res.uid}")
-            refresh = accounts.generateRefreshToken(f"{session.sid}.{res.uid}")
+            token = accounts.generateToken(f"{session.sid}.{user.uid}")
+            refresh = accounts.generateRefreshToken(f"{session.sid}.{user.uid}")
             return schemas.SessionCredentials(token=token, refresh=refresh)
             
 # Endpoint used to request new main token using refresh token. Refresh token is expected in authentication header, with Bearer scheme.
