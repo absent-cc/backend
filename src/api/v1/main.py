@@ -35,9 +35,8 @@ def authenticate(gToken: schemas.Token, db: Session = Depends(accounts.getDBSess
             else:
                 user = schemas.UserCreate(gid=int(creds['sub']), first=name[0])
             user = crud.addUser(db, user)
-            id = user.uid 
             # Session is created, both tokens issued. Returned to user in body.
-            session = crud.addSession(db, schemas.SessionCreate(uid=res.uid))
+            session = crud.addSession(db, schemas.SessionCreate(uid=user.uid))
             token = accounts.generateToken(f"{session.sid}.{res.uid}")
             refresh = accounts.generateRefreshToken(f"{session.sid}.{res.uid}")
             return schemas.SessionCredentials(token=token, refresh=refresh)

@@ -3,6 +3,7 @@ import yaml
 from dataTypes import structs
 from notifications.firebase import *
 from .absences import Absences
+from configparser import ConfigParser
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
@@ -37,17 +38,18 @@ class SchoologyListener:
         return states[self.north] and states[self.south]
 
     # Function for fetching an up to date state file content.
-    def fetchStates(self, date, statePath = 'state.yml'):
+    def fetchStates(self, date, statePath = 'state.ini'):
         stateDict = {
             structs.SchoolName.NEWTON_NORTH: False,
             structs.SchoolName.NEWTON_SOUTH: False
         }
         # Read state yaml file.
-        with open(statePath, 'r') as f:
-            state = yaml.safe_load(f)
-        if state[str(structs.SchoolName.NEWTON_NORTH)] == date.strftime('%m/%-d/%Y'):
+
+        state = ConfigParser()
+        state.read(statePath)
+        if state[f"{structs.SchoolName.NEWTON_NORTH}"]['updated'] == date.strftime('%m/%-d/%Y'):
             stateDict[structs.SchoolName.NEWTON_NORTH] = True
-        if state[str(structs.SchoolName.NEWTON_SOUTH)] == date.strftime('%m/%-d/%Y'):
+        if state[f"{structs.SchoolName.NEWTON_SOUTH}"]['updated'] == date.strftime('%m/%-d/%Y'):
             stateDict[structs.SchoolName.NEWTON_SOUTH] = True
         return stateDict
 

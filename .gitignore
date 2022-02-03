@@ -130,9 +130,10 @@ dmypy.json
 
 # Our stuff
 secrets.yml
+config.ini
 state.yml
 oauth/
 data/
-abSENT/
+.vscode/
 logs/
-.ssh/
+creds

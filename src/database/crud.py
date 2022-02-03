@@ -153,15 +153,11 @@ def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> 
     return False
 
 def updateProfile(db, profile: schemas.UserBase, uid: str) -> models.User:
-    q = update(models.User).where(models.User.uid == uid).values(**profile.dict()).\
-        execution_options(synchronize_session="fetch") # This is the update query, just sets the values to those of the profile dict.
-    result = db.execute(q)
+    result = db.execute(update(models.User).where(models.User.uid == uid).values(**profile.dict()).execution_options(synchronize_session="fetch"))
     db.commit()
     return result # Returns new profile.
 
 def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserSession:
-    q = update(models.UserSession).where(models.UserSession.uid == uid, models.UserSession.sid == sid).values(fcm_token = token.token, fcm_timestamp = datetime.now()).\
-        execution_options(synchronize_session="fetch")
-    result = db.execute(q)
+    result = db.execute(update(models.UserSession).where(models.UserSession.uid == uid, models.UserSession.sid == sid).values(fcm_token = token.token, fcm_timestamp = datetime.now()).execution_options(synchronize_session="fetch"))
     db.commit()
     return result

@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP
 from sqlalchemy.orm import relationship
-from database.database import Base
+from database.database import Base # CHANGE THIS TO ..database for ALEMBIC
 
 class User(Base):
     __tablename__ = "users"

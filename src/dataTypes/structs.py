@@ -2,7 +2,6 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import Dict, List
 from pydantic import BaseModel
-from itertools import chain
 
 #
 # SCHOOL ENUMS (BLOCK AND NAME) 
