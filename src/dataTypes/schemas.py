@@ -1,10 +1,10 @@
 from typing import List, Literal, Optional, Tuple, Union
 from uuid import UUID
 from pydantic import BaseModel, validator
-from dataTypes import structs
+from ..dataTypes import structs
 from datetime import datetime
 
-from database.database import Base
+from ..database.database import Base
 
 class UserBase(BaseModel):
     first: str = None
@@ -25,6 +25,9 @@ class TeacherCreate(BaseModel):
     first: str = None
     last: str = None
     school: structs.SchoolName = None
+
+    def __repr__(self) -> str:
+        return f"{self.first} {self.last}"
 
 class TeacherReturn(TeacherCreate):
     tid: str = None
@@ -125,6 +128,9 @@ class AbsenceBase(BaseModel):
 
 class AbsenceCreate(AbsenceBase):
     teacher: TeacherCreate
+
+    def __repr__(self) -> str:
+        return super().__repr__()
 
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn

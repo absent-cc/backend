@@ -1,10 +1,12 @@
-from fastapi import Depends, APIRouter
-from dataTypes import schemas, structs, models
-from sqlalchemy.orm import Session
-from fuzzywuzzy import fuzz
-import api.accounts as accounts
-import database.crud as crud
 import csv as c
+
+from fastapi import APIRouter, Depends
+from fuzzywuzzy import fuzz
+from sqlalchemy.orm import Session
+
+from ....api import accounts
+from ....database import crud
+from ....dataTypes import schemas, structs
 
 NNHS_FIRSTS = []
 NNHS_LASTS = []

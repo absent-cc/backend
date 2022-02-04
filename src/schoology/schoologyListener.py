@@ -4,7 +4,6 @@ from dataTypes import structs
 from notifications.firebase import *
 from .absences import Absences
 from configparser import ConfigParser
-
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
@@ -15,55 +14,44 @@ class SchoologyListener:
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
         date = datetime.now(timezone.utc) - timedelta(hours=5) # Convert from UTC --> EST
-        # Reads from state file to determine whether notifications have been sent today.
-        states = self.fetchStates(date)
-        
-        # NNHS Runtime.
-        if states[self.north] == False:
-            self.sc.filterAbsencesNorth(date)
-            #update = self.notifications.run(date, self.north) # Sends notifications, checks sucess.
-            #if update:
-            #    self.writeState(self.north, date) # Update statefile and var.
 
-        # NSHS Runtime
-        if states[self.south] == False:
-            self.sc.filterAbsencesSouth(date)
-            #update = self.notifications.run(date, self.south) # Sends notifications, check sucess.
-            
-            #if update:
-            #    self.writeState(self.south, date) # Update statefile and var.
-        
-        states = self.fetchStates(date)
-        
-        return states[self.north] and states[self.south]
-
-    # Function for fetching an up to date state file content.
-    def fetchStates(self, date, statePath = 'state.ini'):
-        stateDict = {
-            structs.SchoolName.NEWTON_NORTH: False,
-            structs.SchoolName.NEWTON_SOUTH: False
+        # These statuses get updated when the listern is run.
+        ## What happens is that each run function sees if the absent teachers have already been added to the database.
+        ## They then update the statuses to reflect that, so in essence the state is now stored as a computed property of the absences table in the database.
+        statuses = {
+            # School : Tuple(pull status, notify status)
+            structs.SchoolName.NEWTON_SOUTH: structs.ListenerStatus(), # Default is False, False (Always pull, always notify)
+            structs.SchoolName.NEWTON_NORTH: structs.ListenerStatus()
         }
-        # Read state yaml file.
 
-        state = ConfigParser()
-        state.read(statePath)
-        if state[f"{structs.SchoolName.NEWTON_NORTH}"]['updated'] == date.strftime('%m/%-d/%Y'):
-            stateDict[structs.SchoolName.NEWTON_NORTH] = True
-        if state[f"{structs.SchoolName.NEWTON_SOUTH}"]['updated'] == date.strftime('%m/%-d/%Y'):
-            stateDict[structs.SchoolName.NEWTON_SOUTH] = True
-        return stateDict
+        def southRun() -> bool:
+            # Get the absences
+            absences = self.sc.filterAbsencesSouth(date)
+            
+            # Add the absences to the database.
+            for absence in absences:
+                # Check if the absence is already in the database.
+                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                    print("Absence already in database.")
+                    statuses[self.south].absences = True # Update status that action was committed previously.
+                    break
+                
+            if not statuses[self.south].notifications:
+                print("ADD IN NOTIFY CODE HERE LATER")
 
-    # Function for writing state.
-    def writeState(self, school: structs.SchoolName, date, statePath = 'state.yml'):
-        # Read state yaml file.
-        with open(statePath, 'r') as f:
-            state = yaml.safe_load(f)
-        state[str(school)] = date.strftime('%m/%-d/%Y')
-        if school == structs.SchoolName.NEWTON_NORTH:
-            state[str(structs.SchoolName.NEWTON_SOUTH)] = state[str(structs.SchoolName.NEWTON_SOUTH)]
-        else:
-            state[str(structs.SchoolName.NEWTON_NORTH)] = state[str(structs.SchoolName.NEWTON_NORTH)]
-        # Write new state to state file
-        with open('state.yml', 'w') as f:
-            yaml.safe_dump(state, f)
-        return state
+        def northRun() -> bool:
+            # Get the absences
+            absences = self.sc.filterAbsencesNorth(date)
+
+            # Add the absences to the database.
+            for absence in absences:
+                # Check if the absence is already in the database.
+                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                    print("Absence already in database.")
+                    statuses[self.north].absences = True # Update status that action was committed previously.
+                    break
+                
+            if not statuses[self.north].notifications:
+                print("ADD IN NOTIFY CODE HERE LATER")
+        
+        return southRun() and northRun()

@@ -1,11 +1,11 @@
 from fastapi import Depends, APIRouter
-from api.v1.routers import teachers, users
-from dataTypes import structs, schemas, models
+from .routers import teachers, users
+from ...dataTypes import structs, models, schemas
 from sqlalchemy.orm import Session
 from fuzzywuzzy import fuzz
-import database.crud as crud
-import api.utils as utils
-import api.accounts as accounts
+from ...database import crud
+from ...api import utils
+from ...api import accounts
 
 
 router = APIRouter(prefix="/v1")
@@ -37,8 +37,8 @@ def authenticate(gToken: schemas.Token, db: Session = Depends(accounts.getDBSess
             user = crud.addUser(db, user)
             # Session is created, both tokens issued. Returned to user in body.
             session = crud.addSession(db, schemas.SessionCreate(uid=user.uid))
-            token = accounts.generateToken(f"{session.sid}.{res.uid}")
-            refresh = accounts.generateRefreshToken(f"{session.sid}.{res.uid}")
+            token = accounts.generateToken(f"{session.sid}.{user.uid}")
+            refresh = accounts.generateRefreshToken(f"{session.sid}.{user.uid}")
             return schemas.SessionCredentials(token=token, refresh=refresh)
             
 # Endpoint used to request new main token using refresh token. Refresh token is expected in authentication header, with Bearer scheme.

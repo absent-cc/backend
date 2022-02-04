@@ -6,7 +6,7 @@ from loguru import logger
 from uuid import uuid4
 from sqlalchemy import update
 
-from dataTypes import schemas, models, structs
+from ..dataTypes import schemas, models, structs
 
 def getUser(db, user: schemas.UserReturn) -> models.User:
     if user.uid != None:
@@ -87,6 +87,11 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     db.add(absenceModel)
     db.commit()
     return absenceModel
+
+# Peek the top entry in the absences table by date.
+def peekAbsence(db, date: datetime) -> tuple:
+    query = db.query(models.Absence).filter(models.Absence.date == datetime.today().date()).first()
+    return query
 
 def addSession(db, newSession: schemas.SessionCreate) -> models.UserSession:
     if newSession.uid != None: # Checks for required fields    

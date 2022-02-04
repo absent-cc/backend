@@ -137,3 +137,7 @@ data/
 .vscode/
 logs/
 creds
+src/tools/googleTokenGen.py
+abSENT/
+secrets.ini
+testing_config.ini

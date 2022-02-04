@@ -1,5 +1,7 @@
 from datetime import datetime
 from typing import List
+
+from sqlalchemy import true
 from dataTypes import structs, schemas, models
 import schoolopy
 from .columnDetection import ColumnDetection
@@ -46,9 +48,6 @@ class Absences:
         self.date = date
         table = self.getCurrentTable(structs.SchoolName.NEWTON_NORTH)  
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_NORTH)
-        print(absences)
-        for absence in absences:
-            crud.addAbsence(self.db, absence)
         return absences
 
     # Same as the above, but the parsing is handled slightly differently due to the South absence table being differenct in formatting.
@@ -57,9 +56,18 @@ class Absences:
         table = self.getCurrentTable(structs.SchoolName.NEWTON_SOUTH)    
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_SOUTH)
         print(absences)
-        for absence in absences:
-            crud.addAbsence(self.db, absence)
         return absences
+
+    # Wrapper to add in absences to the database.
+    # Returns success of the action
+    # Meant to avoid the need for ENV variables
+    def addAbsence(self, absence) -> bool:
+        try:
+            crud.addAbsence(self.db, absence)
+            return True
+        except:
+            print("Absences already exists")
+            return False
 
 class ContentParser:
     def __init__(self, date):

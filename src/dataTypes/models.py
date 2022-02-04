@@ -1,7 +1,10 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP
 from sqlalchemy.orm import relationship
-from database.database import Base # CHANGE THIS TO ..database for ALEMBIC
 
+if "alembic.env" in __name__:
+    from ..database.database import Base # CHANGE THIS TO ..database for ALEMBIC
+else:
+    from ..database.database import Base # CHANGE THIS TO ..database for ALEMBIC
 class User(Base):
     __tablename__ = "users"
     uid = Column(String(36), primary_key=True)
