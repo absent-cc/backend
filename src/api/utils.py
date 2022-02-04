@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from dataTypes import structs
+from ..dataTypes import structs
 
 def raiseError(code, error, type: structs.ErrorType):
     raise HTTPException(

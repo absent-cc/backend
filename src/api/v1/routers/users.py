@@ -1,10 +1,10 @@
 from fastapi import Depends, APIRouter
-from dataTypes import structs, schemas
+from ....dataTypes import structs, schemas
 from loguru import logger
 from sqlalchemy.orm import Session
-import database.crud as crud
-import api.utils as utils
-import api.accounts as accounts
+from ....database import crud
+from ....api import utils
+from ....api import accounts
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

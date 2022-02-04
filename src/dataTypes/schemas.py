@@ -1,10 +1,10 @@
 from typing import List, Literal, Optional, Tuple, Union
 from uuid import UUID
 from pydantic import BaseModel, validator
-from dataTypes import structs
+from ..dataTypes import structs
 from datetime import datetime
 
-from database.database import Base
+from ..database.database import Base
 
 class UserBase(BaseModel):
     first: str = None
