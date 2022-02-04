@@ -27,7 +27,7 @@ Frontend design by [Leah Vashevko](https://github.com/theaquarium)
 ## Disclaimer:
 abSENT as a project is not affiliated with any of the entities whose students it serves. We are students and have written this project just for fun, as a minor QOL improvement in the morning.
 
-# Get Started
+# 🛠️ Get Started
 ## Requirements
 - [Schoology](https://www.schoology.com/) API creds
 - [PostgreSQL] 12+ installaton
@@ -36,8 +36,8 @@ abSENT as a project is not affiliated with any of the entities whose students it
 
 ## Config Files
 abSENT consists of 2 config files:
-- [```config.ini```]()
-- [```testing_config.ini```]()
+- [```config.ini```](
+- [```testing_config.ini```](
 
 We've included templates for both of these files. Fill them in with the appropriate values.
 ## Database Setup
@@ -49,7 +49,7 @@ We've included templates for both of these files. Fill them in with the appropri
     - Run ```alembic upgrade head```
 - The database should now be setup now!
 
-[^1]: You can call the database anything, but make sure to change the name in [```settings.py```](
+[^1]: You can call the database anything, but make sure to change the name in [```config.ini```](
 
 Notes: 
 - By default, abSENT uses a postgres DB caled absent, running on port 5432. If you encounter issues, try changing the server address and port in [```src/database/database.py```]()
