@@ -6,7 +6,7 @@ from loguru import logger
 from uuid import uuid4
 from sqlalchemy import update
 
-from dataTypes import schemas, models, structs
+from ..dataTypes import schemas, models, structs
 
 def getUser(db, user: schemas.UserReturn) -> models.User:
     if user.uid != None:

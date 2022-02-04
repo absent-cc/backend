@@ -1,16 +1,16 @@
 import jwt
 import time
-import api.utils as utils
-import database.crud as crud
-from dataTypes import schemas
-from dataTypes import structs
+from ..api.utils import *
+from ..database.crud import *
+# from ..dataTypes.structs import *
+# from dataTypes.structs import schemas
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from cryptography.hazmat.primitives import serialization
 from fastapi import Depends
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from loguru import logger
-from database.database import SessionLocal
+from ..database.database import SessionLocal
 
 def getDBSession():
     # Dependency

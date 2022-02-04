@@ -2,7 +2,7 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
-from api.v1 import main as v1
+from .v1 import main as v1
 
 # All this fucking shit for the docs because I am legitimately this vain.
 
@@ -27,44 +27,49 @@ tags_metadata = [
 
 ]
 
-# Initalize the API
-absent = FastAPI(
-    title="abSENT",
-    description=description,
-    version="1.0.0",
-    terms_of_service="https://absent.cc/terms",
-    docs_url=None, 
-    redoc_url=None,
-    contact={
-        "name": "abSENT",
-        "url": "https://absent.cc",
-        "email": "hello@absent.cc",
-    },
-    license_info={
-        "name": "GNU Affero General Public License v3.0",
-        "url": "https://www.gnu.org/licenses/agpl-3.0.html",
-    },
-    openapi_tags=tags_metadata
-)
-
-@absent.middleware("http")
-async def addProcessTime(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-    return response
-
-absent.mount("/static", StaticFiles(directory="static"), name="static")
-
-@absent.get("/docs", include_in_schema=False)
-async def custom_swagger_ui_html():
-    return get_swagger_ui_html(
-        openapi_url=absent.openapi_url,
-        title=absent.title + " - Documentation",
-        swagger_js_url="/static/swagger-ui-bundle.js",
-        swagger_css_url="/static/swagger-ui.css",
+def init_app():
+    # Initalize the API
+    absent = FastAPI(
+        title="abSENT",
+        description=description,
+        version="1.0.0",
+        terms_of_service="https://absent.cc/terms",
+        docs_url=None, 
+        redoc_url=None,
+        contact={
+            "name": "abSENT",
+            "url": "https://absent.cc",
+            "email": "hello@absent.cc",
+        },
+        license_info={
+            "name": "GNU Affero General Public License v3.0",
+            "url": "https://www.gnu.org/licenses/agpl-3.0.html",
+        },
+        openapi_tags=tags_metadata
     )
 
-absent.include_router(v1.router) # Include routers for V1 API
+    @absent.middleware("http")
+    async def addProcessTime(request: Request, call_next):
+        start_time = time.time()
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        response.headers["X-Process-Time"] = str(process_time)
+        return response
+
+    absent.mount("/static", StaticFiles(directory="static"), name="static")
+
+    @absent.get("/docs", include_in_schema=False)
+    async def custom_swagger_ui_html():
+        return get_swagger_ui_html(
+            openapi_url=absent.openapi_url,
+            title=absent.title + " - Documentation",
+            swagger_js_url="/static/swagger-ui-bundle.js",
+            swagger_css_url="/static/swagger-ui.css",
+        )
+
+    absent.include_router(v1.router) # Include routers for V1 API
+
+    return absent
+if __name__ == "__main__":
+    init_app()
 
