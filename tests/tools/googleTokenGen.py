@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 
-SECRETS_PATH = "tests/tools/secrets.ini"
+SECRETS_PATH = "tests/tools/testing_secrets.ini"
 
 configuer = ConfigParser()
 secrets = configuer.read(SECRETS_PATH)

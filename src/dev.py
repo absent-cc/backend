@@ -1,3 +1,6 @@
+# Run 'python -m src.dev' to run this script
+# Must be run from root folder!
+
 import os
 import logging
 import sys
