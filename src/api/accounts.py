@@ -1,6 +1,6 @@
 import jwt
 import time
-from ..api.utils import *
+from ..api import utils
 from ..database.crud import *
 # from ..dataTypes.structs import *
 # from dataTypes.structs import schemas
