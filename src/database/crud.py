@@ -35,6 +35,9 @@ def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
         return db.query(models.UserSession).filter(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).first() # Returns session information.
     return None
 
+def getAllUsers(db) -> List[models.User]:
+    return db.query(models.User).all()
+
 def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
     if user.uid != None:
         sessions = db.query(models.UserSession).filter(models.UserSession.uid == user.uid).all()
