@@ -1,6 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import List
 from pydantic import BaseModel
 
 #
