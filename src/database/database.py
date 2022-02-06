@@ -2,8 +2,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from configparser import ConfigParser
 
-cfg = ConfigParser()
-cfg.read("config.ini")
+from os.path import exists
+
+if exists("config.ini"):
+    cfg = ConfigParser()
+    cfg.read("config.ini")
+else:
+    cfg = ConfigParser()
+    cfg.read("config.ini.default")
 
 SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{cfg['PostgreSQL']['user']}:{cfg['PostgreSQL']['password']}@127.0.0.1:5432/{cfg['PostgreSQL']['name']}"
 print(SQLALCHEMY_DATABASE_URL)
