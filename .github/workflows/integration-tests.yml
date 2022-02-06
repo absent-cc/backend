@@ -4,6 +4,8 @@
 name: Integration Tests
 
 on:
+  discussion:
+    types: [opened, edited, answered]
   push:
     branches: [ main ]
   pull_request:
