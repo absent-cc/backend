@@ -21,8 +21,7 @@ Refreshing Schoology 20 times every morning is somewhat draining.
 ## Contributors
 - [Kevin Yang](https://github.com/bykevinyang)
 - [Roshan Karim](https://github.com/karimroshan)
-
-Frontend design by [Leah Vashevko](https://github.com/theaquarium)
+- [Leah Vashevko](https://github.com/theaquarium)
 
 ## Disclaimer:
 abSENT as a project is not affiliated with any of the entities whose students it serves. We are students and have written this project just for fun, as a minor QOL improvement in the morning.
