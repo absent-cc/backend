@@ -38,6 +38,9 @@ def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
 def getAllUsers(db) -> List[models.User]:
     return db.query(models.User).all()
 
+def getUserCount(db) -> int:
+    return len(getAllUsers(db))
+
 def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
     if user.uid != None:
         sessions = db.query(models.UserSession).filter(models.UserSession.uid == user.uid).all()
@@ -95,6 +98,12 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
 def peekAbsence(db, date: datetime) -> tuple:
     query = db.query(models.Absence).filter(models.Absence.date == datetime.today().date()).first()
     return query
+
+def getAllAbsences(db) -> List[models.Absence]:
+    return db.query(models.Absence).all()
+
+def getAbsencesCount(db) -> int:
+    return len(getAllAbsences(db))
 
 def addSession(db, newSession: schemas.SessionCreate) -> models.UserSession:
     if newSession.uid != None: # Checks for required fields    

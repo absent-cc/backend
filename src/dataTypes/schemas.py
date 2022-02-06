@@ -163,3 +163,7 @@ class AutoComplete(BaseModel):
 
 class Valid(BaseModel):
     value: bool
+
+class Analytics(BaseModel):
+    userCount: int
+    totalAbsences: int
