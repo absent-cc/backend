@@ -1,7 +1,7 @@
 from datetime import datetime
 import time
 import secrets
-from typing import List
+from typing import List, Tuple
 from loguru import logger
 from uuid import uuid4
 from sqlalchemy import update
@@ -178,3 +178,21 @@ def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserS
     result = db.execute(update(models.UserSession).where(models.UserSession.uid == uid, models.UserSession.sid == sid).values(fcm_token = token.token, fcm_timestamp = datetime.now()).execution_options(synchronize_session="fetch"))
     db.commit()
     return result
+
+# Function to check if a user has been onboarded successfully.
+# Defintion of onboarded: A user has onboarded successfully when they exist in the user table, as well as have at least one class in the class table.
+# Otherwise, they have not onboarded.
+# Returns: Tuple[bool, bool] = (exists in users, exists in classes)
+def checkOnboarded(db, gid: str) -> Tuple[bool, bool]:
+    resUser = getUser(db, schemas.UserReturn(gid=gid))
+    
+    # If user is not in the table, they could not have possibly been onboarded.
+    if resUser == None: return (False, False)
+    
+    # If user is in the table, check if they have any classes.
+    resClasses = getClassesByUser(db, resUser)
+    
+    if resClasses == None: # Lack of classes means they have not been onboarded fully
+        return (True, False)
+    else:
+        return (True, True) # If they have classes, they have been onboarded!

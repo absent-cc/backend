@@ -121,6 +121,7 @@ class UserInfo(BaseModel):
 class SessionCredentials(BaseModel):
     token: Optional[str] = None
     refresh: Optional[str] = None
+    onboarded: Optional[bool] = None
 
 class AbsenceBase(BaseModel):
     length: Optional[str] = None

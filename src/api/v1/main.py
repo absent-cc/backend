@@ -21,26 +21,35 @@ async def serviceInfo():
 def authenticate(gToken: schemas.Token, db: Session = Depends(accounts.getDBSession)): # GToken is expected in request body.
     creds = accounts.validateGoogleToken(gToken) # Accounts code is used to validate the Google JWT, returns all the data from it.
     if creds != None:
-        res = crud.getUser(db, schemas.UserReturn(gid=creds['sub'])) # SUB = GID, this is used as our external identifier. This code checks if the user is in the DB.
-        if res != None: 
+        onboardStatus = crud.checkOnboarded(db, gid=creds["sub"]) # Check if the user has been onboarded.
+        if onboardStatus[0] == True: 
+            # User is in our table
+            # Return  return the session credentials and if they have been completly onboarded.
+            res = crud.getUser(db, schemas.UserReturn(gid=creds["sub"]))
             # Session is created, both tokens issued. Returned to user in body.
             session = crud.addSession(db, schemas.SessionCreate(uid=res.uid))
             token = accounts.generateToken(f"{session.sid}.{res.uid}")
             refresh = accounts.generateRefreshToken(f"{session.sid}.{res.uid}") 
-            return schemas.SessionCredentials(token=token, refresh=refresh)
-        else: 
+            return schemas.SessionCredentials(token=token, refresh=refresh, onboarded=onboardStatus[1])
+            
+            # Remember that onboardStatus[1] is the status of whether or not they have any classes in our system. Read the checkOnboarded function for more info (database/crud.py)
+        else:
+            # User is not in table
+            # Return session credentials and if they have been completly onboarded.
             # Account is created with the information we have from Google.
             name = creds['name'].split(' ', 1)
             if len(name) == 2:
                 user = schemas.UserCreate(gid=int(creds['sub']), first=name[0], last=name[1])
             else:
                 user = schemas.UserCreate(gid=int(creds['sub']), first=name[0])
+            
             user = crud.addUser(db, user)
             # Session is created, both tokens issued. Returned to user in body.
             session = crud.addSession(db, schemas.SessionCreate(uid=user.uid))
             token = accounts.generateToken(f"{session.sid}.{user.uid}")
             refresh = accounts.generateRefreshToken(f"{session.sid}.{user.uid}")
-            return schemas.SessionCredentials(token=token, refresh=refresh)
+            return schemas.SessionCredentials(token=token, refresh=refresh, onboarded=False)
+            # User could not have been onboarded if they were not even in our user table.
             
 # Endpoint used to request new main token using refresh token. Refresh token is expected in authentication header, with Bearer scheme.
 @router.post("/refresh/", status_code=201, response_model=schemas.SessionCredentials, tags=["Main"])
