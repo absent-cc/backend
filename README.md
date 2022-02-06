@@ -1,7 +1,7 @@
 # abSENT - Notifications for NPS students. 
 Push notifications for NPS students, informing them of absent teachers. The solution to the absent list problem.
 
-![abSENT Github Banner](https://github.com/absent-cc/branding/blob/main/banner.png)
+![abSENT Github Banner](https://github.com/absent-cc/branding/blob/main/assets/banner.png)
 
 ## What is it?
 An SMS schoology bot that notifies NPS students when their teachers are absent. Supports both Newton high schools, [Newton South](https://www.newton.k12.ma.us/nshs) & [Newton North](https://www.newton.k12.ma.us/nnhs).
