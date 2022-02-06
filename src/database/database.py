@@ -9,7 +9,7 @@ if exists("config.ini"):
     cfg.read("config.ini")
 else:
     cfg = ConfigParser()
-    cfg.read("config.ini.default")
+    cfg.read("config.default.ini")
 
 SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{cfg['PostgreSQL']['user']}:{cfg['PostgreSQL']['password']}@127.0.0.1:5432/{cfg['PostgreSQL']['name']}"
 print(SQLALCHEMY_DATABASE_URL)
