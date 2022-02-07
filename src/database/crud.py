@@ -192,7 +192,8 @@ def checkOnboarded(db, gid: str) -> Tuple[bool, bool]:
     # If user is in the table, check if they have any classes.
     resClasses = getClassesByUser(db, resUser)
     
-    if resClasses == None: # Lack of classes means they have not been onboarded fully
+    if len(resClasses) == 0: # Lack of classes means they have not been onboarded fully
         return (True, False)
     else:
+        print(f"User has: {resClasses}")
         return (True, True) # If they have classes, they have been onboarded!

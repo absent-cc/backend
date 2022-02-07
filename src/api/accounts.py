@@ -1,7 +1,7 @@
 import jwt
 import time
 from ..api import utils
-from ..database import crud as crud
+from ..database import crud
 from ..dataTypes import schemas, structs
 from google.auth.transport import requests
 from google.oauth2 import id_token
