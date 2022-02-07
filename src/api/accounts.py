@@ -1,9 +1,8 @@
 import jwt
 import time
 from ..api import utils
-from ..database.crud import *
-# from ..dataTypes.structs import *
-# from dataTypes.structs import schemas
+from ..database import crud as crud
+from ..dataTypes import schemas, structs
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from cryptography.hazmat.primitives import serialization
