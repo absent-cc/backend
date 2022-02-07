@@ -8,7 +8,7 @@ from src.api import main as api
 
 from fastapi.testclient import TestClient
 
-from ..tools.googleTokenGen import googleAuth, read_secrets, write_secrets
+from ...tools.googleTokenGen import googleAuth, read_secrets, write_secrets
 
 # from api.v1.main import refresh
 app = api.init_app()

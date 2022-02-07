@@ -73,7 +73,7 @@ class AddUsers(unittest.TestCase):
             self.assertEqual(db_user.gid, user.gid)
 
 class GetUsers(unittest.TestCase):
-    def __init__(self, methodName: str = ...) -> None:
+    def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self.db = SessionLocal()
     
