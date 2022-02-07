@@ -142,3 +142,5 @@ abSENT/
 secrets.ini
 testing_config.ini
 alembic/versions/*
+
+!.gitkeep
