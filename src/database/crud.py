@@ -179,6 +179,14 @@ def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserS
     db.commit()
     return result
 
+def reset(db):
+    db.query(models.User).delete()
+    db.query(models.Teacher).delete()
+    db.query(models.Class).delete()
+    db.query(models.Absence).delete()
+    db.query(models.UserSession).delete()
+    db.commit()
+
 # Function to check if a user has been onboarded successfully.
 # Defintion of onboarded: A user has onboarded successfully when they exist in the user table, as well as have at least one class in the class table.
 # Otherwise, they have not onboarded.

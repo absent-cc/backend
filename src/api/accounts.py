@@ -31,7 +31,6 @@ def verifyCredentials(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer()
         return session
     logger.info(f"Credential check failed: {sub}")
     utils.raiseError(401, "Invalid credentials", structs.ErrorType.AUTH)
-    return None
 
 def verifyRefreshToken(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())) -> str:
     cid = validateRefreshToken(creds.credentials)
