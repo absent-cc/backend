@@ -70,7 +70,7 @@ def validateRefreshToken(jwt: str) -> str:
         return None
 
 # Building block for our token check.
-def decodeToken(webtoken: str) -> dict:
+def decodeToken(webtoken: str) -> dict: 
     SECRET = open('creds/id_rsa.pub', 'r').read()
     key = serialization.load_ssh_public_key(SECRET.encode())
     try:
