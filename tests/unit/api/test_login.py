@@ -28,6 +28,7 @@ if len(sys.argv) > 1:
         id_token = googleAuth()
         write_secrets('Login', 'id_token', id_token)
 
+@unittest.skip("Only test when you want to use test login")
 class TestLogin(unittest.TestCase):
     def test_login(self):
         response = client.post("v1/login/",

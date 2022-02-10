@@ -14,3 +14,9 @@ def getAnalytics(
     userCount = crud.getUserCount(db)
     absences = crud.getAbsencesCount(db)
     return schemas.Analytics(userCount=userCount, totalAbsences=absences)
+
+@router.post("/canceled", response_model=schemas.Analytics)
+def updatedCanceledCount(
+    db: Session = Depends(accounts.getDBSession)
+):
+    return crud.getUserAnalytics(db)
