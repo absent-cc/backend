@@ -19,6 +19,11 @@ def getDBSession():
     finally:
         db.close()
 
+with open('creds/id_rsa.pub', 'r') as f:
+    PUB_KEY = f.read()
+with open('creds/id_rsa', 'r') as f:
+    PRIV_KEY = f.read()
+
 # Depends for checking credentials on each request.
 def verifyCredentials(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer()), db = Depends(getDBSession)) -> schemas.SessionReturn:
     creds = decodeToken(creds.credentials)
@@ -31,7 +36,6 @@ def verifyCredentials(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer()
         return session
     logger.info(f"Credential check failed: {sub}")
     utils.raiseError(401, "Invalid credentials", structs.ErrorType.AUTH)
-    return None
 
 def verifyRefreshToken(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer())) -> str:
     cid = validateRefreshToken(creds.credentials)
@@ -72,8 +76,7 @@ def validateRefreshToken(jwt: str) -> str:
 
 # Building block for our token check.
 def decodeToken(webtoken: str) -> dict:
-    SECRET = open('creds/id_rsa.pub', 'r').read()
-    key = serialization.load_ssh_public_key(SECRET.encode())
+    key = serialization.load_ssh_public_key(PUB_KEY.encode())
     try:
         decoded = jwt.decode(
             webtoken,
@@ -87,8 +90,7 @@ def decodeToken(webtoken: str) -> dict:
 
 # Building block for our token check.
 def decodeRefreshToken(webtoken: str) -> dict:
-    SECRET = open('creds/id_rsa.pub', 'r').read()
-    key = serialization.load_ssh_public_key(SECRET.encode())
+    key = serialization.load_ssh_public_key(PUB_KEY.encode())
     try:
         decoded = jwt.decode(
             webtoken,
@@ -106,9 +108,8 @@ def decodeRefreshToken(webtoken: str) -> dict:
 
 # Takes a ClientID and generates signed JWT for authentication purposes.
 def generateToken(clientID: str) -> str:
-    SECRET = open('creds/id_rsa', 'r').read()
     EXP_TIME = 600
-    key = serialization.load_ssh_private_key(SECRET.encode(), password=None)
+    key = serialization.load_ssh_private_key(PRIV_KEY.encode(), password=None)
     payload = {
         "iss": "https://api.absent.cc",
         "sub": clientID,
@@ -125,8 +126,7 @@ def generateToken(clientID: str) -> str:
 
 # Takes a ClientID and generates signed JWT for authentication purposes.
 def generateRefreshToken(clientID: str) -> str:
-    SECRET = open('creds/id_rsa', 'r').read()
-    key = serialization.load_ssh_private_key(SECRET.encode(), password=None)
+    key = serialization.load_ssh_private_key(PRIV_KEY.encode(), password=None)
     payload = {
         "iss": "https://api.absent.cc",
         "sub": str(clientID),

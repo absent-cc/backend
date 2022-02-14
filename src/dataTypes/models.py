@@ -53,3 +53,13 @@ class Absence(Base):
     date = Column(TIMESTAMP, primary_key=True)
 
     teacher = relationship("Teacher")
+
+class CanceledClass(Base):
+    __tablename__ = "canceled_classes"
+    tid = Column(String(8), ForeignKey(Teacher.tid, ondelete='CASCADE'), primary_key=True)
+    block = Column(String(8), primary_key=True)
+    date = Column(TIMESTAMP, primary_key=True)
+    uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'), primary_key=True)
+
+    teacher = relationship("Teacher")
+    user = relationship("User")

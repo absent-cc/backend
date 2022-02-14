@@ -84,15 +84,46 @@ def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
         return teacherModel
     return None
 
+# def addAbsence(db, absence: schemas.AbsenceCreate, date: datetime = datetime.today().date()) -> models.Absence:
 def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     if absence.teacher.first != None and absence.teacher.last != None and absence.teacher.school != None:
         teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
     if teacher == None:
         teacher = addTeacher(db, absence.teacher)
-    absenceModel = models.Absence(date=datetime.today().date(), tid=teacher.tid, note=absence.note)
+    absenceModel = models.Absence(date=absence.date, tid=teacher.tid, note=absence.note)
     db.add(absenceModel)
     db.commit()
     return absenceModel
+
+def addCanceledClass(db, canceledClass: schemas.CanceledClassCreate) -> bool:
+    if canceledClass.tid == None:
+        teacher = getTeacher(db, schemas.TeacherReturn(**canceledClass.teacher.dict()))
+    else:
+        teacher = getTeacher(db, schemas.TeacherReturn(tid=canceledClass.tid))
+
+    if teacher == None: # Verify if teacher exists.
+        print("Add canceled class: Teacher does not exist.")
+        return False
+    
+    if canceledClass.uid == None: 
+        user = getUser(db, schemas.UserReturn(**canceledClass.user.dict()))
+    else:
+        user = getUser(db, schemas.UserReturn(uid=canceledClass.uid))
+    
+    if user == None: # Verify if user exists.
+        print("User does not exist")
+        return False
+    
+    canceledClassModel = models.CanceledClass(
+                            tid=teacher.tid,
+                            date=canceledClass.date, 
+                            block=canceledClass.block,
+                            uid=user.uid
+                    )
+    
+    db.add(canceledClassModel)
+    db.commit()
+    return True
 
 # Peek the top entry in the absences table by date.
 def peekAbsence(db, date: datetime) -> tuple:
@@ -178,6 +209,14 @@ def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserS
     result = db.execute(update(models.UserSession).where(models.UserSession.uid == uid, models.UserSession.sid == sid).values(fcm_token = token.token, fcm_timestamp = datetime.now()).execution_options(synchronize_session="fetch"))
     db.commit()
     return result
+
+def reset(db):
+    db.query(models.User).delete()
+    db.query(models.Teacher).delete()
+    db.query(models.Class).delete()
+    db.query(models.Absence).delete()
+    db.query(models.UserSession).delete()
+    db.commit()
 
 # Function to check if a user has been onboarded successfully.
 # Defintion of onboarded: A user has onboarded successfully when they exist in the user table, as well as have at least one class in the class table.

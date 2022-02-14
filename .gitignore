@@ -144,3 +144,5 @@ testing_config.ini
 alembic/versions/*
 
 !.gitkeep
+!NNHS_teachers.csv
+!NSHS_teachers.csv

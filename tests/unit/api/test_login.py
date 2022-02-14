@@ -8,7 +8,7 @@ from src.api import main as api
 
 from fastapi.testclient import TestClient
 
-from ..tools.googleTokenGen import googleAuth, read_secrets, write_secrets
+from ...tools.googleTokenGen import googleAuth, read_secrets, write_secrets
 
 # from api.v1.main import refresh
 app = api.init_app()
@@ -28,6 +28,7 @@ if len(sys.argv) > 1:
         id_token = googleAuth()
         write_secrets('Login', 'id_token', id_token)
 
+@unittest.skip("Only test when you want to use test login")
 class TestLogin(unittest.TestCase):
     def test_login(self):
         response = client.post("v1/login/",
