@@ -67,6 +67,9 @@ class Class(BaseModel):
     class Config:
         orm_mode = True
 
+    def __repr__(self) -> str:
+        return f"tid: {self.tid} Block: {self.block} uid: {self.uid}"
+    
     # @staticmethod
     # def listFromSchedule(schedule: Schedule, uid: str):
     #     clsList = []
@@ -74,7 +77,6 @@ class Class(BaseModel):
     #         for _ in block[1]:
     #             clsList.append(Class(block=ReverseBlockMapper()[block[0]], uid=uid))
     #     return clsList
-
 
 class TeacherFull(TeacherReturn):
     schedule: List[Class] = []
@@ -137,7 +139,13 @@ class AbsenceCreate(AbsenceBase):
 
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
-    date: datetime
+    date: date
+
+class CanceledClassCreate(Class):
+    date: date
+
+    def __repr__(self) -> str:
+        return super().__repr__()
 
 class PartialName(BaseModel):
     name: str 

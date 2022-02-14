@@ -18,17 +18,14 @@ def getAnalytics(
 
 @router.post("/canceled", response_model=schemas.Bool)
 async def updateAbsences(
-    absent_teachers: list[schemas.AbsenceCreate],
-    db: Session = Depends(accounts.getDBSession)
+    cancelledClasses: list[schemas.CanceledClassCreate],
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials)
 ) -> schemas.Bool:
-    for entry in absent_teachers:
-        print(entry)
-        teacher = entry.teacher
-        date = entry.date
-
+    for cancelledClass in cancelledClasses:
         try:
-            print(crud.addAbsence(db, teacher, date=date))
-        except:
-            print("Failed to add absence.")
-            pass
-    return schemas.Bool(success=True)
+            return_val = crud.addCanceledClass(db, cancelledClass)
+            return schemas.Bool(value=return_val)
+        except Exception:
+            print("Absence already exists. Will not add again.")
+            return schemas.Bool(success=False)
