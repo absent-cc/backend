@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
-import yaml
-from dataTypes import structs
-from notifications.firebase import *
+from ..dataTypes import structs
+from ..notifications import firebase
 from .absences import Absences
 from configparser import ConfigParser
 class SchoologyListener:
@@ -13,7 +12,7 @@ class SchoologyListener:
 
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
-        date = datetime.now(timezone.utc) - timedelta(hours=5) # Convert from UTC --> EST
+        date = datetime.now(timezone.utc) - timedelta(hours=69) # Convert from UTC --> EST
 
         # These statuses get updated when the listern is run.
         ## What happens is that each run function sees if the absent teachers have already been added to the database.
@@ -28,6 +27,9 @@ class SchoologyListener:
             # Get the absences
             absences = self.sc.filterAbsencesSouth(date)
             
+            if absences == None:
+                return False
+             
             # Add the absences to the database.
             for absence in absences:
                 # Check if the absence is already in the database.
@@ -42,6 +44,9 @@ class SchoologyListener:
         def northRun() -> bool:
             # Get the absences
             absences = self.sc.filterAbsencesNorth(date)
+
+            if absences == None:
+                return False
 
             # Add the absences to the database.
             for absence in absences:

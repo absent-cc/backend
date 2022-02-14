@@ -84,12 +84,13 @@ def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
         return teacherModel
     return None
 
+# def addAbsence(db, absence: schemas.AbsenceCreate, date: datetime = datetime.today().date()) -> models.Absence:
 def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     if absence.teacher.first != None and absence.teacher.last != None and absence.teacher.school != None:
         teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
     if teacher == None:
         teacher = addTeacher(db, absence.teacher)
-    absenceModel = models.Absence(date=datetime.today().date(), tid=teacher.tid, note=absence.note)
+    absenceModel = models.Absence(date=absence.date, tid=teacher.tid, note=absence.note)
     db.add(absenceModel)
     db.commit()
     return absenceModel

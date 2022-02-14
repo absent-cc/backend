@@ -1,11 +1,10 @@
-import statistics
 import csv as c
-from fuzzywuzzy import fuzz
-from typing import Tuple
-from dataTypes import structs
+import statistics
 from typing import Dict, Tuple
 
-import pretty_errors
+from fuzzywuzzy import fuzz
+
+from ..dataTypes import structs
 
 FUZZY_MATCH_THRESHOLD = 90
 

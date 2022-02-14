@@ -1,8 +1,9 @@
+from sre_constants import SUCCESS
 from typing import List, Literal, Optional, Tuple, Union
 from uuid import UUID
 from pydantic import BaseModel, validator
 from ..dataTypes import structs
-from datetime import datetime
+from datetime import datetime, date
 
 from ..database.database import Base
 
@@ -129,6 +130,7 @@ class AbsenceBase(BaseModel):
 
 class AbsenceCreate(AbsenceBase):
     teacher: TeacherCreate
+    date: date
 
     def __repr__(self) -> str:
         return super().__repr__()
@@ -168,3 +170,6 @@ class Valid(BaseModel):
 class Analytics(BaseModel):
     userCount: int
     totalAbsences: int
+
+class Bool(BaseModel):
+    success: bool

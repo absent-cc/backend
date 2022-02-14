@@ -17,9 +17,10 @@ class Users(unittest.TestCase):
             print(command)
             print(status_code)
             response = client.get(f"v1/users/me/{command}")
-            print(response)
+            print("RUN 1:", response)
             self.assertEqual(response.status_code, status_code)
-            response = client.get("v1/users/me/sessions", headers= {"Authorization": "Bearing Trojan_Horse"})
+            response = client.get("v1/users/me/sessions", headers = {"Authorization": "Bearing Trojan_Horse"})
+            print("RUN 2:", response)
             self.assertEqual(response.status_code, status_code), "Failed to return 403 when no Authorization header is present"
 
         def check(self, commands: Dict[str, int]):
@@ -30,7 +31,7 @@ class Users(unittest.TestCase):
             commands = {
                     "info" : 403, 
                     "sessions" : 403,
-                    "delete" : 403,
+                    "delete" : 405,
                     "update" : 405,
                     "update/profile" : 422,
                     "update/schedule" : 422,
