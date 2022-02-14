@@ -1,4 +1,5 @@
 import csv
+from typing import List
 import unittest
 
 from sqlalchemy import delete
@@ -12,10 +13,10 @@ example_users_path = "tests/unit/database/data/test_users.csv"
 
 # Helper function that will load example users from csv 
 # and convert them in userbase obejcts
-def load_example_users() -> list[UserBase]:
+def load_example_users() -> List[UserBase]:
     pseduo_gid = 0
 
-    example_users: list[UserCreate] = []
+    example_users: List[UserCreate] = []
     with open(example_users_path, "r") as f:
         file = csv.reader(f)
         for row in file:
