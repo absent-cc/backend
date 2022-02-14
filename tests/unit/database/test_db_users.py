@@ -1,12 +1,12 @@
-import unittest
-from src.dataTypes.schemas import UserBase, UserCreate, UserReturn
-from src.dataTypes.structs import SchoolNameMapper
-from src.dataTypes import models
-from src.database.database import SessionLocal
-from src.database import crud
 import csv
+import unittest
 
 from sqlalchemy import delete
+from src.database import crud
+from src.database.database import SessionLocal
+from src.dataTypes import models
+from src.dataTypes.schemas import UserBase, UserCreate, UserReturn
+from src.dataTypes.structs import SchoolNameMapper
 
 example_users_path = "tests/unit/database/data/test_users.csv"
 
