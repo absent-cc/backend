@@ -44,9 +44,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Setup ssh keys
-      run: |
-        apt-get -y install openssh-client
-        ssh-keygen -q -t rsa -N '' -f ./backend/creds/id_rsa -C "INSECURE ssh key for abSENT backend CI runner"
+      env:
+        ssh_test_key_priv: ${{SSH_TEST_KEY_PRIV}}
+        ssh_test_key_pub: ${{SSH_TEST_KEY_PUB}}
+        run: |
+          mkdir creds
+          echo $ssh_test_key_priv creds/id_rsa
+          echo $ssh_test_key_pub creds/id_rsa.pub
+      # run: |
+      #   apt-get -y install openssh-client
+      #   ssh-keygen -q -t rsa -N '' -f ./backend/creds/id_rsa -C "INSECURE ssh key for abSENT backend CI runner"
           
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -70,7 +77,7 @@ jobs:
       run: |
         alembic revision --autogenerate -m 'initial'
         alembic upgrade head
-        
+
     - name: Test with pytest
       run: |
         pytest
