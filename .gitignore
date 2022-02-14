@@ -133,10 +133,10 @@ secrets.yml
 config.ini
 state.yml
 oauth/
-data/
 .vscode/
 logs/
-creds
+creds/*
+data/*
 src/tools/googleTokenGen.py
 abSENT/
 secrets.ini
