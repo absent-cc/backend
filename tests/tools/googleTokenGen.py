@@ -9,12 +9,12 @@ SECRETS_PATH = "tests/tools/testing_config.ini"
 def load_google_secrets_into_env():
     configuer = ConfigParser()
     secrets = configuer.read(SECRETS_PATH)
-    if secrets == None:
-        print("No secrets file found. Please create one in tests/tools/testing_config.ini")
+    if secrets == []:
+        raise Exception("Could not find secrets file. Please create one in the tests/tools directory.")
     else:
         for key in configuer['Google']:
             os.environ[key.upper()]= configuer['Google'][key]
-
+    
 def check_if_secrets_in_env():
     if os.getenv("GOOGLE_CLIENT_ID") is None or os.getenv("GOOGLE_CLIENT_SECRET") is None:
         print("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not found in env. Setting now...")

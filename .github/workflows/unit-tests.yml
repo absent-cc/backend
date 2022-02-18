@@ -53,7 +53,7 @@ jobs:
         echo $ssh_test_key_priv > creds/id_rsa
         echo $ssh_test_key_pub > creds/id_rsa.pub
 
-    - name: Setup ENV VARS
+    - name: Setup Google Secrets to ENV VARs
       env: 
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}      
         GOOGLE_CLIENT_SECRETS: ${{ secrets.GOOGLE_CLIENT_SECRETS }}

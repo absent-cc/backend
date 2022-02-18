@@ -1,6 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
-from typing import Dict
+from typing import Dict, Tuple
 import unittest
 
 from src.api import main as api
@@ -13,30 +13,34 @@ client = TestClient(app)
 
 class Users(unittest.TestCase):
     class HeaderAuth(unittest.TestCase):
-        def header_not_authorized(self, command: str, status_code: int):
-            print(command)
-            print(status_code)
-            response = client.get(f"v1/users/me/{command}")
-            print("RUN 1:", response)
-            self.assertEqual(response.status_code, status_code)
-            response = client.get("v1/users/me/sessions", headers = {"Authorization": "Bearing Trojan_Horse"})
-            print("RUN 2:", response)
-            self.assertEqual(response.status_code, status_code), "Failed to return 403 when no Authorization header is present"
+        def header_not_authorized(self, command: str, status_codes: Tuple[int, int]):
+            def incorrect_header(self, status_code: int):
+                response = client.get(f"v1/users/me/{command}")
+                print("RUN 1:", response)
+                self.assertEqual(response.status_code, status_code), "Failed to return correct status code when no Authorization header is present"
+            def no_header(self, status_code: int):
+                response = client.get("v1/users/me/sessions", headers = {"Authorization": "Bearing Trojan_Horse"})
+                print("RUN 2:", response)
+                self.assertEqual(response.status_code, status_code), "Failed to return correct status code when no Authorization header is present"
+            print("COMMAND", command)
+            incorrect_header(self, status_codes[0])
+            print("_____")
+            no_header(self, status_codes[1])
 
-        def check(self, commands: Dict[str, int]):
+        def check(self, commands: Dict[str, Tuple[int, int]]):
             for command, status_code in commands.items():
                 self.header_not_authorized(command, status_code)
         
         def runTest(self):
             commands = {
-                    "info" : 403, 
-                    "sessions" : 403,
-                    "delete" : 405,
-                    "update" : 405,
-                    "update/profile" : 422,
-                    "update/schedule" : 422,
-                    "update/fcm" : 422,
-                    "session/revoke": 422,
+                    "info" : (403, 403), 
+                    "sessions" : (403, 403),
+                    "delete" : (405, 403),
+                    "update" : (405, 403),
+                    "update/profile" : (405 , 403),
+                    "update/schedule" : (405, 403),
+                    "update/fcm" : (405, 403),
+                    "session/revoke": (404, 403),
             }
             self.check(commands)
     
