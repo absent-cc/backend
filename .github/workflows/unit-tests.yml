@@ -58,8 +58,8 @@ jobs:
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}      
         GOOGLE_CLIENT_SECRETS: ${{ secrets.GOOGLE_CLIENT_SECRETS }}
       run: |
-        export GOOGLE_CLIENT_ID = $GOOGLE_CLIENT_ID
-        export GOOGLE_CLIENT_SECRETS = $GOOGLE_CLIENT_SECRETS
+        export GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+        export GOOGLE_CLIENT_SECRETS=$GOOGLE_CLIENT_SECRETS
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
