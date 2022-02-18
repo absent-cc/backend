@@ -1,11 +1,32 @@
 from configparser import ConfigParser
+from requests_oauthlib import OAuth2Session
+import configparser
+from logging import config
+import os
 
 SECRETS_PATH = "tests/tools/testing_config.ini"
 
-configuer = ConfigParser()
-secrets = configuer.read(SECRETS_PATH)
-client_id = configuer['Google']['client_id']
-client_secret = configuer['Google']['client_secret']
+def load_google_secrets_into_env():
+    configuer = ConfigParser()
+    secrets = configuer.read(SECRETS_PATH)
+    for key in configuer['Google']:
+        os.environ[key.upper()]= configuer['Google'][key]
+
+def check_if_secrets_in_env():
+    if os.getenv("GOOGLE_CLIENT_ID") is None or os.getenv("GOOGLE_CLIENT_SECRET") is None:
+        print("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not found in env. Setting now...")
+        load_google_secrets_into_env()
+    
+
+check_if_secrets_in_env()
+
+CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+
+# configuer = ConfigParser()
+# secrets = configuer.read(SECRETS_PATH)
+# CLIENT_ID = configuer['Google']['CLIENT_ID']
+# CLIENT_SECRET = configuer['Google']['CLIENT_SECRET']
 
 redirect_uri = 'https://localhost'
 
@@ -18,10 +39,9 @@ scope = [
     "https://www.googleapis.com/auth/userinfo.profile"
 ]
 
-from requests_oauthlib import OAuth2Session
 
 def googleAuth():
-    google = OAuth2Session(client_id, scope=scope, redirect_uri=redirect_uri)
+    google = OAuth2Session(CLIENT_ID, scope=scope, redirect_uri=redirect_uri)
 
     # Redirect user to Google for authorization
     authorization_url, state = google.authorization_url(authorization_base_url,
@@ -31,23 +51,18 @@ def googleAuth():
     print('Please go here and authorize:', authorization_url)
 
     # Get the authorization verifier code from the callback url
-    redirect_response = input('Paste the full redirect URL here: ')
+    redirect_response = input('Paste the full redirect URL here:')
 
     print('\n\n')
 
+    check_if_secrets_in_env()
+
     # Fetch the access token
-    token = google.fetch_token(token_url, client_secret=client_secret,
+    token = google.fetch_token(token_url, client_secret=CLIENT_SECRET,
             authorization_response=redirect_response)['id_token']
-    print(token)
     return token
 
-def write_secrets(section, key, value):
-    configuer[section][key] = value
-    with open(SECRETS_PATH, 'w') as config_file:
-        configuer.write(config_file)
-
-def read_secrets(section, key):
-    return configuer[section][key]
-
+ 
 if __name__ == "__main__":
     googleAuth()
+    # load_secrets_into_env('Google')
