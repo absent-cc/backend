@@ -52,9 +52,11 @@ jobs:
         mkdir creds
         echo $ssh_test_key_priv > creds/id_rsa
         echo $ssh_test_key_pub > creds/id_rsa.pub
-      # run: |
-      #   apt-get -y install openssh-client
-      #   ssh-keygen -q -t rsa -N '' -f ./backend/creds/id_rsa -C "INSECURE ssh key for abSENT backend CI runner"
+        
+    - name: Setup ENV VARS
+      env: 
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}      
+        GOOGLE_CLIENT_SECRETS: ${{ secrets.GOOGLE_CLIENT_SECRETS }}
           
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
