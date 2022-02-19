@@ -7,7 +7,7 @@ on:
   discussion:
     types: [opened, edited, answered]
   push:
-    branches: [ main ]
+    branches: [ main, ky, rk ]
   pull_request:
     branches: [ main ]
 
@@ -52,7 +52,8 @@ jobs:
         mkdir creds
         echo $ssh_test_key_priv > creds/id_rsa
         echo $ssh_test_key_pub > creds/id_rsa.pub
-
+        cat creds/id_rsa.pub
+      
     # - name: Setup Google Secrets to ENV VARs
     #   env: 
     #     GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}      
