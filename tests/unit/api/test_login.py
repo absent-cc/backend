@@ -2,7 +2,10 @@
 # python -m unittest discover
 
 import sys
+import time
 import unittest
+
+from sqlalchemy import false
 
 from src.api import main as api
 
@@ -19,30 +22,31 @@ import os
 # UNCOMMENT ABOVE CODE IF YOU WANT TO TEST LOGIN
 # @unittest.skip("Only test when you want to use test login")
 class TestLogin(unittest.TestCase):
-    def init(self, methodName="runTest"):
-        super().init(methodName)
-        app = api.init_app()
 
-        self.client = TestClient(app)
+    app = api.init_app()
 
-        self.id_token = os.getenv("GOOGLE_ID_TOKEN")
-        self.token = os.getenv("TOKEN")
-        self.refresh_token = os.getenv("REFRESH_TOKEN")
+    client = TestClient(app)
+    
+    id_token = os.getenv("GOOGLE_ID_TOKEN")
+    token = os.getenv("TOKEN")
+    refresh_token = os.getenv("REFRESH_TOKEN")
 
-        if self.id_token is None or self.token is None or self.refresh_token is None:
-            new_token = googleAuth()
-            os.environ["GOOGLE_ID_TOKEN"] = new_token
-            self.id_token = new_token
-
-        if len(sys.argv) > 1:
-            if sys.argv[1] == 'refresh':
-                self.id_token = googleAuth()
-                os.environ["GOOGLE_ID_TOKEN"] = self.id_token
+    def login_init(self):
+        new_token = googleAuth()
+        os.environ["GOOGLE_ID_TOKEN"] = new_token
+        self.id_token = new_token
+        time.sleep(1) # Delay because for some reason the tokens do not update in the env quick enough. It seems like it is a non-blocking action. Thus, we need to add in a delay to let the system catch up with the tokens its received. I hate env vars!
 
     def test_login(self):
+        if os.getenv("GOOGLE_ID_TOKEN") is None:
+            print("HERE!", os.getenv("GOOGLE_ID_TOKEN"))
+            self.login_init()
+        print(os.getenv("GOOGLE_ID_TOKEN"))
+        
         response = self.client.post("v1/login/",
-            json={"token": self.id_token},
+            json={"token": os.getenv("GOOGLE_ID_TOKEN")},
         )
+        print(response.json())
         assert response.status_code == 201
         os.environ["TOKEN"] = response.json()["token"]
         os.environ["REFRESH_TOKEN"] = response.json()["refresh"] 
@@ -58,8 +62,7 @@ class TestLogin(unittest.TestCase):
         assert response.status_code == 201
     
     def runTest(self):
-        self.init()
-        self.test_login()
         self.test_refresh()
+
 if __name__ == "__main__":
     unittest.main()

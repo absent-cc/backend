@@ -44,6 +44,8 @@ scope = [
 
 
 def googleAuth():
+    check_if_secrets_in_env()
+
     google = OAuth2Session(CLIENT_ID, scope=scope, redirect_uri=redirect_uri)
 
     # Redirect user to Google for authorization
@@ -58,14 +60,13 @@ def googleAuth():
 
     print('\n\n')
 
-    check_if_secrets_in_env()
-
     # Fetch the access token
     token = google.fetch_token(token_url, client_secret=CLIENT_SECRET,
             authorization_response=redirect_response)['id_token']
+    
     return token
 
  
-if __name__ == "__main__":
-    googleAuth()
+# if __name__ == "__main__":
+#     googleAuth()
     # load_secrets_into_env('Google')
