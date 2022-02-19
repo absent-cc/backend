@@ -2,51 +2,67 @@
 # python -m unittest discover
 
 import sys
+import time
 import unittest
+
+from sqlalchemy import false
 
 from src.api import main as api
 
 from fastapi.testclient import TestClient
 
-from ...tools.googleTokenGen import googleAuth, read_secrets, write_secrets
+from tests.tools.googleTokenGen import googleAuth
 
-# from api.v1.main import refresh
-app = api.init_app()
+import os
 
-client = TestClient(app)
+## UNCOMMENT BELOW CODE IF YOU WANT TO TEST LOGIN
 
-id_token = read_secrets('Login', 'id_token')
-token = read_secrets('Login', 'token')
-refresh_token = read_secrets('Login', 'refresh_token')
+# # from api.v1.main import refresh
 
-if (id_token or token or refresh_token) is None:
-    new_token = googleAuth()
-    write_secrets('Login', 'id_token', new_token)
-
-if len(sys.argv) > 1:
-    if sys.argv[1] == 'refresh':
-        id_token = googleAuth()
-        write_secrets('Login', 'id_token', id_token)
-
-@unittest.skip("Only test when you want to use test login")
+# UNCOMMENT ABOVE CODE IF YOU WANT TO TEST LOGIN
+# @unittest.skip("Only test when you want to use test login")
 class TestLogin(unittest.TestCase):
+
+    app = api.init_app()
+
+    client = TestClient(app)
+    
+    id_token = os.getenv("GOOGLE_ID_TOKEN")
+    token = os.getenv("TOKEN")
+    refresh_token = os.getenv("REFRESH_TOKEN")
+
+    def login_init(self):
+        new_token = googleAuth()
+        os.environ["GOOGLE_ID_TOKEN"] = new_token
+        self.id_token = new_token
+        time.sleep(1) # Delay because for some reason the tokens do not update in the env quick enough. It seems like it is a non-blocking action. Thus, we need to add in a delay to let the system catch up with the tokens its received. I hate env vars!
+
     def test_login(self):
-        response = client.post("v1/login/",
-            json={"token": id_token},
+        if os.getenv("GOOGLE_ID_TOKEN") is None:
+            print("HERE!", os.getenv("GOOGLE_ID_TOKEN"))
+            self.login_init()
+        print(os.getenv("GOOGLE_ID_TOKEN"))
+        
+        response = self.client.post("v1/login/",
+            json={"token": os.getenv("GOOGLE_ID_TOKEN")},
         )
+        print(response.json())
         assert response.status_code == 201
-        write_secrets('Login', 'token', response.json()['token'])
-        write_secrets('Login', 'refresh_token', response.json()['refresh'])
+        os.environ["TOKEN"] = response.json()["token"]
+        os.environ["REFRESH_TOKEN"] = response.json()["refresh"] 
         return response.json()
 
     def test_refresh(self):
         login_response = self.test_login()
         
         refresh_token = login_response["refresh"]
-        response = client.post("v1/refresh/",
+        response = self.client.post("v1/refresh/",
             headers={"Authorization": f"Bearer {refresh_token}"},
         )
         assert response.status_code == 201
     
+    def runTest(self):
+        self.test_refresh()
+
 if __name__ == "__main__":
     unittest.main()

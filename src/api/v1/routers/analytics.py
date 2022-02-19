@@ -6,6 +6,8 @@ from ....api import accounts
 from ....database import crud
 from ....dataTypes import schemas
 
+from typing import List
+
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 @router.get("/info", response_model=schemas.Analytics)
@@ -18,7 +20,7 @@ def getAnalytics(
 
 @router.post("/canceled", response_model=schemas.Bool)
 async def updateAbsences(
-    cancelledClasses: list[schemas.CanceledClassCreate],
+    cancelledClasses: List[schemas.CanceledClassCreate],
     db: Session = Depends(accounts.getDBSession),
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials)
 ) -> schemas.Bool:
