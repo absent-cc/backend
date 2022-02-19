@@ -30,8 +30,8 @@ jobs:
         # Provide default password to postgres
         env:
           POSTGRES_USER: absent
-          POSTGRES_PASSWORD: password
           POSTGRES_DB: absent
+          POSTGRES_PASSWORD: password
          # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
@@ -58,8 +58,10 @@ jobs:
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}      
         GOOGLE_CLIENT_SECRETS: ${{ secrets.GOOGLE_CLIENT_SECRETS }}
       run: |
-        export GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
-        export GOOGLE_CLIENT_SECRETS=$GOOGLE_CLIENT_SECRETS
+        export GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
+        export GOOGLE_CLIENT_SECRETS="$GOOGLE_CLIENT_SECRETS"
+        printenv GOOGLE_CLIENT_ID
+        printenv GOOGLE_CLIENT_SECRETS
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
