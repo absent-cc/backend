@@ -7,7 +7,7 @@ on:
   discussion:
     types: [opened, edited, answered]
   push:
-    branches: [ main ]
+    branches: [ main, ky, rk ]
   pull_request:
     branches: [ main ]
 
@@ -52,16 +52,17 @@ jobs:
         mkdir creds
         echo $ssh_test_key_priv > creds/id_rsa
         echo $ssh_test_key_pub > creds/id_rsa.pub
-
-    - name: Setup Google Secrets to ENV VARs
-      env: 
-        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}      
-        GOOGLE_CLIENT_SECRETS: ${{ secrets.GOOGLE_CLIENT_SECRETS }}
-      run: |
-        export GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
-        export GOOGLE_CLIENT_SECRETS="$GOOGLE_CLIENT_SECRETS"
-        printenv GOOGLE_CLIENT_ID
-        printenv GOOGLE_CLIENT_SECRETS
+        cat creds/id_rsa.pub
+      
+    # - name: Setup Google Secrets to ENV VARs
+    #   env: 
+    #     GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}      
+    #     GOOGLE_CLIENT_SECRETS: ${{ secrets.GOOGLE_CLIENT_SECRETS }}
+    #   run: |
+    #     export GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
+    #     export GOOGLE_CLIENT_SECRETS="$GOOGLE_CLIENT_SECRETS"
+    #     printenv GOOGLE_CLIENT_ID
+    #     printenv GOOGLE_CLIENT_SECRETS
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -87,5 +88,8 @@ jobs:
         alembic upgrade head
 
     - name: Test with pytest
+      env:
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}      
+        GOOGLE_CLIENT_SECRETS: ${{ secrets.GOOGLE_CLIENT_SECRETS }}
       run: |
         pytest

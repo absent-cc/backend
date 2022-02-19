@@ -10,6 +10,7 @@ def load_google_secrets_into_env():
     configuer = ConfigParser()
     secrets = configuer.read(SECRETS_PATH)
     if secrets == []:
+        print(os.environ)
         raise Exception("Could not find secrets file. Please create one in the tests/tools directory.")
     else:
         for key in configuer['Google']:
