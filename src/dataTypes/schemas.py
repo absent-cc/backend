@@ -22,9 +22,14 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     gid: str = None
 
-class TeacherCreate(BaseModel):
+class TeacherBase(BaseModel):
     first: str = None
     last: str = None
+
+    def __repr__(self) -> str:
+        return f"{self.first} {self.last}"
+
+class TeacherCreate(TeacherBase):
     school: structs.SchoolName = None
 
     def __repr__(self) -> str:
@@ -37,15 +42,15 @@ class TeacherReturn(TeacherCreate):
         orm_mode = True
 
 class Schedule(BaseModel):
-    A: List[TeacherReturn] = None
-    ADVISORY: List[TeacherReturn] = None
-    B: List[TeacherReturn] = None
-    C: List[TeacherReturn] = None 
-    D: List[TeacherReturn] = None
-    E: List[TeacherReturn] = None
-    F: List[TeacherReturn] = None
-    G: List[TeacherReturn] = None 
-    EXTRA: List[TeacherReturn] = None
+    A: List[TeacherBase] = None
+    ADVISORY: List[TeacherBase] = None
+    B: List[TeacherBase] = None
+    C: List[TeacherBase] = None
+    D: List[TeacherBase] = None
+    E: List[TeacherBase] = None
+    F: List[TeacherBase] = None
+    G: List[TeacherBase] = None
+    EXTRA: List[TeacherBase] = None
 
     @staticmethod
     def scheduleFromList(classes: list):
