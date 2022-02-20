@@ -5,7 +5,7 @@ from typing import List, Optional
 
 relative_path = "src/tools/schoology"
 
-class VariableSchoologyListener:
+class VariableSchoologyWriter:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
         self.south = structs.SchoolName.NEWTON_SOUTH
@@ -92,6 +92,5 @@ SCHOOLOGYCREDS = structs.SchoologyCreds(
     )
 
 if __name__ == "__main__":
-    listener = VariableSchoologyListener(SCHOOLOGYCREDS)
+    listener = VariableSchoologyWriter(SCHOOLOGYCREDS)
     listener.run([datetime.now(timezone.utc) - timedelta(days=2), datetime.now(timezone.utc)])
-
