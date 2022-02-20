@@ -1,7 +1,12 @@
 from datetime import datetime, timedelta, timezone
+
+from pytest import Session
+
+from src.tools.schoology.helper.dateRangeGen import dateRangeGen
 from ...dataTypes import structs, tools
 from ...schoology.absences import Absences
 from typing import List, Optional
+from ...api import accounts
 
 relative_path = "src/tools/schoology"
 
@@ -19,7 +24,6 @@ class VariableSchoologyWriter:
             table = self.sc.getCurrentTable(school.value, date)
             raw[school] = table
         
-        print(raw)
         return raw
 
     # Run function, for listening and calling notifications code.
@@ -47,27 +51,49 @@ class VariableSchoologyWriter:
             structs.SchoolName.NEWTON_SOUTH: southPull(), 
             structs.SchoolName.NEWTON_NORTH: northPull()
             }
+    
+    def updateDatabase(self, filteredAbsences: dict[structs.SchoolName, list[str]], date: datetime, db: Session = accounts.getDBSession):
+        for school, absences in filteredAbsences.items():
+            if absences == None:
+                print(f"{date}: No absences for {school}")
+                continue
+            for absence in absences:
+                if not self.sc.addAbsence(absence):
+                    print(f"Absences already exist for {date}. Probs some error in your code.")
+                    continue
+            print(f"{date}: Added {len(absences)} absences for {school}")
 
+        print()
+    
     def writeRawToFile(self, raw: dict[structs.SchoolName, list[str]], date: datetime, rawFileBasePath: str = f"{relative_path}/data/rawFeed"):
-        print("RAW", raw)
         for school, feed in raw.items():
-            with open(f"{rawFileBasePath}/raw_{school.value}.txt", "w+") as f:
+            if feed == None:
+                print(f"{date}: No absences for {school}")
+                continue
+            with open(f"{rawFileBasePath}/raw_{school.value}.txt", "a+") as f:
                 f.write(f"--- {date} ---\n")
                 strToWrite = ""
                 for line in feed.content:
-                    print("Line", line)
                     strToWrite += line + "\n"
                 strToWrite = strToWrite[:-2]
                 f.write(strToWrite + "\n")
-                print("STR TO WRITE", strToWrite)
+            print(f"{date}: Wrote raw feed to file for {school}")
+        print()
 
     def run(self, dates: List[datetime]):
+        print("--- UPDATING DATABASE ---")
         for date in dates:
-            raw = self.pullRaw(date)
-            if raw[structs.SchoolName.NEWTON_NORTH] == None or raw[structs.SchoolName.NEWTON_SOUTH] == None:
-                print("No absences to add.")
-                continue
-            self.writeRawToFile(raw, date)
+            absences = self.pullFiltered(date)
+            self.updateDatabase(absences, date)
+
+        print("--- RAW FEED TO TXT ---")
+        for date in dates:
+            self.writeRawToFile(self.pullRaw(date), date)
+            # raw = self.pullRaw(date)
+            # if raw[structs.SchoolName.NEWTON_NORTH] == None or raw[structs.SchoolName.NEWTON_SOUTH] == None:
+            #     print("No absences to add.")
+            #     continue
+            # self.writeRawToFile(raw, date)
 
 # Get secrets info from config.ini
 config_path = 'config.ini'
@@ -92,5 +118,6 @@ SCHOOLOGYCREDS = structs.SchoologyCreds(
     )
 
 if __name__ == "__main__":
-    listener = VariableSchoologyWriter(SCHOOLOGYCREDS)
-    listener.run([datetime.now(timezone.utc) - timedelta(days=2), datetime.now(timezone.utc)])
+    writer = VariableSchoologyWriter(SCHOOLOGYCREDS)
+    dates = dateRangeGen(datetime(2022, 2, 10), datetime(2022, 2, 20))
+    # writer.run(dates)

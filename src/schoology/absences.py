@@ -47,7 +47,7 @@ class Absences:
     def filterAbsencesNorth(self, date):       
         table = self.getCurrentTable(structs.SchoolName.NEWTON_NORTH, date)
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_NORTH)
-        return absences
+        return absences 
 
     # Same as the above, but the parsing is handled slightly differently due to the South absence table being differenct in formatting.
     def filterAbsencesSouth(self, date):
@@ -93,7 +93,6 @@ class ContentParser:
 
     def constructObject(self, update: structs.RawUpdate, map: dict, school: structs.SchoolName) -> List[schemas.AbsenceCreate]:
         objList = []
-        print(update)
         for row in update.content:
 
             try:
@@ -116,7 +115,7 @@ class ContentParser:
             object = schemas.AbsenceCreate(
                 teacher = teacher,
                 length = length,
-                date = datetime.today().date(),
+                date = self.date,
                 note = note
             )
 
