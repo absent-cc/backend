@@ -146,3 +146,5 @@ alembic/versions/*
 !.gitkeep
 !NNHS_teachers.csv
 !NSHS_teachers.csv
+
+src/tools/schoology/data/*

@@ -20,8 +20,8 @@ class Absences:
             structs.SchoolName.NEWTON_NORTH: schoolopy.Schoology(schoolopy.Auth(northkey, northsecret)),
             structs.SchoolName.NEWTON_SOUTH: schoolopy.Schoology(schoolopy.Auth(southkey, southsecret))
         }
-        self.api[structs.SchoolName.NEWTON_NORTH].limit = 10
-        self.api[structs.SchoolName.NEWTON_SOUTH].limit = 10
+        self.api[structs.SchoolName.NEWTON_NORTH].limit = 100
+        self.api[structs.SchoolName.NEWTON_SOUTH].limit = 100
         self.db = SessionLocal()
 
     # Gets the feed, accepting an argument 'school' which is either 0 or 1, 0 corresponding to North and 1 corresponding to South (this value being the same as the school's index within the API array). Grabs all updates posted by individuals of interest and saves them to an array 'feed', and returns that array.
@@ -123,6 +123,6 @@ class ContentParser:
         return objList
 
     def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
-        while ('position' or 'name') not in update.content[0].lower():
+        while not ('position' or 'name' in update.content[0].lower()) and len(update.content) > 1:
             update.content.pop(0)
         return update
