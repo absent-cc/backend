@@ -1,6 +1,8 @@
 import csv as c
+import datetime
+from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from fuzzywuzzy import fuzz
 from sqlalchemy.orm import Session
 
@@ -28,11 +30,12 @@ readCSV(structs.SchoolName.NEWTON_SOUTH)
 
 router = APIRouter(prefix="/teachers", tags=["Teachers"])
 
-@router.get("/absences", response_model=schemas.AbsenceList, status_code=200)
+@router.get("/absences/", response_model=schemas.AbsenceList, status_code=200)
 def getAbsenceList(
+    date: Optional[datetime.date] = datetime.date.today(),
     db: Session = Depends(accounts.getDBSession) # Initializes a DB. 
-):
-    list = crud.getAbsenceList(db)
+):  
+    list = crud.getAbsenceList(db, date)
     return schemas.AbsenceList(absences=list)
 
 @router.post("/autocomplete/", status_code=201, response_model=schemas.AutoComplete)

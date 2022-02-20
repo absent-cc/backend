@@ -6,7 +6,7 @@ import unittest
 from src.api import main as api
 from fastapi.testclient import TestClient
 
-from tests.tools.trojanhorse import TrojanHorse
+from tests.tools.trojanHorse import TrojanHorse
 
 app = api.init_app()
 client = TestClient(app)

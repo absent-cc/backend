@@ -25,7 +25,7 @@ class Absences:
         self.db = SessionLocal()
 
     # Gets the feed, accepting an argument 'school' which is either 0 or 1, 0 corresponding to North and 1 corresponding to South (this value being the same as the school's index within the API array). Grabs all updates posted by individuals of interest and saves them to an array 'feed', and returns that array.
-    def getFeed(self, school: structs.SchoolName):
+    def getFeed(self, school: structs.SchoolName) -> list:
         teachers = ["Tracy Connolly", "Casey Friend", "Suzanne Spirito"]
         feed = []
         for update in reversed(self.api[school].get_feed()):
@@ -35,27 +35,24 @@ class Absences:
         return feed
 
     # Gets the absence table for the date requested as defined by 'date'. Returns just this update for furthing processing. The date argument ultimately comes from the call of this function in main.py.
-    def getCurrentTable(self, school: structs.SchoolName):
+    def getCurrentTable(self, school: structs.SchoolName, date: datetime) -> list:
         feed = self.getFeed(school)
-        for poster, body, date in feed:
-            postDate = datetime.utcfromtimestamp(int(date))
-            if self.date.date() == postDate.date():
+        for poster, body, feedDate in feed:
+            postDate = datetime.utcfromtimestamp(int(feedDate))
+            if date.date() == postDate.date():
                 return structs.RawUpdate(content=body.split("\n"), poster=poster)
         return None
 
     # Takes the raw North attendance table from the prior function and parses it, using the AbsentTeacher dataclass. Returns an array of entries utilizing this class. 
     def filterAbsencesNorth(self, date):       
-        self.date = date
-        table = self.getCurrentTable(structs.SchoolName.NEWTON_NORTH)  
+        table = self.getCurrentTable(structs.SchoolName.NEWTON_NORTH, date)
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_NORTH)
-        return absences
+        return absences 
 
     # Same as the above, but the parsing is handled slightly differently due to the South absence table being differenct in formatting.
     def filterAbsencesSouth(self, date):
-        self.date = date
-        table = self.getCurrentTable(structs.SchoolName.NEWTON_SOUTH)    
+        table = self.getCurrentTable(structs.SchoolName.NEWTON_SOUTH, date)    
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_SOUTH)
-        print(absences)
         return absences
 
     # Wrapper to add in absences to the database.
@@ -96,7 +93,6 @@ class ContentParser:
 
     def constructObject(self, update: structs.RawUpdate, map: dict, school: structs.SchoolName) -> List[schemas.AbsenceCreate]:
         objList = []
-        print(update)
         for row in update.content:
 
             try:
@@ -119,7 +115,7 @@ class ContentParser:
             object = schemas.AbsenceCreate(
                 teacher = teacher,
                 length = length,
-                date = datetime.today().date(),
+                date = self.date,
                 note = note
             )
 

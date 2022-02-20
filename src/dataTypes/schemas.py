@@ -204,3 +204,8 @@ class UserCountBadge(Badges):
 class AbsencesBadge(Badges):
     label = "Absences"
     message: str
+
+class Date(BaseModel):
+    year: int
+    month: int
+    day: int

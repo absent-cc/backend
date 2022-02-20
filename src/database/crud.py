@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 import time
 import secrets
 from typing import List, Tuple
@@ -47,8 +47,8 @@ def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
         return sessions
     return None
 
-def getAbsenceList(db) -> tuple:
-    absences = db.query(models.Absence).filter(models.Absence.date == datetime.today().date()).all()
+def getAbsenceList(db, searchDate: date=datetime.today().date()) -> tuple:
+    absences = db.query(models.Absence).filter(models.Absence.date == searchDate).all()
     return absences
 
 def getAbsenceCount(db) -> int:
