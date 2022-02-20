@@ -36,7 +36,6 @@ pyaml==21.10.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21
-pycrypto==2.6.1
 pydantic==1.9.0
 PyJWT==2.3.0
 pyparsing==3.0.7
@@ -50,7 +49,7 @@ schoolopy==0.2.2
 six==1.16.0
 sniffio==1.2.0
 SQLAlchemy==1.4.31
--e git+git@github.com:absent-org/absent.git@18d3ea1d8fdc7b89230b9e59192f89448fc1f3f6#egg=src
+-e git+git@github.com:absent-org/absent.git@ffee76a7cfe58fefae309962da40c13035279ef4#egg=src
 starlette==0.17.1
 tomli==2.0.0
 typing-extensions==4.0.1
