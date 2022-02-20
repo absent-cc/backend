@@ -2,11 +2,17 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
+from alembic.config import Config
 from src.dataTypes.models import Base
 
+from os import getenv 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-config = context.config
+
+if getenv["TESTING"] == "True":
+    config = Config("./tests/test_alembic.ini")
+else:
+    config = Config("./alembic.ini")
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
