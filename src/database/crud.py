@@ -39,7 +39,7 @@ def getAllUsers(db) -> List[models.User]:
     return db.query(models.User).all()
 
 def getUserCount(db) -> int:
-    return len(getAllUsers(db))
+    return db.query(models.User).count()
 
 def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
     if user.uid != None:
@@ -51,10 +51,17 @@ def getAbsenceList(db) -> tuple:
     absences = db.query(models.Absence).filter(models.Absence.date == datetime.today().date()).all()
     return absences
 
+def getAbsenceCount(db) -> int:
+    return db.query(models.Absence).count()
+
 def getClassesByUser(db, user: schemas.UserReturn) -> List[models.Class]: 
     if user.uid != None:
         return db.query(models.Class).filter(models.Class.uid == user.uid).all() # Returns all entries in classes table for a given user.
     return None
+
+def getClassesCount(db) -> int:
+    return db.query(models.Class).count()
+
 
 def addUser(db, user: schemas.UserCreate) -> models.User:
     if user.gid != None: # Checks for GID as this is the only mandatory field.
