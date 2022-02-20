@@ -7,9 +7,9 @@ on:
   discussion:
     types: [opened, edited, answered]
   push:
-    branches: [ main ]
+    branches: [ main, prod ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, prod ]
     # Beep
 
 jobs:
