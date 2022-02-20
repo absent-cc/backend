@@ -7,7 +7,7 @@ on:
   discussion:
     types: [opened, edited, answered]
   push:
-    branches: [ main, ky, rk ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
     # Beep
