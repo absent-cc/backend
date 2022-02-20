@@ -39,7 +39,7 @@ def getAllUsers(db) -> List[models.User]:
     return db.query(models.User).all()
 
 def getUserCount(db) -> int:
-    return len(getAllUsers(db))
+    return db.query(models.User).count()
 
 def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
     if user.uid != None:
@@ -51,10 +51,17 @@ def getAbsenceList(db) -> tuple:
     absences = db.query(models.Absence).filter(models.Absence.date == datetime.today().date()).all()
     return absences
 
+def getAbsenceCount(db) -> int:
+    return db.query(models.Absence).count()
+
 def getClassesByUser(db, user: schemas.UserReturn) -> List[models.Class]: 
     if user.uid != None:
         return db.query(models.Class).filter(models.Class.uid == user.uid).all() # Returns all entries in classes table for a given user.
     return None
+
+def getClassesCount(db) -> int:
+    return db.query(models.Class).count()
+
 
 def addUser(db, user: schemas.UserCreate) -> models.User:
     if user.gid != None: # Checks for GID as this is the only mandatory field.
@@ -84,15 +91,46 @@ def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
         return teacherModel
     return None
 
+# def addAbsence(db, absence: schemas.AbsenceCreate, date: datetime = datetime.today().date()) -> models.Absence:
 def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     if absence.teacher.first != None and absence.teacher.last != None and absence.teacher.school != None:
         teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
     if teacher == None:
         teacher = addTeacher(db, absence.teacher)
-    absenceModel = models.Absence(date=datetime.today().date(), tid=teacher.tid, note=absence.note)
+    absenceModel = models.Absence(date=absence.date, tid=teacher.tid, note=absence.note)
     db.add(absenceModel)
     db.commit()
     return absenceModel
+
+def addCanceledClass(db, canceledClass: schemas.CanceledClassCreate) -> bool:
+    if canceledClass.tid == None:
+        teacher = getTeacher(db, schemas.TeacherReturn(**canceledClass.teacher.dict()))
+    else:
+        teacher = getTeacher(db, schemas.TeacherReturn(tid=canceledClass.tid))
+
+    if teacher == None: # Verify if teacher exists.
+        print("Add canceled class: Teacher does not exist.")
+        return False
+    
+    if canceledClass.uid == None: 
+        user = getUser(db, schemas.UserReturn(**canceledClass.user.dict()))
+    else:
+        user = getUser(db, schemas.UserReturn(uid=canceledClass.uid))
+    
+    if user == None: # Verify if user exists.
+        print("User does not exist")
+        return False
+    
+    canceledClassModel = models.CanceledClass(
+                            tid=teacher.tid,
+                            date=canceledClass.date, 
+                            block=canceledClass.block,
+                            uid=user.uid
+                    )
+    
+    db.add(canceledClassModel)
+    db.commit()
+    return True
 
 # Peek the top entry in the absences table by date.
 def peekAbsence(db, date: datetime) -> tuple:
@@ -179,6 +217,14 @@ def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserS
     db.commit()
     return result
 
+def reset(db):
+    db.query(models.User).delete()
+    db.query(models.Teacher).delete()
+    db.query(models.Class).delete()
+    db.query(models.Absence).delete()
+    db.query(models.UserSession).delete()
+    db.commit()
+
 # Function to check if a user has been onboarded successfully.
 # Defintion of onboarded: A user has onboarded successfully when they exist in the user table, as well as have at least one class in the class table.
 # Otherwise, they have not onboarded.
@@ -192,7 +238,8 @@ def checkOnboarded(db, gid: str) -> Tuple[bool, bool]:
     # If user is in the table, check if they have any classes.
     resClasses = getClassesByUser(db, resUser)
     
-    if resClasses == None: # Lack of classes means they have not been onboarded fully
+    if len(resClasses) == 0: # Lack of classes means they have not been onboarded fully
         return (True, False)
     else:
+        print(f"User has: {resClasses}")
         return (True, True) # If they have classes, they have been onboarded!

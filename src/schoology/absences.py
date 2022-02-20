@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import true
-from dataTypes import structs, schemas, models
 import schoolopy
+from ..database.database import SessionLocal
+from ..database import crud
+
+from ..dataTypes import models, schemas, structs
 from .columnDetection import ColumnDetection
-from database.database import SessionLocal
-import database.crud as crud
 
 class Absences:
     # Sets up the two API objects as entries within a list 'api' . 
@@ -75,7 +75,7 @@ class ContentParser:
     
     def parse(self, update: structs.RawUpdate, school: structs.SchoolName) -> List[schemas.AbsenceCreate]:
 
-        if update == [] or None:
+        if update == [] or update == None:
             return None
         if school == structs.SchoolName.NEWTON_NORTH:
             detection = ColumnDetection(structs.SchoolName.NEWTON_NORTH)
@@ -119,8 +119,9 @@ class ContentParser:
             object = schemas.AbsenceCreate(
                 teacher = teacher,
                 length = length,
+                date = datetime.today().date(),
                 note = note
-                )
+            )
 
             objList.append(object)
         return objList

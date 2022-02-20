@@ -1,8 +1,9 @@
+from sre_constants import SUCCESS
 from typing import List, Literal, Optional, Tuple, Union
 from uuid import UUID
 from pydantic import BaseModel, validator
 from ..dataTypes import structs
-from datetime import datetime
+from datetime import datetime, date
 
 from ..database.database import Base
 
@@ -66,6 +67,9 @@ class Class(BaseModel):
     class Config:
         orm_mode = True
 
+    def __repr__(self) -> str:
+        return f"tid: {self.tid} Block: {self.block} uid: {self.uid}"
+    
     # @staticmethod
     # def listFromSchedule(schedule: Schedule, uid: str):
     #     clsList = []
@@ -73,7 +77,6 @@ class Class(BaseModel):
     #         for _ in block[1]:
     #             clsList.append(Class(block=ReverseBlockMapper()[block[0]], uid=uid))
     #     return clsList
-
 
 class TeacherFull(TeacherReturn):
     schedule: List[Class] = []
@@ -129,13 +132,20 @@ class AbsenceBase(BaseModel):
 
 class AbsenceCreate(AbsenceBase):
     teacher: TeacherCreate
+    date: date
 
     def __repr__(self) -> str:
         return super().__repr__()
 
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
-    date: datetime
+    date: date
+
+class CanceledClassCreate(Class):
+    date: date
+
+    def __repr__(self) -> str:
+        return super().__repr__()
 
 class PartialName(BaseModel):
     name: str 
@@ -168,3 +178,29 @@ class Valid(BaseModel):
 class Analytics(BaseModel):
     userCount: int
     totalAbsences: int
+
+class Bool(BaseModel):
+    success: bool
+
+class Badges(BaseModel):
+    schemaVersion: int = 1
+    label: str
+    message: str
+    color: str = "lightgrey"
+    labelColor: str = "grey"
+    isError: bool = False
+    namedLogo: str = None
+    logoSvg: str = None
+    logoColor: str = None
+    logoWidth: str = None
+    logoPostion: str = None
+    style: str = "flat"
+    cacheSeconds: int = 300
+
+class UserCountBadge(Badges):
+    label = "Active Users"
+    message: str
+
+class AbsencesBadge(Badges):
+    label = "Absences"
+    message: str

@@ -8,7 +8,7 @@ An SMS schoology bot that notifies NPS students when their teachers are absent. 
 abSENT uses the [Schoolopy](https://github.com/ErikBoesen/schoolopy) API wrapper to grab teacher absences from Schoology, which are processed. Alerts are then sent through FCM (Firebase Cloud Messaging) to registered users.
 
 ## How does it work?
-Students sign up in our app. Their schedule is then saved as an SQLite database using 3 tables:
+Students sign up in our app. Their schedule is then saved as a postgres database using 3 tables:
 
 - One table stores students and their characteristics (name, Google subject ID, FCM device details, etc)
 - Another stores teachers and their characteristics (name)

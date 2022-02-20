@@ -1,8 +1,8 @@
 import configparser
 import threading, time, yaml
-from dataTypes import structs, tools
-from schoology.schoologyListener import *
-from database.database import *
+from .dataTypes import structs, tools
+from .schoology.schoologyListener import *
+from .database.database import *
 from datetime import timedelta, datetime, timezone
 
 # Get secrets info from config.ini
@@ -34,7 +34,7 @@ def listener():
     holidays = []
 
     # debug mode
-    debugMode = True
+    debugMode = False
 
     dailyCheckTimeStart = 7 # hour
     dailyCheckTimeEnd = 12 # hour
@@ -45,7 +45,7 @@ def listener():
     schoologySuccessCheck = False
     dayoffLatch = False
     while True:
-        currentTime = datetime.now(timezone.utc) - timedelta(hours=5) # Shift by 5 hours to get into EST.
+        currentTime = datetime.now(timezone.utc) - timedelta(hours=69) # Shift by 5 hours to get into EST.
         currentDate = currentTime.strftime('%d/%m/%Y')
         dayOfTheWeek = currentTime.weekday() 
         
@@ -63,6 +63,8 @@ def listener():
                 sc = SchoologyListener(SCHOOLOGYCREDS)
                 schoologySuccessCheck = sc.run()
                 print("CHECK COMPLETE.")
+            else:
+                print("NOT IN DAILY CHECK TIME.")
         
         if (currentTime.hour == resetTimeOne[0] or currentTime.hour == resetTimeTwo[0]):
             # Reset schoologySuccessCheck to false @ midnight
