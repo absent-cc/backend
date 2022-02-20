@@ -86,9 +86,9 @@ class VariableSchoologyWriter:
             absences = self.pullFiltered(date)
             self.updateDatabase(absences, date)
 
-        print("--- RAW FEED TO TXT ---")
-        for date in dates:
-            self.writeRawToFile(self.pullRaw(date), date)
+        # print("--- RAW FEED TO TXT ---")
+        # for date in dates:
+        #     self.writeRawToFile(self.pullRaw(date), date)
             # raw = self.pullRaw(date)
             # if raw[structs.SchoolName.NEWTON_NORTH] == None or raw[structs.SchoolName.NEWTON_SOUTH] == None:
             #     print("No absences to add.")
@@ -120,4 +120,4 @@ SCHOOLOGYCREDS = structs.SchoologyCreds(
 if __name__ == "__main__":
     writer = VariableSchoologyWriter(SCHOOLOGYCREDS)
     dates = dateRangeGen(datetime(2022, 2, 10), datetime(2022, 2, 20))
-    # writer.run(dates)
+    writer.run(dates)
