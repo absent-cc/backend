@@ -181,3 +181,26 @@ class Analytics(BaseModel):
 
 class Bool(BaseModel):
     success: bool
+
+class Badges(BaseModel):
+    schemaVersion: int = 1
+    label: str
+    message: str
+    color: str = "lightgrey"
+    labelColor: str = "grey"
+    isError: bool = False
+    namedLogo: str = None
+    logoSvg: str = None
+    logoColor: str = None
+    logoWidth: str = None
+    logoPostion: str = None
+    style: str = "flat"
+    cacheSeconds: int = 300
+
+class UserCountBadge(Badges):
+    label = "Active Users"
+    message: str
+
+class AbsencesBadge(Badges):
+    label = "Absences"
+    message: str
