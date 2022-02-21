@@ -139,6 +139,11 @@ class UserInfo(BaseModel):
     schedule: Schedule
     fcm: Token
 
+class UserInfoReturn(BaseModel):
+    profile: UserBase
+    schedule: ScheduleReturn
+    fcm: Token
+
 class SessionCredentials(BaseModel):
     token: Optional[str] = None
     refresh: Optional[str] = None
