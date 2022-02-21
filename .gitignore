@@ -142,6 +142,7 @@ abSENT/
 secrets.ini
 testing_config.ini
 alembic/versions/*
+.idea/
 
 !.gitkeep
 !NNHS_teachers.csv
