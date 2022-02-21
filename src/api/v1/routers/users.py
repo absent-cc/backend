@@ -38,7 +38,7 @@ def cancel(
         return utils.returnStatus("Account deleted.") # Sends sucess.
     utils.raiseError(500, "Operation failed", structs.ErrorType.DB) # Else, errors.
 
-@router.put("/me/update", status_code=201) # Update endpoint, main.
+@router.put("/me/update", status_code=201, response_model=schemas.UserInfoReturn) # Update endpoint, main.
 def updateUserInfo(
     user: schemas.UserInfo, # Takes a user object: this is the NEW info, not the current info.
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
@@ -67,11 +67,11 @@ def updateUserInfo(
     result = crud.updateProfile(db, profile, creds.uid) # Updates the profile info.
 
     if result != None:
-        return result
+        return utils.returnStatus("Success")
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
-@router.put("/me/update/schedule", status_code=201) # Update endpoint, schedule.
+@router.put("/me/update/schedule", status_code=201, response_model=schemas.ScheduleReturn) # Update endpoint, schedule.
 def updateUserInfo(
     schedule: schemas.Schedule, # Takes just a schedule.
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
