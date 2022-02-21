@@ -16,7 +16,7 @@ def returnUserInfo(
     user = schemas.UserReturn(uid=creds.uid) # Creates husk user.
     user = crud.getUser(db, user) # Gets the rest of the info.
     userReturn = schemas.UserReturn.from_orm(user) # Builds a Pydantic model from this Alchemy model.
-    userReturn.schedule = schemas.Schedule.scheduleFromList(user.schedule) # Converts list-schedule into Schedule object.
+    userReturn.schedule = schemas.ScheduleReturn.scheduleFromList(user.schedule) # Converts list-schedule into Schedule object.
 
     return userReturn # Returns user.
 
@@ -50,7 +50,10 @@ def updateUserInfo(
     token = crud.updateFCMToken(db, user.fcm, creds.uid, creds.sid)
 
     if (profile, token) != None and schedule:
-        return utils.returnStatus("Information updated") # Returns success.
+
+        user.schedule = schemas.ScheduleReturn().scheduleFromList(crud.getClassesByUser(db, schemas.UserReturn(uid=creds.uid)))
+
+        return user # Returns success.
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
@@ -64,7 +67,7 @@ def updateUserInfo(
     result = crud.updateProfile(db, profile, creds.uid) # Updates the profile info.
 
     if result != None:
-        return utils.returnStatus("Information updated") # Returns success.
+        return result
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
@@ -74,12 +77,11 @@ def updateUserInfo(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
     db: Session = Depends(accounts.getDBSession) # Initializes a DB.
 ):
-    user = schemas.UserReturn(uid=creds.uid) # Creates husk user. 
-
+    user = schemas.UserReturn(uid=creds.uid) # Creates husk user.
     result = crud.updateSchedule(db, user, schedule) # Updates schedule.
     
     if result:
-        return utils.returnStatus("Information updated") # Returns success.
+        return schemas.ScheduleReturn().scheduleFromList(crud.getClassesByUser(db, user))
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
