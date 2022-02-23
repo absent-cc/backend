@@ -62,6 +62,8 @@ def getClassesByUser(db, user: schemas.UserReturn) -> List[models.Class]:
 def getClassesCount(db) -> int:
     return db.query(models.Class).count()
 
+def getClassesCancelledCount(db) -> int:
+    return db.query(models.CanceledClass).count()
 
 def addUser(db, user: schemas.UserCreate) -> models.User:
     if user.gid != None: # Checks for GID as this is the only mandatory field.
