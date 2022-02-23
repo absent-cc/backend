@@ -1,3 +1,4 @@
+from asyncio import CancelledError
 from email import message
 from fastapi import APIRouter, Depends
 from sqlalchemy import true
@@ -29,11 +30,20 @@ def getAbsences(
         message=str(absences)
         )
 
-@router.get("/classes/count", response_model=schemas.AbsencesBadge)
+@router.get("/classes/count", response_model=schemas.ClassCountBadge)
 def getClasses(
     db: Session = Depends(accounts.getDBSession)
-) -> schemas.AbsencesBadge:
+) -> schemas.ClassCountBadge:
     classes = crud.getClassesCount(db)
-    return schemas.AbsencesBadge(
+    return schemas.ClassCountBadge(
         message=str(classes)
+        )
+
+@router.get("/classes/canceled", response_model=schemas.ClassCanceledBadge)
+def getClasses(
+    db: Session = Depends(accounts.getDBSession)
+) -> schemas.ClassCanceledBadge:
+    cancelledCount = crud.getClassesCancelledCount(db)
+    return schemas.ClassCanceledBadge(
+        message=str(cancelledCount)
         )
