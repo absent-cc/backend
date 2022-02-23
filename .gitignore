@@ -142,7 +142,10 @@ abSENT/
 secrets.ini
 testing_config.ini
 alembic/versions/*
+.idea/
 
 !.gitkeep
 !NNHS_teachers.csv
 !NSHS_teachers.csv
+
+src/tools/schoology/data/*

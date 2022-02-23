@@ -5,7 +5,7 @@ import schoolopy
 from ..database.database import SessionLocal
 from ..database import crud
 
-from ..dataTypes import models, schemas, structs
+from ..dataTypes import schemas, structs
 from .columnDetection import ColumnDetection
 
 class Absences:
@@ -123,6 +123,6 @@ class ContentParser:
         return objList
 
     def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
-        while ('position' or 'name') not in update.content[0].lower():
+        while not ('position' or 'name' in update.content[0].lower()) and len(update.content) > 1:
             update.content.pop(0)
         return update

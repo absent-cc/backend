@@ -69,9 +69,11 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
     - name: Set up postgres 
+      env: 
+        TESTING: True
       run: |
-        alembic revision --autogenerate -m 'initial'
-        alembic upgrade head
+        alembic -c tests/test_alembic.ini revision --autogenerate -m 'initial'
+        alembic -c tests/test_alembic.ini upgrade head
 
     - name: Test with pytest
       run: |
