@@ -141,7 +141,6 @@ src/tools/googleTokenGen.py
 abSENT/
 secrets.ini
 testing_config.ini
-alembic/versions/*
 
 !.gitkeep
 !NNHS_teachers.csv

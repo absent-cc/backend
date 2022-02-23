@@ -189,22 +189,29 @@ class Badges(BaseModel):
     color: str = "lightgrey"
     labelColor: str = "grey"
     isError: bool = False
-    namedLogo: str = None
-    logoSvg: str = None
-    logoColor: str = None
-    logoWidth: str = None
-    logoPostion: str = None
-    style: str = "flat"
-    cacheSeconds: int = 300
+    # namedLogo: str = None
+    # logoSvg: str = None
+    # logoColor: str = None
+    # logoWidth: str = None
+    # logoPostion: str = None
+    # style: str = "flat"
+    # cacheSeconds: int = 300
 
 class UserCountBadge(Badges):
     label = "Active Users"
     message: str
 
 class AbsencesBadge(Badges):
-    label = "Absences"
+    label = "Absences Reported"
     message: str
 
+class ClassCountBadge(Badges):
+    label = "Classes Serving"
+    message: str
+
+class ClassCanceledBadge(Badges):
+    label = "Classes Canceled"
+    message: str
 class Date(BaseModel):
     year: int
     month: int
