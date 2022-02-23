@@ -47,10 +47,24 @@ def verifyRefreshToken(creds: HTTPAuthorizationCredentials = Depends(HTTPBearer(
 
 # Google IDToken check.
 def validateGoogleToken(token) -> dict:
-    CLIENT_ID = "349911558418-9d07ptkk7pg7aqq58qkj5tshi8bq9s5v.apps.googleusercontent.com"
+
+    # Various Client IDs for Backend + App frontend
+    BACKEND_ID = "349911558418-9d07ptkk7pg7aqq58qkj5tshi8bq9s5v.apps.googleusercontent.com"
+    EXPO_ID = "349911558418-rusr95n8ttq00iujmk3je4q5fmkiib5t.apps.googleusercontent.com"
+    IOS_ID = "349911558418-9tm5hh1jgk7k7obhcor3k9l3l2ejt3ue.apps.googleusercontent.com"
+    ANDROID_ID = "349911558418-tbkntqmdvhb1j71e52ptl4kagp3q23pi.apps.googleusercontent.com"
+
+    CLIEND_IDs = [
+        BACKEND_ID,
+        EXPO_ID,
+        IOS_ID,
+        ANDROID_ID
+    ]
+
     NEWTON = "newton.k12.ma.us"
+    
     try:
-        idInfo = id_token.verify_oauth2_token(token.token, requests.Request(), CLIENT_ID)
+        idInfo = id_token.verify_token(token.token, requests.Request(), audience=CLIEND_IDs)
         logger.info(f"Sucessful Google login: {idInfo['sub']}")
     except BaseException as error:
         logger.info(f"Invalid Google token POSTed.")
