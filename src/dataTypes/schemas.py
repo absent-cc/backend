@@ -1,4 +1,3 @@
-from sre_constants import SUCCESS
 from typing import List, Literal, Optional, Tuple, Union
 from uuid import UUID
 from pydantic import BaseModel, validator
@@ -22,9 +21,14 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     gid: str = None
 
-class TeacherCreate(BaseModel):
+class TeacherBase(BaseModel):
     first: str = None
     last: str = None
+
+    def __repr__(self) -> str:
+        return f"{self.first} {self.last}"
+
+class TeacherCreate(TeacherBase):
     school: structs.SchoolName = None
 
     def __repr__(self) -> str:
@@ -37,26 +41,40 @@ class TeacherReturn(TeacherCreate):
         orm_mode = True
 
 class Schedule(BaseModel):
+    A: List[TeacherBase] = None
+    ADVISORY: List[TeacherBase] = None
+    B: List[TeacherBase] = None
+    C: List[TeacherBase] = None
+    D: List[TeacherBase] = None
+    E: List[TeacherBase] = None
+    F: List[TeacherBase] = None
+    G: List[TeacherBase] = None
+    EXTRA: List[TeacherBase] = None
+
+class ScheduleReturn(BaseModel):
     A: List[TeacherReturn] = None
     ADVISORY: List[TeacherReturn] = None
     B: List[TeacherReturn] = None
-    C: List[TeacherReturn] = None 
+    C: List[TeacherReturn] = None
     D: List[TeacherReturn] = None
     E: List[TeacherReturn] = None
     F: List[TeacherReturn] = None
-    G: List[TeacherReturn] = None 
+    G: List[TeacherReturn] = None
     EXTRA: List[TeacherReturn] = None
+
+    class Config:
+        orm_mode = True
 
     @staticmethod
     def scheduleFromList(classes: list):
-        schedule = Schedule()
+        schedule = ScheduleReturn()
         for cls in classes:
             current = getattr(schedule, cls.block)
             if current != None:
-                current.append(cls.teacher)
+                current.append(TeacherReturn.from_orm(cls.teacher))
                 setattr(schedule, cls.block, current)
             else:
-                setattr(schedule, cls.block, [cls.teacher])
+                setattr(schedule, cls.block, [TeacherReturn.from_orm(cls.teacher)])
         return schedule
 
 class Class(BaseModel):
@@ -86,7 +104,7 @@ class TeacherFull(TeacherReturn):
 
 class UserReturn(UserCreate):
     uid: str = None
-    schedule: Union[Schedule, List[Class]] = [] 
+    schedule: Union[ScheduleReturn, List[Class]] = []
 
     class Config:
         orm_mode = True
@@ -119,6 +137,11 @@ class Token(BaseModel):
 class UserInfo(BaseModel):
     profile: UserBase
     schedule: Schedule
+    fcm: Token
+
+class UserInfoReturn(BaseModel):
+    profile: UserBase
+    schedule: ScheduleReturn
     fcm: Token
 
 class SessionCredentials(BaseModel):
@@ -172,8 +195,13 @@ class AbsenceList(BaseModel):
 class AutoComplete(BaseModel):
     suggestions: list
 
-class Valid(BaseModel):
+class TeacherValid(BaseModel):
     value: bool
+    formatted: str = None
+    suggestions: List[str] = None
+
+class ClassList(BaseModel):
+    classes: List[structs.SchoolBlock] = None
 
 class Analytics(BaseModel):
     userCount: int
@@ -213,6 +241,4 @@ class ClassCanceledBadge(Badges):
     label = "Classes Canceled"
     message: str
 class Date(BaseModel):
-    year: int
-    month: int
-    day: int
+    date: date
