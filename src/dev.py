@@ -90,7 +90,7 @@ if __name__ == '__main__':
     logger.add("logs/latest.log", rotation="4 hours", retention=1)   
 
     options = {
-        "bind": "0.0.0.0:6969", # CHANGE BACK PLEASE
+        "bind": "0.0.0.0:8000", # CHANGE BACK PLEASE
         "workers": WORKERS,
         "accesslog": "-",
         "errorlog": "-",
