@@ -143,6 +143,7 @@ secrets.ini
 testing_config.ini
 .idea/
 oauth/
+alembic/versions/*
 
 !.gitkeep
 !NNHS_teachers.csv
