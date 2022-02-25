@@ -59,8 +59,9 @@ class Absence(Base):
 
 class CancelledClass(Base):
     __tablename__ = "cancelled"
+    index = Column(Integer, primary_key=True, autoincrement=True)
     cid = Column(String(16), ForeignKey(Class.cid, ondelete='CASCADE'),)
     date = Column(TIMESTAMP)
     
-    parent = relationship("Class", back_populates='classes')
+    parent = relationship("Class")
     __table_args__ = (UniqueConstraint('cid', 'date'),)

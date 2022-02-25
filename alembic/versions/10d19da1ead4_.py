@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 1ee280dcaf56
+Revision ID: 10d19da1ead4
 Revises: 
-Create Date: 2022-02-24 12:24:24.837547
+Create Date: 2022-02-24 23:52:45.208168
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '1ee280dcaf56'
+revision = '10d19da1ead4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -51,7 +51,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['tid'], ['teachers.tid'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['uid'], ['users.uid'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('cid'),
-    sa.UniqueConstraint('cid', 'tid', 'block', 'uid')
+    sa.UniqueConstraint('tid', 'block', 'uid')
     )
     op.create_table('sessions',
     sa.Column('sid', sa.String(length=16), nullable=False),
@@ -64,10 +64,11 @@ def upgrade():
     sa.UniqueConstraint('sid', 'uid')
     )
     op.create_table('cancelled',
-    sa.Column('cid', sa.String(length=16), nullable=False),
+    sa.Column('index', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('cid', sa.String(length=16), nullable=True),
     sa.Column('date', sa.TIMESTAMP(), nullable=True),
     sa.ForeignKeyConstraint(['cid'], ['classes.cid'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('cid'),
+    sa.PrimaryKeyConstraint('index'),
     sa.UniqueConstraint('cid', 'date')
     )
     # ### end Alembic commands ###
