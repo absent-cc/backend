@@ -61,6 +61,6 @@ class CancelledClass(Base):
     __tablename__ = "cancelled"
     cid = Column(String(16), ForeignKey(Class.cid, ondelete='CASCADE'), primary_key=True)
     date = Column(TIMESTAMP)
-
-    cls = relationship("Class")
+    
+    parent = relationship("Class", back_populates='classes')
     __table_args__ = (UniqueConstraint('cid', 'date'),)

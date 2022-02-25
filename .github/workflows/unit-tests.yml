@@ -60,10 +60,6 @@ jobs:
     - name: Setup src as python package
       run: |
         python setup.py install
-    
-    - name: Setup ssh keys
-      run: |
-        python -m tests.setup_test_system 
 
     - name: Lint with flake8
       run: |
