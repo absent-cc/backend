@@ -182,7 +182,7 @@ class PartialName(BaseModel):
         
     @validator('school')
     def checkSchoolName(cls, v):
-        if v != ("NNHS" or "NSHS"):
+        if (v != "NNHS") and (v != "NSHS"):
             raise ValueError('Invalid school.')
         return v
 
