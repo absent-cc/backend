@@ -59,7 +59,7 @@ jobs:
 
     - name: Setup src as python package
       run: |
-        python setup.py
+        python setup.py install
     
     - name: Setup ssh keys
       run: |
