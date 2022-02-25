@@ -47,7 +47,7 @@ def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
         return sessions
     return None
 
-def getAbsenceList(db, searchDate: date=datetime.today().date()) -> tuple:
+def getAbsenceList(db, searchDate: date=datetime.today().date()) -> List[models.Absence]:
     absences = db.query(models.Absence).filter(models.Absence.date == searchDate).all()
     return absences
 

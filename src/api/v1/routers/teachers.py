@@ -1,10 +1,12 @@
 import csv as c
 import datetime
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Body
 from fuzzywuzzy import fuzz
 from sqlalchemy.orm import Session
+
+from src.dataTypes import models
 
 from ....api import accounts, utils
 from ....database import crud
@@ -44,8 +46,11 @@ def getAbsenceList(
     date: Optional[datetime.date] = datetime.date.today(),
     db: Session = Depends(accounts.getDBSession) # Initializes a DB. 
 ):  
-    list = crud.getAbsenceList(db, date)
-    return schemas.AbsenceList(absences=list)
+    list: List[models.Absence] = crud.getAbsenceList(db, date)
+    
+    returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=absence.teacher, date=absence.date, note=absence.note) for absence in list ]
+
+    return schemas.AbsenceList(absences=returnAbsences)
 
 @router.get("/classes/", response_model=schemas.ClassList, status_code=200)
 async def getClassList(date: datetime.date):
