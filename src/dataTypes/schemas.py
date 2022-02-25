@@ -190,7 +190,7 @@ class SessionList(BaseModel):
     sessions: List[SessionReturn]
 
 class AbsenceList(BaseModel):
-    absences: Tuple
+    absences: Tuple[AbsenceReturn]
 
 class AutoComplete(BaseModel):
     suggestions: list
