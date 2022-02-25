@@ -221,6 +221,7 @@ def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserS
     return result
 
 def reset(db):
+    print("INTERNAL FLAG: RESETTING DB!")
     db.query(models.User).delete()
     db.query(models.Teacher).delete()
     db.query(models.Class).delete()

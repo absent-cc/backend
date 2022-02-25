@@ -45,22 +45,28 @@ class Users(unittest.TestCase):
             self.check(commands)
     
     class GetInfo(unittest.TestCase):
+        TROJANHORSE = TrojanHorse()
+
         def test_get_users(self):
             response = client.get("v1/users/me/info",
-            headers= { "Authorization": f"Bearer {TrojanHorse.token}" }
+            headers= { "Authorization": f"Bearer {self.TROJANHORSE.token}" }
             )
+            print(response.json())
+            print(self.TROJANHORSE.pseudo_info)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json()["first"], TrojanHorse.pseudo_info["first"])
-            self.assertEqual(response.json()["last"], TrojanHorse.pseudo_info["last"])
-            self.assertEqual(response.json()["gid"], TrojanHorse.pseudo_info["gid"])
+            self.assertEqual(response.json()["first"], self.TROJANHORSE.pseudo_info["first"])
+            self.assertEqual(response.json()["last"], self.TROJANHORSE.pseudo_info["last"])
+            self.assertEqual(response.json()["gid"], self.TROJANHORSE.pseudo_info["gid"])
         
         def runTest(self):
             self.test_get_users()
 
     class Sessions(unittest.TestCase):
+        TROJANHORSE = TrojanHorse()
+
         def test_get_sessions(self):
             response = client.get("v1/users/me/sessions",
-            headers= { "Authorization": f"Bearer {TrojanHorse.token}" }
+            headers= { "Authorization": f"Bearer {self.TROJANHORSE.token}" }
             )
             self.assertEqual(response.status_code, 200), "Failed to return 200 when Authorization header is present"
 
@@ -70,10 +76,10 @@ class Users(unittest.TestCase):
             sid = sessions_info['sid']
             raw_last_accessed = sessions_info['last_accessed']
             last_accessed = datetime.strptime(raw_last_accessed, "%Y-%m-%dT%H:%M:%S.%f")
-
-            self.assertEqual(uid, TrojanHorse.user.uid), "Failed to return correct uid" # Check uid
-            self.assertEqual(sid, TrojanHorse.session.sid), "Failed to return correct sid" # Check sid
-            self.assertAlmostEqual(last_accessed, TrojanHorse.session.last_accessed, delta=timedelta(100)), "Failed to return correct last_accessed" # Aprox. time check for last_accessed. 
+            
+            self.assertEqual(uid, self.TROJANHORSE.user.uid), "Failed to return correct uid" # Check uid
+            self.assertEqual(sid, self.TROJANHORSE.session.sid), "Failed to return correct sid" # Check sid
+            self.assertAlmostEqual(last_accessed, self.TROJANHORSE.session.last_accessed, delta=timedelta(100)), "Failed to return correct last_accessed" # Aprox. time check for last_accessed.
             
         def runTest(self):
             self.test_get_sessions()
