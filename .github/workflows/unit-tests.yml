@@ -72,8 +72,9 @@ jobs:
       env: 
         TESTING: True
       run: |
-        alembic -c tests/test_alembic.ini revision --autogenerate -m 'initial'
-        alembic -c tests/test_alembic.ini upgrade head
+        cd tests
+        alembic revision --autogenerate -m 'initial'
+        alembic upgrade head
 
     - name: Test with pytest
       run: |

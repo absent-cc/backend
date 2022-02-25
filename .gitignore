@@ -147,4 +147,5 @@ testing_config.ini
 !NNHS_teachers.csv
 !NSHS_teachers.csv
 
-src/tools/schoology/data/*
+tools/schoology/data/*
+tests/alembic/versions/*

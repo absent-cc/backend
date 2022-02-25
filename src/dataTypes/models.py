@@ -47,7 +47,7 @@ class Class(Base):
 
     teacher = relationship("Teacher")
     user = relationship("User")
-    __table_args__ = (UniqueConstraint('cid', 'tid', 'block', 'uid'),)
+    __table_args__ = (UniqueConstraint('tid', 'block', 'uid'),)
 
 class Absence(Base):
     __tablename__ = "absences"

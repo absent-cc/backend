@@ -2,11 +2,13 @@ from datetime import datetime, timedelta, timezone
 
 from pytest import Session
 
-from src.tools.schoology.helper.dateRangeGen import dateRangeGen
-from ...dataTypes import structs, tools
-from ...schoology.absences import Absences
+from .helper.dateRangeGen import dateRangeGen
+
+# Uses the compiled src package rather than the code itself!
+from src.dataTypes import structs, tools
+from src.schoology.absences import Absences
 from typing import List, Optional
-from ...api import accounts
+from src.api import accounts
 
 relative_path = "src/tools/schoology"
 
