@@ -39,7 +39,7 @@ def getClasses(
         message=str(classes)
         )
 
-@router.get("/classes/canceled", response_model=schemas.ClassCanceledBadge)
+@router.get("/classes/cancelled", response_model=schemas.ClassCanceledBadge)
 def getClasses(
     db: Session = Depends(accounts.getDBSession)
 ) -> schemas.ClassCanceledBadge:
