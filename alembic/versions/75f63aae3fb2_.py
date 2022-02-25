@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 10d19da1ead4
+Revision ID: 75f63aae3fb2
 Revises: 
-Create Date: 2022-02-24 23:52:45.208168
+Create Date: 2022-02-25 00:43:31.514035
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '10d19da1ead4'
+revision = '75f63aae3fb2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,13 +38,14 @@ def upgrade():
     )
     op.create_table('absences',
     sa.Column('tid', sa.String(length=8), nullable=False),
+    sa.Column('length', sa.String(length=255), nullable=True),
     sa.Column('note', sa.String(length=255), nullable=True),
     sa.Column('date', sa.TIMESTAMP(), nullable=False),
     sa.ForeignKeyConstraint(['tid'], ['teachers.tid'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('tid', 'date')
     )
     op.create_table('classes',
-    sa.Column('cid', sa.String(length=16), nullable=False),
+    sa.Column('cid', sa.String(length=8), nullable=False),
     sa.Column('tid', sa.String(length=8), nullable=True),
     sa.Column('block', sa.String(length=8), nullable=True),
     sa.Column('uid', sa.String(length=36), nullable=True),
@@ -65,7 +66,7 @@ def upgrade():
     )
     op.create_table('cancelled',
     sa.Column('index', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('cid', sa.String(length=16), nullable=True),
+    sa.Column('cid', sa.String(length=8), nullable=True),
     sa.Column('date', sa.TIMESTAMP(), nullable=True),
     sa.ForeignKeyConstraint(['cid'], ['classes.cid'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('index'),

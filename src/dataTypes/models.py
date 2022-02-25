@@ -40,7 +40,7 @@ class UserSession(Base):
     __table_args__ = (UniqueConstraint('sid', 'uid'),)
 class Class(Base):
     __tablename__ = "classes"
-    cid = Column(String(16), primary_key=True)
+    cid = Column(String(8), primary_key=True)
     tid = Column(String(8), ForeignKey(Teacher.tid, ondelete='CASCADE'))
     block = Column(String(8))
     uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'))
@@ -52,6 +52,7 @@ class Class(Base):
 class Absence(Base):
     __tablename__ = "absences"
     tid = Column(String(8), ForeignKey(Teacher.tid, ondelete='CASCADE'), primary_key=True)
+    length = Column(String(255))
     note = Column(String(255))
     date = Column(TIMESTAMP, primary_key=True)
 
@@ -60,7 +61,7 @@ class Absence(Base):
 class CancelledClass(Base):
     __tablename__ = "cancelled"
     index = Column(Integer, primary_key=True, autoincrement=True)
-    cid = Column(String(16), ForeignKey(Class.cid, ondelete='CASCADE'),)
+    cid = Column(String(8), ForeignKey(Class.cid, ondelete='CASCADE'),)
     date = Column(TIMESTAMP)
     
     parent = relationship("Class")

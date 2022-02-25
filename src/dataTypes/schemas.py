@@ -214,7 +214,7 @@ class Badges(BaseModel):
     schemaVersion: int = 1
     label: str
     message: str
-    color: str = "lightgrey"
+    color: str = "#FF793F"
     labelColor: str = "grey"
     isError: bool = False
     # namedLogo: str = None

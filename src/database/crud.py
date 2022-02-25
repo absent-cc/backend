@@ -63,7 +63,7 @@ def getClassesCount(db) -> int:
     return db.query(models.Class).count()
 
 def getClassesCancelledCount(db) -> int:
-    return db.query(models.CanceledClass).count()
+    return db.query(models.CancelledClass).count()
 
 def addUser(db, user: schemas.UserCreate) -> models.User:
     if user.gid != None: # Checks for GID as this is the only mandatory field.
@@ -99,7 +99,7 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
         teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
     if teacher == None:
         teacher = addTeacher(db, absence.teacher)
-    absenceModel = models.Absence(date=absence.date, tid=teacher.tid, note=absence.note)
+    absenceModel = models.Absence(date=absence.date, tid=teacher.tid, note=absence.note, length=absence.length)
     db.add(absenceModel)
     db.commit()
     return absenceModel
