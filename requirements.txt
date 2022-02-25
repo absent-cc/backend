@@ -49,7 +49,6 @@ schoolopy==0.2.2
 six==1.16.0
 sniffio==1.2.0
 SQLAlchemy==1.4.31
--e git+git@github.com:absent-cc/backend.git@2de094d5fbd9d5627c8fb291cd0bc98847fba53d#egg=src
 starlette==0.17.1
 tomli==2.0.0
 typing-extensions==4.0.1
