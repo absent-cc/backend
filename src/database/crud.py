@@ -77,7 +77,8 @@ def addUser(db, user: schemas.UserCreate) -> models.User:
 
 def addClass(db, newClass: schemas.Class) -> models.Class:
     if newClass.tid != None and newClass.uid != None and newClass.block != None: # Checks for the required fields.
-        classModel = models.Class(**newClass.dict()) # Creates a model.
+        cid = secrets.token_hex(4)
+        classModel = models.Class(**newClass.dict(), cid=cid) # Creates a model.
         db.add(classModel) # Adds it.
         db.commit()
         return classModel # Returns class details.
