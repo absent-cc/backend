@@ -142,6 +142,7 @@ abSENT/
 secrets.ini
 testing_config.ini
 .idea/
+oauth/
 
 !.gitkeep
 !NNHS_teachers.csv

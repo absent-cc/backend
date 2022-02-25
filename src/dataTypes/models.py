@@ -59,7 +59,7 @@ class Absence(Base):
 
 class CancelledClass(Base):
     __tablename__ = "cancelled"
-    cid = Column(String(16), ForeignKey(Class.cid, ondelete='CASCADE'), primary_key=True)
+    cid = Column(String(16), ForeignKey(Class.cid, ondelete='CASCADE'),)
     date = Column(TIMESTAMP)
     
     parent = relationship("Class", back_populates='classes')
