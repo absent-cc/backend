@@ -57,6 +57,10 @@ jobs:
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+    - name: Setup ssh keys
+      run: |
+        python -m tests.setup_test_system
+
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -68,10 +72,8 @@ jobs:
       env: 
         TESTING: True
       run: |
-        cd tests
-        alembic revision --autogenerate -m 'initial'
-        alembic upgrade head
-
+        alembic -c tests/test_alembic.ini revision --autogenerate -m 'initial'
+        alembic -c tests/test_alembic.ini upgrade head
     - name: Test with pytest
       run: |
         pytest
