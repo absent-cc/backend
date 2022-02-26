@@ -47,11 +47,13 @@ def getAbsenceList(
     db: Session = Depends(accounts.getDBSession) # Initializes a DB. 
 ):  
     list: List[models.Absence] = crud.getAbsenceList(db, date)
-    returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=absence.teacher, date=absence.date, note=absence.note) for absence in list ]
-    return schemas.AbsenceList(absences=returnAbsences)
+    returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=absence.teacher, note=absence.note) for absence in list ]
+    return schemas.AbsenceList(absences=returnAbsences, date=date)
 
 @router.get("/classes/", response_model=schemas.ClassList, status_code=200)
-async def getClassList(date: datetime.date):
+async def getClassList(
+    date: Optional[datetime.date] = datetime.date.today()
+    ):
     try:
         return schemas.ClassList(classes=classDict[date.weekday()])
     except:
