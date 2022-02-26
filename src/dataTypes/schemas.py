@@ -162,7 +162,6 @@ class AbsenceCreate(AbsenceBase):
 
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
-    date: date
 
 class CanceledClassCreate(Class):
     date: date
@@ -191,6 +190,7 @@ class SessionList(BaseModel):
 
 class AbsenceList(BaseModel):
     absences: List[AbsenceReturn]
+    date: date
 
 class AutoComplete(BaseModel):
     suggestions: list
