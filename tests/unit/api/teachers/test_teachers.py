@@ -87,8 +87,9 @@ class TestTeachers(unittest.TestCase):
         def test_get_teachers(self):
             pass
     
-    class AutoComplete(unittest.TestCase):
-        
+    # class AutoComplete(unittest.TestCase):
+    #    pass
+ 
     def runTest(self):
         absences_test = TestTeachers.Absences()
         absences_test.runTest()
