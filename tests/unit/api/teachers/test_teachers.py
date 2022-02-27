@@ -6,6 +6,7 @@ from urllib import response
 
 from src.api import main as api
 from fastapi.testclient import TestClient
+from src.dataTypes import models
 
 from src.dataTypes.schemas import AbsenceCreate, AbsenceReturn, TeacherCreate, TeacherReturn
 from src.dataTypes.structs import SchoolNameMapper
@@ -30,12 +31,13 @@ class TestTeachers(unittest.TestCase):
             self.dates: List[str] = [] # String versions of the date object. Format: YYYY-MM-DD
 
         def load_absences(self):
-            with open('tests/data/test_absences.csv', "r") as f:
+            with open('tests/data/test_absences.csv', "r") as f: # Reads test data
                 raw_absences: Dict = csv.DictReader(f)
+
 
                 for row in raw_absences:
                     # Add teacher to DB
-                    teacherMeta = crud.addAbsence(TestTeachers._db, AbsenceCreate(
+                    teacherMeta: models.Absence = crud.addAbsence(TestTeachers._db, AbsenceCreate(
                         teacher=TeacherCreate(
                             first=row['First'],
                             last=row['Last'],
@@ -46,16 +48,16 @@ class TestTeachers(unittest.TestCase):
                         date=row['Date']
                         )
                     )
-                    tid = teacherMeta.tid
+                    tid: str = teacherMeta.tid
 
-                    teacherReturn = TeacherReturn(
+                    teacherReturn: TeacherReturn = TeacherReturn(
                         tid=tid,
                         first=row['First'], 
                         last=row['Last'],
                         school=row['School']
                         )
 
-                    absenceReturn = AbsenceReturn(
+                    absenceReturn: AbsenceReturn= AbsenceReturn(
                         length=row['Length'],
                         teacher=teacherReturn,
                         note=row['Note'],
@@ -85,14 +87,14 @@ class TestTeachers(unittest.TestCase):
         def test_get_teachers(self):
             pass
     
+    class AutoComplete(unittest.TestCase):
+        
     def runTest(self):
         absences_test = TestTeachers.Absences()
         absences_test.runTest()
     
 if __name__ == '__main__':
-    pass
-    # _db = SessionLocal()
-    # crud.reset(_db)
-    # test = TestTeachers().Absences()
-    # test.runTest()
-    # unittest.main()
+    _db = SessionLocal()
+    crud.reset(_db)
+    test = TestTeachers().Absences()
+    test.runTest()
