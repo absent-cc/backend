@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from logging import raiseExceptions
 import time
 import secrets
 from typing import List, Tuple
@@ -233,8 +234,13 @@ def reset(db):
 # Defintion of onboarded: A user has onboarded successfully when they exist in the user table, as well as have at least one class in the class table.
 # Otherwise, they have not onboarded.
 # Returns: Tuple[bool, bool] = (exists in users, exists in classes)
-def checkOnboarded(db, gid: str) -> Tuple[bool, bool]:
-    resUser = getUser(db, schemas.UserReturn(gid=gid))
+def checkOnboarded(db, gid: str = None, uid: str = None) -> Tuple[bool, bool]:
+    if gid != None:
+        resUser = getUser(db, schemas.UserReturn(gid=gid))
+    elif uid != None:
+        resUser = getUser(db, schemas.UserReturn(uid=uid))
+    else: 
+        raise Exception("No gid or uid provided!")
     
     # If user is not in the table, they could not have possibly been onboarded.
     if resUser == None: return (False, False)

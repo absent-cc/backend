@@ -57,6 +57,9 @@ def authenticate(gToken: schemas.Token, db: Session = Depends(accounts.getDBSess
 def refresh(cid = Depends(accounts.verifyRefreshToken)): # Here, the refresh token is decoded and verified using our accounts code.
     if cid != None: # This is the actual validity check here.
         token = accounts.generateToken(cid) # Issue a new token, using accounts code. Since these tokens are stateless no DB interaction is needed.
-        return schemas.SessionCredentials(token=token) # Return this using our credentials schema.
+        db, = accounts.getDBSession()
+        sid, uid = cid.split(".") # Split the cid into the session id and user id.
+        inSystem, hasClasses = crud.checkOnboarded(db, uid=uid) # Check if the user has been onboarded.
+        return schemas.SessionCredentials(token=token, onboarded=(inSystem and hasClasses), refresh=cid) # Return this using our credentials schema.
     else:
         utils.raiseError(401, "Invalid refresh token provided", structs.ErrorType.AUTH) # Otherwise, raise an error of type AUTH, signifying an invalid token.

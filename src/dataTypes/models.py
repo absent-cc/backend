@@ -1,6 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, Text, collate
 from sqlalchemy.orm import relationship
-from citext import CIText
 
 if "alembic.env" in __name__:
     from ..database.database import Base # CHANGE THIS TO ..database for ALEMBIC
