@@ -19,7 +19,7 @@ class Users(unittest.TestCase):
                 print("RUN 1:", response)
                 self.assertEqual(response.status_code, status_code), "Failed to return correct status code when no Authorization header is present"
             def no_header(self, status_code: int):
-                response = client.get("v1/users/me/sessions", headers = {"Authorization": "Bearing Trojan_Horse"})
+                response = client.get("v1/users/me/sessions", headers = {"Absent-Auth": "Trojan_Horse"})
                 print("RUN 2:", response)
                 self.assertEqual(response.status_code, status_code), "Failed to return correct status code when no Authorization header is present"
             print("COMMAND", command)
@@ -33,14 +33,14 @@ class Users(unittest.TestCase):
         
         def runTest(self):
             commands = {
-                    "info" : (403, 403), 
-                    "sessions" : (403, 403),
-                    "delete" : (405, 403),
-                    "update" : (405, 403),
-                    "update/profile" : (405 , 403),
-                    "update/schedule" : (405, 403),
-                    "update/fcm" : (405, 403),
-                    "session/revoke": (404, 403),
+                    "info" : (403, 401), 
+                    "sessions" : (403, 401),
+                    "delete" : (405, 401),
+                    "update" : (405, 401),
+                    "update/profile" : (405 , 401),
+                    "update/schedule" : (405, 401),
+                    "update/fcm" : (405, 401),
+                    "session/revoke": (404, 401),
             }
             self.check(commands)
     
@@ -49,7 +49,7 @@ class Users(unittest.TestCase):
 
         def test_get_users(self):
             response = client.get("v1/users/me/info",
-            headers= { "Absent-Auth": f"Bearer {self.TROJANHORSE.token}" }
+            headers= { "Absent-Auth": f"{self.TROJANHORSE.token}" }
             )
             print(response.json())
             print(self.TROJANHORSE.pseudo_info)
@@ -66,7 +66,7 @@ class Users(unittest.TestCase):
 
         def test_get_sessions(self):
             response = client.get("v1/users/me/sessions",
-            headers= { "Absent-Auth": f"Bearer {self.TROJANHORSE.token}" }
+            headers= { "Absent-Auth": f"{self.TROJANHORSE.token}" }
             )
             self.assertEqual(response.status_code, 200), "Failed to return 200 when Authorization header is present"
 
