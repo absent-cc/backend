@@ -31,7 +31,7 @@ class TestTeachers(unittest.TestCase):
             self.dates: List[str] = [] # String versions of the date object. Format: YYYY-MM-DD
 
         def load_absences(self):
-            with open('tests/data/test_absences.csv', "r") as f: # Reads test data
+            with open('./tests/unit/data/test_absences.csv', "r") as f: # Reads test data
                 raw_absences: Dict = csv.DictReader(f)
 
 

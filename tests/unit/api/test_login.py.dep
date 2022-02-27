@@ -57,7 +57,7 @@ class TestLogin(unittest.TestCase):
         
         refresh_token = login_response["refresh"]
         response = self.client.post("v1/refresh/",
-            headers={"Authorization": f"Bearer {refresh_token}"},
+            headers={"Authorization": f"absent-auth {refresh_token}"},
         )
         assert response.status_code == 201
     

@@ -49,7 +49,7 @@ class Users(unittest.TestCase):
 
         def test_get_users(self):
             response = client.get("v1/users/me/info",
-            headers= { "Authorization": f"Bearer {self.TROJANHORSE.token}" }
+            headers= { "Authorization": f"absent-auth {self.TROJANHORSE.token}" }
             )
             print(response.json())
             print(self.TROJANHORSE.pseudo_info)
@@ -66,7 +66,7 @@ class Users(unittest.TestCase):
 
         def test_get_sessions(self):
             response = client.get("v1/users/me/sessions",
-            headers= { "Authorization": f"Bearer {self.TROJANHORSE.token}" }
+            headers= { "Authorization": f"absent-auth {self.TROJANHORSE.token}" }
             )
             self.assertEqual(response.status_code, 200), "Failed to return 200 when Authorization header is present"
 
