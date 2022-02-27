@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, Text, collate
 from sqlalchemy.orm import relationship
 
 if "alembic.env" in __name__:
@@ -10,24 +10,29 @@ class User(Base):
     __tablename__ = "users"
     uid = Column(String(36), primary_key=True)
     gid = Column(String(255), unique=True)
-    first = Column(String(255))
-    last = Column(String(255))
+    first = Column(Text(255))
+    last = Column(Text(255))
     school = Column(String(4))
     grade = Column(Integer)
 
     schedule = relationship("Class", back_populates="user")
     sessions = relationship("UserSession", back_populates="user")
 
+    caseInsensitiveFirst = collate('first', 'NOCASE')
+    caseInsensitiveLast = collate('last', 'NOCASE')
+
 class Teacher(Base):
     __tablename__ = "teachers"
     tid = Column(String(8), primary_key=True)
-    first = Column(String(255))
-    last = Column(String(255))
+    first = Column(Text(255))
+    last = Column(Text(255))
     school = Column(String(4))
 
     schedule = relationship("Class", back_populates="teacher")
     __table_args__ = (UniqueConstraint('first', 'last', 'school'),)
     
+    caseInsensitiveFirst = collate('first', 'NOCASE')
+    caseInsensitiveLast = collate('last', 'NOCASE')
 class UserSession(Base):
     __tablename__ = "sessions"
     sid = Column(String(16), primary_key=True)

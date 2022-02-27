@@ -79,9 +79,9 @@ class TestTeachers(unittest.TestCase):
                     self.assertNotEqual(test_entry, None), "Lookup of response teacher failed."
 
                     self.assertEqual(entry['length'], test_entry.length), "Length entry does not match test data."
-                    self.assertEqual(entry['teacher']['first'], test_entry.teacher.first.upper()), "First name entry does not match test data."
-                    self.assertEqual(entry['teacher']['last'], test_entry.teacher.last.upper()), "Last name entry does not match test data."
-                    self.assertEqual(entry['teacher']['school'], test_entry.teacher.school), "School name entry does not match test data."
+                    self.assertEqual(entry['teacher']['first'].upper(), test_entry.teacher.first.upper()), "First name entry does not match test data."
+                    self.assertEqual(entry['teacher']['last'].upper(), test_entry.teacher.last.upper()), "Last name entry does not match test data."
+                    self.assertEqual(entry['teacher']['school'].upper(), test_entry.teacher.school), "School name entry does not match test data."
                     self.assertEqual(entry['note'], test_entry.note), "Note entry does not match test data."
 
         def test_get_teachers(self):

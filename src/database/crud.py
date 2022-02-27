@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from logging import raiseExceptions
 import time
 import secrets
 from typing import List, Tuple
@@ -21,7 +22,7 @@ def getTeacher(db, teacher: schemas.TeacherReturn) -> models.Teacher:
     if teacher.tid != None:
         return db.query(models.Teacher).filter(models.Teacher.tid == teacher.tid).first() # Looks up teacher by TID if available, grabs the first match.
     if teacher.first != None and teacher.last != None and teacher.school != None: # Does so below by name and school, these entries are treated as a primary key by our DB.
-        return db.query(models.Teacher).filter(models.Teacher.first == teacher.first.upper(), models.Teacher.last == teacher.last.upper()).first()
+        return db.query(models.Teacher).filter(models.Teacher.first == teacher.first, models.Teacher.last == teacher.last).first()
     return None
 
 def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
@@ -87,7 +88,7 @@ def addClass(db, newClass: schemas.Class) -> models.Class:
 def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
     if newTeacher.first != None and newTeacher.last != None and newTeacher.school != None: # Checks for required fields.
         tid = secrets.token_hex(4) # Generates hexadecimal TID.
-        teacherModel = models.Teacher(tid=tid, first=newTeacher.first.upper(), last=newTeacher.last.upper(), school=newTeacher.school) # Creates a model.
+        teacherModel = models.Teacher(tid=tid, first=newTeacher.first, last=newTeacher.last, school=newTeacher.school) # Creates a model.
         db.add(teacherModel) # Adds teacher.
         db.commit()
         logger.info("Teacher added: " + tid) # Logs the action.
@@ -201,7 +202,7 @@ def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> 
         for cls in schedule:
             if cls[1] != None:
                 for teacher in cls[1]: # This loops through all the teachers for a given block.
-                    resTeacher = getTeacher(db, schemas.TeacherReturn(first=teacher.first.upper(), last=teacher.last.upper(), school=user.school))
+                    resTeacher = getTeacher(db, schemas.TeacherReturn(first=teacher.first, last=teacher.last, school=user.school))
                     if resTeacher == None:
                         tid = addTeacher(db, schemas.TeacherCreate(first=teacher.first, last=teacher.last, school=user.school)).tid # Adds them to DB if they don't exist.
                     else:
@@ -233,8 +234,13 @@ def reset(db):
 # Defintion of onboarded: A user has onboarded successfully when they exist in the user table, as well as have at least one class in the class table.
 # Otherwise, they have not onboarded.
 # Returns: Tuple[bool, bool] = (exists in users, exists in classes)
-def checkOnboarded(db, gid: str) -> Tuple[bool, bool]:
-    resUser = getUser(db, schemas.UserReturn(gid=gid))
+def checkOnboarded(db, gid: str = None, uid: str = None) -> Tuple[bool, bool]:
+    if gid != None:
+        resUser = getUser(db, schemas.UserReturn(gid=gid))
+    elif uid != None:
+        resUser = getUser(db, schemas.UserReturn(uid=uid))
+    else: 
+        raise Exception("No gid or uid provided!")
     
     # If user is not in the table, they could not have possibly been onboarded.
     if resUser == None: return (False, False)
