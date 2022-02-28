@@ -50,7 +50,6 @@ def updateUserInfo(
     token = crud.updateFCMToken(db, user.fcm, creds.uid, creds.sid)
 
     if (profile, token) != None and schedule:
-
         user.schedule = schemas.ScheduleReturn().scheduleFromList(crud.getClassesByUser(db, schemas.UserReturn(uid=creds.uid)))
 
         return user # Returns success.

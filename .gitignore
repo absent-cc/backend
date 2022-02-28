@@ -144,6 +144,7 @@ testing_config.ini
 .idea/
 oauth/
 alembic/versions/*
+src/api/debug_scripts/*
 
 !.gitkeep
 !NNHS_teachers.csv
