@@ -7,7 +7,7 @@ class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
         self.south = structs.SchoolName.NEWTON_SOUTH
-        self.restTime = timedelta(seconds=10)
+        self.restTime = timedelta(seconds=30)
         self.sc = Absences(SCHOOLOGYCREDS)
 
     # Run function, for listening and calling notifications code.

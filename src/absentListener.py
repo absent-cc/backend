@@ -44,33 +44,35 @@ def listener():
 
     schoologySuccessCheck = False
     dayoffLatch = False
+
     while True:
-        currentTime = datetime.now(timezone.utc) - timedelta(hours=69) # Shift by 5 hours to get into EST.
+        currentTime = datetime.now(timezone.utc) - timedelta(hours=5) # Shift by 5 hours to get into EST.
         currentDate = currentTime.strftime('%d/%m/%Y')
         dayOfTheWeek = currentTime.weekday() 
         
-        print("LISTENING", currentTime)
+        if not dayoffLatch:
+            print("LISTENING", currentTime)
 
-        if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
-            if dayoffLatch == False:
-                print("abSENT DAY OFF")
-                dayoffLatch = True
-        else:
-            aboveStartTime: bool = currentTime.hour >= dailyCheckTimeStart
-            belowEndTime: bool = currentTime.hour <= dailyCheckTimeEnd
-            if (aboveStartTime and belowEndTime and not schoologySuccessCheck) or debugMode:
-                print("CHECKING SCHOOLOGY.")
-                sc = SchoologyListener(SCHOOLOGYCREDS)
-                schoologySuccessCheck = sc.run()
-                print("CHECK COMPLETE.")
+            if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
+                if dayoffLatch == False:
+                    print("abSENT DAY OFF. LATCHING TO SLEEP!")
+                    dayoffLatch = True
             else:
-                print("NOT IN DAILY CHECK TIME.")
-        
+                aboveStartTime: bool = currentTime.hour >= dailyCheckTimeStart
+                belowEndTime: bool = currentTime.hour <= dailyCheckTimeEnd
+                if (aboveStartTime and belowEndTime and not schoologySuccessCheck) or debugMode:
+                    print("CHECKING SCHOOLOGY...")
+                    sc = SchoologyListener(SCHOOLOGYCREDS)
+                    schoologySuccessCheck = sc.run()
+                    print("CHECK COMPLETE!")
+                else:
+                    print("NOT IN DAILY CHECK TIME OR SCHOOLOGY HAS ALREADY BEEN CHECKED")
+            
         if (currentTime.hour == resetTimeOne[0] or currentTime.hour == resetTimeTwo[0]):
             # Reset schoologySuccessCheck to false @ midnight
             # Only change value when it is latched (true)
             if schoologySuccessCheck == True:
-                print("RESTART")
+                print("RESETTING STATE!", currentTime)
                 dayoffLatch = False
                 schoologySuccessCheck = False
 
