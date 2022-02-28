@@ -70,6 +70,7 @@ def init_app():
     absent.include_router(v1.router) # Include routers for V1 API
 
     return absent
+
 if __name__ == "__main__":
-    init_app()
+    absentApp = init_app()
 

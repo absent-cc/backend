@@ -1,4 +1,6 @@
-import csv
+# Run 'python -m src.dev' to run this script
+# Must be run from root folder!
+
 import os
 import logging
 import sys
@@ -6,7 +8,9 @@ import sys
 from gunicorn.app.base import BaseApplication
 from gunicorn.glogging import Logger
 from loguru import logger
-from api.main import absent as app
+from .api.main import init_app
+
+app = init_app()
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
@@ -56,9 +60,9 @@ class StandaloneApplication(BaseApplication):
 
     def load(self):
         return self.application
-    
-if __name__ == '__main__':
 
+
+if __name__ == '__main__':
     intercept_handler = InterceptHandler()
     logging.root.setLevel(LOG_LEVEL)
 
@@ -86,7 +90,7 @@ if __name__ == '__main__':
     logger.add("logs/latest.log", rotation="4 hours", retention=1)   
 
     options = {
-        "bind": "unix:/opt/absent-sock/absent.sock",
+        "bind": "0.0.0.0:8000",
         "workers": WORKERS,
         "accesslog": "-",
         "errorlog": "-",
@@ -94,4 +98,5 @@ if __name__ == '__main__':
         "logger_class": StubbedGunicornLogger
     }
 
+    print("Go to: http://localhost:8000/docs")
     StandaloneApplication(app, options).run()
