@@ -44,6 +44,7 @@ class SchoologyListener:
         def northRun() -> bool:
             # Get the absences
             absences = self.sc.filterAbsencesNorth(date)
+            print("In North")
 
             if absences == None:
                 return False
@@ -59,4 +60,6 @@ class SchoologyListener:
             if not statuses[self.north].notifications:
                 print("ADD IN NOTIFY CODE HERE LATER")
         
-        return southRun() and northRun()
+        southRes = southRun()
+        northRes = northRun()
+        return southRes and northRes

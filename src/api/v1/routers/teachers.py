@@ -43,9 +43,11 @@ router = APIRouter(prefix="/teachers", tags=["Teachers"])
 
 @router.get("/absences/", response_model=schemas.AbsenceList, status_code=200)
 def getAbsenceList(
-    date: Optional[datetime.date] = datetime.date.today(),
+    date: datetime.date = None,
     db: Session = Depends(accounts.getDBSession) # Initializes a DB. 
 ):  
+    if date == None:
+        date = datetime.date.today()
     list: List[models.Absence] = crud.getAbsenceList(db, date)
     returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=absence.teacher, note=absence.note) for absence in list ]
     return schemas.AbsenceList(absences=returnAbsences, date=date)
