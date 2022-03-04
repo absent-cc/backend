@@ -3,14 +3,16 @@ import time
 from ..api import utils
 from ..database import crud
 from ..dataTypes import schemas, structs
-from ..dataTypes.headers import HTTPAuthCreds, HTTPBase
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from cryptography.hazmat.primitives import serialization
-from fastapi import Depends
-# from fastapi.security.http import HTTPBearer, HTTPBaseorizationCredentials
+from fastapi import Depends, Security, FastAPI
 from loguru import logger
 from ..database.database import SessionLocal
+from fastapi.security.api_key import APIKeyHeader, APIKey
+
+API_KEY_NAME = "absent-auth"
+credsHeader = APIKeyHeader(name=API_KEY_NAME, auto_error=True)
 
 def getDBSession():
     # Dependency
@@ -25,13 +27,12 @@ with open('creds/id_rsa.pub', 'r') as f:
 with open('creds/id_rsa', 'r') as f:
     PRIV_KEY = f.read()
 
-# Depends for checking credentials on each request.
 def verifyCredentials(
-        creds: HTTPAuthCreds = Depends(HTTPBase()),
+        creds: str = Security(credsHeader),
         db = Depends(getDBSession)
     ) -> schemas.SessionReturn:
 
-    creds = decodeToken(creds.credentials)
+    creds = decodeToken(creds)
     if creds == None:
         return None
     sub = creds['sub'].split('.')
@@ -42,8 +43,8 @@ def verifyCredentials(
     logger.info(f"Credential check failed: {sub}")
     utils.raiseError(401, "Invalid credentials", structs.ErrorType.AUTH)
 
-def verifyRefreshToken(creds: HTTPAuthCreds = Depends(HTTPBase())) -> str:
-    cid = validateRefreshToken(creds.credentials)
+def verifyRefreshToken(creds: str = Security(credsHeader)) -> str:
+    cid = validateRefreshToken(creds)
     return cid
 
 #
