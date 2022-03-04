@@ -54,8 +54,10 @@ def getAbsenceList(
 
 @router.get("/classes/", response_model=schemas.ClassList, status_code=200)
 async def getClassList(
-    date: Optional[datetime.date] = datetime.date.today()
+    date: Optional[datetime.date] = None
     ):
+    if date == None:
+        date = datetime.date.today()
     try:
         return schemas.ClassList(classes=classDict[date.weekday()])
     except:

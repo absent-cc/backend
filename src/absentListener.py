@@ -34,7 +34,7 @@ def listener():
     holidays = []
 
     # debug mode
-    debugMode = False
+    debugMode = True
 
     dailyCheckTimeStart = 7 # hour
     dailyCheckTimeEnd = 12 # hour

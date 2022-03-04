@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+
 from ..dataTypes import structs
 from ..notifications import firebase
 from .absences import Absences
@@ -26,25 +27,27 @@ class SchoologyListener:
         def southRun() -> bool:
             # Get the absences
             absences = self.sc.filterAbsencesSouth(date)
-            
+            print("END OF PRINT STATMENT")
             if absences == None:
                 return False
              
             # Add the absences to the database.
             for absence in absences:
                 # Check if the absence is already in the database.
-                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
-                    print("Absence already in database.")
-                    statuses[self.south].absences = True # Update status that action was committed previously.
-                    break
+                self.sc.addAbsence(absence)
+                print("HERE")
+                # if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                #     print("SOUTH: Absence already in database.")
+                #     statuses[self.south].absences = True # Update status that action was committed previously.
+                #     break
+            statuses[self.south].absences = True # Update status that action was committed previously.
                 
             if not statuses[self.south].notifications:
-                print("ADD IN NOTIFY CODE HERE LATER")
+                print("SOUTH: ADD IN NOTIFY CODE HERE LATER")
 
         def northRun() -> bool:
             # Get the absences
             absences = self.sc.filterAbsencesNorth(date)
-            print("In North")
 
             if absences == None:
                 return False
@@ -53,12 +56,12 @@ class SchoologyListener:
             for absence in absences:
                 # Check if the absence is already in the database.
                 if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
-                    print("Absence already in database.")
+                    print("NORTH: Absence already in database.")
                     statuses[self.north].absences = True # Update status that action was committed previously.
                     break
                 
             if not statuses[self.north].notifications:
-                print("ADD IN NOTIFY CODE HERE LATER")
+                print("NORTH: ADD IN NOTIFY CODE HERE LATER")
         
         southRes = southRun()
         northRes = northRun()
