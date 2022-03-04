@@ -170,6 +170,7 @@ def removeSession(db, session: schemas.SessionReturn) -> bool:
 
 def removeDayAbsences(db, date: datetime) -> bool:
     db.query(models.Absence).filter(models.Absence.date == date).delete()
+    db.commit()
     return True
 
 def removeUser(db, user: schemas.UserReturn) -> bool:
