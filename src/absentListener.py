@@ -40,7 +40,7 @@ def listener():
     dailyCheckTimeEnd = 12 # hour
     
     resetTimeOne = (0, 0) # Midnight
-    resetTimeTwo = (4, 20) # Light it up
+    resetTimeTwo = (16, 20) # Light it up
 
     schoologySuccessCheck = False
     dayoffLatch = False
