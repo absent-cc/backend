@@ -55,8 +55,6 @@ class Absences:
     def filterAbsencesSouth(self, date):
         table = self.getCurrentTable(structs.SchoolName.NEWTON_SOUTH, date)    
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_SOUTH)
-        print("SOUTH ABSENCES ARE:")
-        print(absences)
         return absences
 
     # Wrapper to add in absences to the database.
@@ -66,11 +64,10 @@ class Absences:
         try:
             # print(absence)
             crud.addAbsence(self.db, absence)
-            print("Absence added to database")
             return True
         except Exception as e:
             # print(e)
-            print("Absence already exists")
+            print(f"{absence} already exists in DB")
             return False
 
 class ContentParser:
@@ -100,8 +97,6 @@ class ContentParser:
 
     def constructObject(self, update: structs.RawUpdate, map: dict, school: structs.SchoolName) -> List[schemas.AbsenceCreate]:
         objList = []
-        print("THE CONTENT IS:", update.content)
-        print("THE MAP IS:", map)
         for row in update.content:
             try:
                 teacher = schemas.TeacherCreate(first=row[map[structs.TableColumn.FIRST_NAME][0]], last=row[map[structs.TableColumn.LAST_NAME][0]], school=school)
@@ -132,7 +127,7 @@ class ContentParser:
         return objList
 
     def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
-        print(update)
+        # print(update)
         while not (('position' in update.content[0].lower()) or ('name' in update.content[0].lower())) and len(update.content) > 1:
             update.content.pop(0)
         return update

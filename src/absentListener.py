@@ -34,13 +34,13 @@ def listener():
     holidays = []
 
     # debug mode
-    debugMode = True
+    debugMode = False
 
     dailyCheckTimeStart = 7 # hour
     dailyCheckTimeEnd = 12 # hour
     
-    resetTimeOne = (0, 0) # midnight
-    resetTimeTwo = (4, 20) # midnight
+    resetTimeOne = (0, 0) # Midnight
+    resetTimeTwo = (4, 20) # Light it up
 
     schoologySuccessCheck = False
     dayoffLatch = False
@@ -53,20 +53,25 @@ def listener():
         if not dayoffLatch:
             print("LISTENING", currentTime)
 
+            print(f"Schoology Success: {schoologySuccessCheck}")
             if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
                 if dayoffLatch == False:
-                    print("abSENT DAY OFF. LATCHING TO SLEEP!")
+                    print(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
                     dayoffLatch = True
             else:
                 aboveStartTime: bool = currentTime.hour >= dailyCheckTimeStart
                 belowEndTime: bool = currentTime.hour <= dailyCheckTimeEnd
-                if (aboveStartTime and belowEndTime and not schoologySuccessCheck) or debugMode:
+                if (aboveStartTime and belowEndTime and not schoologySuccessCheck) or debugMode: # IF its during the check time and t hasn't already been checked.
                     print("CHECKING SCHOOLOGY...")
                     sc = SchoologyListener(SCHOOLOGYCREDS)
                     schoologySuccessCheck = sc.run()
+                    print(f"Schoology Success: {schoologySuccessCheck}")
                     print("CHECK COMPLETE!")
                 else:
-                    print("NOT IN DAILY CHECK TIME OR SCHOOLOGY HAS ALREADY BEEN CHECKED")
+                    if schoologySuccessCheck:
+                        print("Not checking becuase schoology has alrady been checked.")
+                    if not (aboveStartTime and belowEndTime):
+                        print("Not checking because its not during the check time.")
             
         if (currentTime.hour == resetTimeOne[0] or currentTime.hour == resetTimeTwo[0]):
             # Reset schoologySuccessCheck to false @ midnight

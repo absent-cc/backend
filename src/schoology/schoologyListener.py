@@ -27,7 +27,6 @@ class SchoologyListener:
         def southRun() -> bool:
             # Get the absences
             absences = self.sc.filterAbsencesSouth(date)
-            print("END OF PRINT STATMENT")
             if absences == None:
                 return False
              
@@ -35,7 +34,6 @@ class SchoologyListener:
             for absence in absences:
                 # Check if the absence is already in the database.
                 self.sc.addAbsence(absence)
-                print("HERE")
                 # if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
                 #     print("SOUTH: Absence already in database.")
                 #     statuses[self.south].absences = True # Update status that action was committed previously.
@@ -44,6 +42,7 @@ class SchoologyListener:
                 
             if not statuses[self.south].notifications:
                 print("SOUTH: ADD IN NOTIFY CODE HERE LATER")
+                return True
 
         def northRun() -> bool:
             # Get the absences
@@ -62,7 +61,15 @@ class SchoologyListener:
                 
             if not statuses[self.north].notifications:
                 print("NORTH: ADD IN NOTIFY CODE HERE LATER")
+                return True
         
         southRes = southRun()
         northRes = northRun()
         return southRes and northRes
+
+if __name__ == "__main__":
+    config = ConfigParser()
+    config.read('config.ini')
+    creds = config['SCHOOLOGY']
+    sl = SchoologyListener(creds)
+    sl.run()
