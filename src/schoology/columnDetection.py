@@ -147,7 +147,7 @@ class ColumnDetection:
             structs.TableColumn.NOTE: (-1, -1),
             structs.TableColumn.LENGTH: (-1, -1),
             structs.TableColumn.POSITION: (-1, -1),
-        }
+        } # PLEASE REPLACE ME WITH COLUMN MAPPER CLASS!
 
         for col in range(table.columns - 2):
             column = []

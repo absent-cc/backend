@@ -20,8 +20,8 @@ class Absences:
             structs.SchoolName.NEWTON_NORTH: schoolopy.Schoology(schoolopy.Auth(northkey, northsecret)),
             structs.SchoolName.NEWTON_SOUTH: schoolopy.Schoology(schoolopy.Auth(southkey, southsecret))
         }
-        self.api[structs.SchoolName.NEWTON_NORTH].limit = 10
-        self.api[structs.SchoolName.NEWTON_SOUTH].limit = 10
+        self.api[structs.SchoolName.NEWTON_NORTH].limit = 20
+        self.api[structs.SchoolName.NEWTON_SOUTH].limit = 20
         self.db = SessionLocal()
 
     # Gets the feed, accepting an argument 'school' which is either 0 or 1, 0 corresponding to North and 1 corresponding to South (this value being the same as the school's index within the API array). Grabs all updates posted by individuals of interest and saves them to an array 'feed', and returns that array.
@@ -40,6 +40,8 @@ class Absences:
         for poster, body, feedDate in feed:
             postDate = datetime.utcfromtimestamp(int(feedDate))
             if date.date() == postDate.date():
+                # print("HERE")
+                # print(poster, body, feedDate)
                 return structs.RawUpdate(content=body.split("\n"), poster=poster)
         return None
 
@@ -60,10 +62,12 @@ class Absences:
     # Meant to avoid the need for ENV variables
     def addAbsence(self, absence) -> bool:
         try:
+            # print(absence)
             crud.addAbsence(self.db, absence)
             return True
-        except:
-            print("Absences already exists")
+        except Exception as e:
+            # print(e)
+            print(f"{absence} already exists in DB")
             return False
 
 class ContentParser:
@@ -94,10 +98,10 @@ class ContentParser:
     def constructObject(self, update: structs.RawUpdate, map: dict, school: structs.SchoolName) -> List[schemas.AbsenceCreate]:
         objList = []
         for row in update.content:
-
             try:
                 teacher = schemas.TeacherCreate(first=row[map[structs.TableColumn.FIRST_NAME][0]], last=row[map[structs.TableColumn.LAST_NAME][0]], school=school)
             except IndexError:
+                print("INDEX ERROR TRY STATEMENT")
                 continue
 
             try:
@@ -118,12 +122,12 @@ class ContentParser:
                 date = self.date,
                 note = note
             )
-
+            # print("THE OBJECT CREATED IS:", object)
             objList.append(object)
         return objList
 
     def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
-        print(update)
+        # print(update)
         while not (('position' in update.content[0].lower()) or ('name' in update.content[0].lower())) and len(update.content) > 1:
             update.content.pop(0)
         return update

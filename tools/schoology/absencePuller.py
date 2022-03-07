@@ -51,7 +51,7 @@ class VariableSchoologyWriter:
         
         return {
             structs.SchoolName.NEWTON_SOUTH: southPull(), 
-            structs.SchoolName.NEWTON_NORTH: northPull()
+            # structs.SchoolName.NEWTON_NORTH: northPull() # TURN BACK ON AFTER DEBUG
             }
     
     def updateDatabase(self, filteredAbsences: dict[structs.SchoolName, list[str]], date: datetime, db: Session = accounts.getDBSession):
@@ -121,5 +121,5 @@ SCHOOLOGYCREDS = structs.SchoologyCreds(
 
 if __name__ == "__main__":
     writer = VariableSchoologyWriter(SCHOOLOGYCREDS)
-    dates = dateRangeGen(datetime(2022, 2, 10), datetime(2022, 2, 20))
+    dates = dateRangeGen(datetime(2022, 3, 1), datetime(2022, 3, 2))
     writer.run(dates)
