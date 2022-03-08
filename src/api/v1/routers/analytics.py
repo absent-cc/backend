@@ -10,7 +10,7 @@ from typing import List
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
-@router.get("/info", response_model=schemas.Analytics)
+@router.get("/info/", response_model=schemas.Analytics)
 def getAnalytics(
     db: Session = Depends(accounts.getDBSession)
 ) -> schemas.Analytics:
@@ -18,7 +18,7 @@ def getAnalytics(
     absences = crud.getAbsencesCount(db)
     return schemas.Analytics(userCount=userCount, totalAbsences=absences)
 
-@router.post("/canceled", response_model=schemas.Bool)
+@router.post("/canceled/", response_model=schemas.Bool)
 async def updateAbsences(
     cancelledClasses: List[schemas.CanceledClassCreate],
     db: Session = Depends(accounts.getDBSession),
