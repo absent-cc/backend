@@ -34,13 +34,13 @@ def listener():
     holidays = []
 
     # debug mode
-    debugMode = True
+    debugMode = False
 
     dailyCheckTimeStart = 7 # hour
     dailyCheckTimeEnd = 12 # hour
     
     resetTimeOne = (0, 0) # Midnight
-    resetTimeTwo = (16, 20) # Light it up
+    resetTimeTwo = (4, 20) # Light It Up
 
     schoologySuccessCheck = False
     dayoffLatch = False
