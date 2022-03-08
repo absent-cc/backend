@@ -87,7 +87,7 @@ if __name__ == '__main__':
     logger.add("logs/{time:YYYY-MM-DD}/database.log", enqueue=True, filter="database", rotation="00:00", retention=12, compression="tar.gz")
     logger.add("logs/{time:YYYY-MM-DD}/accounts.log", enqueue=True, filter="api.accounts", rotation="00:00", retention=12, compression="tar.gz")
     # Add a general stdout logger.
-    logger.add("logs/latest.log", rotation="4 hours", retention=1)   
+    logger.add("logs/latest.log", rotation="4 hours", retention=0)   
 
     options = {
         "bind": "0.0.0.0:8000",
