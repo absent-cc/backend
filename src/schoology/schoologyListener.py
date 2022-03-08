@@ -2,14 +2,14 @@ from datetime import datetime, timedelta, timezone
 
 from ..dataTypes import structs
 from ..notifications import firebase
-from .absences import Absences
+from .absences import AbsencePuller
 from configparser import ConfigParser
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
         self.south = structs.SchoolName.NEWTON_SOUTH
         self.restTime = timedelta(seconds=30)
-        self.sc = Absences(SCHOOLOGYCREDS)
+        self.sc = AbsencePuller(SCHOOLOGYCREDS)
 
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:

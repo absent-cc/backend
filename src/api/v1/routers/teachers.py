@@ -7,6 +7,7 @@ from fuzzywuzzy import fuzz
 from sqlalchemy.orm import Session
 
 from src.dataTypes import models
+from ....utils.prettifyTeacherName import prettify
 
 from ....api import accounts, utils
 from ....database import crud
@@ -50,7 +51,8 @@ def getAbsenceList(
     if date == None:
         date = datetime.date.today()
     list: List[models.Absence] = crud.getAbsenceList(db, date, school)
-    returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=absence.teacher, note=absence.note) for absence in list ]
+    returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=prettify(absence.teacher), note=absence.note) for absence in list ]
+
     return schemas.AbsenceList(absences=returnAbsences, date=date)
 
 @router.get("/classes/", response_model=schemas.ClassList, status_code=200)

@@ -8,7 +8,7 @@ from ..database import crud
 from ..dataTypes import schemas, structs
 from .columnDetection import ColumnDetection
 
-class Absences:
+class AbsencePuller:
     # Sets up the two API objects as entries within a list 'api' . 
     def __init__(self, scCreds: structs.SchoologyCreds):
         northkey = scCreds.keys[structs.SchoolName.NEWTON_NORTH]
@@ -131,3 +131,12 @@ class ContentParser:
         while not (('position' in update.content[0].lower()) or ('name' in update.content[0].lower())) and len(update.content) > 1:
             update.content.pop(0)
         return update
+
+# class AbsenceCalculator():
+#     def __init__(self):
+#         self.db = SessionLocal()
+    
+#     def calculate(self):
+#         absences = crud.getAbsenceList(self.db)
+         
+#         return absences
