@@ -33,6 +33,7 @@ class Teacher(Base):
     
     caseInsensitiveFirst = collate('first', 'NOCASE')
     caseInsensitiveLast = collate('last', 'NOCASE')
+    caseInsensitiveLast = collate('school', 'NOCASE')
 class UserSession(Base):
     __tablename__ = "sessions"
     sid = Column(String(16), primary_key=True)

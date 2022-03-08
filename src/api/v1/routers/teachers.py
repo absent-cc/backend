@@ -44,18 +44,21 @@ router = APIRouter(prefix="/teachers", tags=["Teachers"])
 @router.get("/absences/", response_model=schemas.AbsenceList, status_code=200)
 def getAbsenceList(
     date: datetime.date = None,
-    db: Session = Depends(accounts.getDBSession) # Initializes a DB. 
+    db: Session = Depends(accounts.getDBSession), # Initializes a DB. 
+    school: Optional[structs.SchoolName] = None # Initializes a school.
 ):  
     if date == None:
         date = datetime.date.today()
-    list: List[models.Absence] = crud.getAbsenceList(db, date)
+    list: List[models.Absence] = crud.getAbsenceList(db, date, school)
     returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=absence.teacher, note=absence.note) for absence in list ]
     return schemas.AbsenceList(absences=returnAbsences, date=date)
 
 @router.get("/classes/", response_model=schemas.ClassList, status_code=200)
 async def getClassList(
-    date: Optional[datetime.date] = datetime.date.today()
+    date: Optional[datetime.date] = None
     ):
+    if date == None:
+        date = datetime.date.today()
     try:
         return schemas.ClassList(classes=classDict[date.weekday()])
     except:
