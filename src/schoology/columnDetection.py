@@ -88,7 +88,7 @@ class ColumnDetection:
         POSITION_KEYWORDS = ["Teacher", "Counselor"] # Keywords that usually appear in position
         LENGTH_KEYWORDS = ["All Day", "Partial Day AM", "Partial Day PM", "Partial Day", "Partial AM", "Partial PM"] # Keywords that usually appear in length of absence
         WEEKDAY_KEYWORDS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "MON", "TUES", "WEDS", "THURS", "FRI", "SAT", "SUN"] # Keywords that usually appear in weekday
-        
+        CS_NAME_KEYWORDS = [',']
         contentPoints = 5 / len(column)
 
         # Title Of Column Check
@@ -134,6 +134,9 @@ class ColumnDetection:
             for entry in WEEKDAY_KEYWORDS:
                 if self.isFuzzyMatch(item, entry):
                     confidence[structs.TableColumn.WEEKDAY] += contentPoints
+            for entry in CS_NAME_KEYWORDS:
+                if entry in item:
+                    confidence[structs.TableColumn.CS_NAME]
         return confidence
 
     def mapColumns(self, table: structs.RawUpdate) -> Dict[structs.TableColumn, Tuple[int, int]]:

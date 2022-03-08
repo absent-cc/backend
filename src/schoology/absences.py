@@ -127,7 +127,6 @@ class ContentParser:
         return objList
 
     def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
-        # print(update)
         while not (('position' in update.content[0].lower()) or ('name' in update.content[0].lower())) and len(update.content) > 1:
             update.content.pop(0)
         return update
