@@ -2,7 +2,7 @@ from datetime import datetime, date
 from logging import raiseExceptions
 import time
 import secrets
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from loguru import logger
 from uuid import uuid4
 from sqlalchemy import update
@@ -48,7 +48,11 @@ def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
         return sessions
     return None
 
-def getAbsenceList(db, searchDate: date=datetime.today().date()) -> List[models.Absence]:
+def getAbsenceList(db, searchDate: date=datetime.today().date(), school: Optional[structs.SchoolName] = None) -> List[models.Absence]:
+    if school != None:
+        absences = db.query(models.Absence).join(models.Teacher).filter(models.Absence.date == searchDate, models.Teacher.school == school.upper()).all()
+        print(school.lower())
+        return absences
     absences = db.query(models.Absence).filter(models.Absence.date == searchDate).all()
     return absences
 
