@@ -1,11 +1,11 @@
-from src.dataTypes.schemas import TeacherBase, TeacherCreate
+from src.dataTypes.schemas import TeacherBase, TeacherCreate, TeacherReturn
 import re
 from typing import List
 
 from src.database.database import SessionLocal
 
 splitTable = "\s|-|_|\."
-def prettify(teacher: TeacherBase) -> TeacherBase:
+def prettify(teacher: TeacherReturn) -> TeacherReturn:
     
     first_split = re.split(splitTable, teacher.first.lower())
     last_split = re.split(splitTable, teacher.last.lower())
@@ -26,7 +26,12 @@ def prettify(teacher: TeacherBase) -> TeacherBase:
     prettyFirst = prettyCompile(first_split, first_delim)
     prettyLast = prettyCompile(last_split, last_delim)
 
-    return TeacherBase(first=prettyFirst, last=prettyLast)
+    return TeacherReturn(
+        tid=teacher.tid,
+        first=prettyFirst,
+        last=prettyLast,
+        school=teacher.school
+    )
 
 if __name__ == "__main__":
     # print(prettify(TeacherBase(first="jimmy-john", last="smith-jr")))
