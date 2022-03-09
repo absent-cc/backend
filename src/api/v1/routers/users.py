@@ -47,9 +47,10 @@ def updateUserInfo(
 
     profile = crud.updateProfile(db, user.profile, creds.uid) # Updates the profile info (everything save the schedule). 
     schedule = crud.updateSchedule(db, schemas.UserReturn(uid=creds.uid, school=user.profile.school), user.schedule) # Updates the schedule.
+    settings = crud.updateUserSettings(db, settings, creds.uid)
     token = crud.updateFCMToken(db, user.fcm, creds.uid, creds.sid)
 
-    if (profile, token) != None and schedule:
+    if (profile, token, settings) != None and schedule:
         user.schedule = schemas.ScheduleReturn().scheduleFromList(crud.getClassesByUser(db, schemas.UserReturn(uid=creds.uid)))
 
         return user # Returns success.
@@ -94,6 +95,19 @@ def updateFirebaseToken(
 
     if result != None:
         return utils.returnStatus("Information updated") # Returns success.
+    else:
+        utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
+
+@router.put("/me/update/settings/", status_code=201)
+def updateUserSettings(
+    settings: schemas.UserSettings,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
+    db: Session = Depends(accounts.getDBSession)
+):
+    result = crud.updateUserSettings(db, settings, creds.uid)
+
+    if result != None:
+        return utils.returnStatus("Information updated")
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 

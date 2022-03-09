@@ -225,6 +225,11 @@ def updateProfile(db, profile: schemas.UserBase, uid: str) -> models.User:
     db.commit()
     return result # Returns new profile.
 
+def updateUserSettings(db, settings: schemas.UserSettings, uid: str) -> models.UserSettings:
+    result = db.execute(update(models.UserSettings).where(models.UserSettings.uid == uid).values(**settings.dict()).execution_options(synchronize_session="fetch"))
+    db.commit()
+    return result
+    
 def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserSession:
     result = db.execute(update(models.UserSession).where(models.UserSession.uid == uid, models.UserSession.sid == sid).values(fcm_token = token.token, fcm_timestamp = datetime.now()).execution_options(synchronize_session="fetch"))
     db.commit()

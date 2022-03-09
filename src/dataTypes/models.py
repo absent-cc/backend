@@ -34,6 +34,7 @@ class Teacher(Base):
     caseInsensitiveFirst = collate('first', 'NOCASE')
     caseInsensitiveLast = collate('last', 'NOCASE')
     caseInsensitiveLast = collate('school', 'NOCASE')
+
 class UserSession(Base):
     __tablename__ = "sessions"
     sid = Column(String(16), primary_key=True)
@@ -44,6 +45,7 @@ class UserSession(Base):
 
     user = relationship("User")
     __table_args__ = (UniqueConstraint('sid', 'uid'),)
+    
 class Class(Base):
     __tablename__ = "classes"
     cid = Column(String(8), primary_key=True)
@@ -76,5 +78,8 @@ class CancelledClass(Base):
 class UserSettings(Base):
     __tablename__ = "settings"
     uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'), primary_key=True)
+    showFreeAsAbsent = Column(Boolean)
+    notify = Column(Boolean)
     notifyWhenNone = Column(Boolean)
     
+    user = relationship("User")

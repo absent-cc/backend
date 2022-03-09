@@ -6,6 +6,14 @@ from datetime import datetime, date
 
 from ..database.database import Base
 
+class UserSettings(BaseModel):
+    showFreeAsAbsent: bool = False
+    notify: bool = True
+    notifyWhenNone: bool = True
+
+class UserSettingsCreate(UserSettings):
+    uid: UUID
+
 class UserBase(BaseModel):
     first: str = None
     last: str = None
@@ -140,6 +148,7 @@ class Token(BaseModel):
 class UserInfo(BaseModel):
     profile: UserBase
     schedule: Schedule
+    settings: UserSettings
     fcm: Token
 
 class UserInfoReturn(BaseModel):
