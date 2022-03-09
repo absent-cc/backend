@@ -47,7 +47,7 @@ def updateUserInfo(
 
     profile = crud.updateProfile(db, user.profile, creds.uid) # Updates the profile info (everything save the schedule). 
     schedule = crud.updateSchedule(db, schemas.UserReturn(uid=creds.uid, school=user.profile.school), user.schedule) # Updates the schedule.
-    settings = crud.updateUserSettings(db, settings, creds.uid)
+    settings = crud.updateUserSettings(db, user.settings, creds.uid)
     token = crud.updateFCMToken(db, user.fcm, creds.uid, creds.sid)
 
     if (profile, token, settings) != None and schedule:
