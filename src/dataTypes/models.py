@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, String, collate
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, String, collate, Boolean
 from sqlalchemy.orm import relationship
 
 if "alembic.env" in __name__:
@@ -72,3 +72,9 @@ class CancelledClass(Base):
     
     parent = relationship("Class")
     __table_args__ = (UniqueConstraint('cid', 'date'),)
+
+class UserSettings(Base):
+    __tablename__ = "settings"
+    uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'), primary_key=True)
+    notifyWhenNone = Column(Boolean)
+    

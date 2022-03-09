@@ -64,6 +64,8 @@ class TestTeachers(unittest.TestCase):
                     )
                     self.ABSENCES[tid] = absenceReturn
                     self.dates.append(row['Date'])
+
+                    print(teacherMeta)
             
         def runTest(self):
             self.load_absences()
@@ -76,6 +78,7 @@ class TestTeachers(unittest.TestCase):
                 response = r.json()
                 for entry in response['absences']:
                     test_entry = self.ABSENCES.get(entry['teacher']['tid']) # Lookup the teacher returned in the test data.
+                    print(test_entry)
                     self.assertNotEqual(test_entry, None), "Lookup of response teacher failed."
 
                     self.assertEqual(entry['length'], test_entry.length), "Length entry does not match test data."

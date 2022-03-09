@@ -36,6 +36,9 @@ class TeacherCreate(TeacherBase):
 
 class TeacherReturn(TeacherCreate):
     tid: str = None
+    
+    def __repr__(self) -> str:
+        return f"{self.first} {self.last} {self.tid} {self.school}"
 
     class Config:
         orm_mode = True
