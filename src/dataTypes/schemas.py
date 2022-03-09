@@ -11,6 +11,9 @@ class UserSettings(BaseModel):
     notify: bool = True
     notifyWhenNone: bool = True
 
+    class Config:
+        orm_mode = True
+
 class UserSettingsCreate(UserSettings):
     uid: UUID
 
@@ -120,6 +123,18 @@ class UserReturn(UserCreate):
     class Config:
         orm_mode = True
 
+class UserProfile(UserCreate):
+    uid: str = None
+
+    class Config:
+        orm_mode = True
+
+class UserSchedule(UserCreate):
+    uid: str = None
+
+    class Config:
+        orm_mode = True
+
 class SessionCreate(BaseModel):
     uid: Optional[str] = None
     @validator('uid')
@@ -145,16 +160,17 @@ class SessionReturn(SessionCreate):
 class Token(BaseModel):
     token: str
 
-class UserInfo(BaseModel):
-    profile: UserBase
-    schedule: Schedule
-    settings: UserSettings
-    fcm: Token
+class UserInfoBase(BaseModel):
+    settings: UserSettings = None
+    
+class UserInfoUpdate(UserInfoBase):
+    schedule: Schedule = None
+    profile: UserBase = None
+    fcm: Token = None
 
-class UserInfoReturn(BaseModel):
-    profile: UserBase
-    schedule: ScheduleReturn
-    fcm: Token
+class UserInfoReturn(UserInfoBase):
+    schedule: ScheduleReturn = None
+    profile: UserProfile = None
 
 class SessionCredentials(BaseModel):
     token: Optional[str] = None

@@ -8,7 +8,7 @@ from ....api import accounts
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.get("/me/info/", response_model=schemas.UserReturn, status_code=200) # Info endpoint.
+@router.get("/me/info/", response_model=schemas.UserInfoReturn, status_code=200) # Info endpoint.
 def returnUserInfo(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
     db: Session = Depends(accounts.getDBSession) # Initializes a DB.
@@ -16,9 +16,10 @@ def returnUserInfo(
     user = schemas.UserReturn(uid=creds.uid) # Creates husk user.
     user = crud.getUser(db, user) # Gets the rest of the info.
     userReturn = schemas.UserReturn.from_orm(user) # Builds a Pydantic model from this Alchemy model.
-    userReturn.schedule = schemas.ScheduleReturn.scheduleFromList(user.schedule) # Converts list-schedule into Schedule object.
+    userSettings = crud.getUserSettings(db, user)
+    userInfo = schemas.UserInfoReturn(profile=userReturn, schedule=schemas.ScheduleReturn.scheduleFromList(user.schedule), settings=userSettings) # Converts list-schedule into Schedule object.
 
-    return userReturn # Returns user.
+    return userInfo # Returns user.
 
 @router.get("/me/sessions/", response_model=schemas.SessionList, status_code=200)
 def getSessionList(
@@ -40,7 +41,7 @@ def cancel(
 
 @router.put("/me/update/", status_code=201, response_model=schemas.UserInfoReturn) # Update endpoint, main.
 def updateUserInfo(
-    user: schemas.UserInfo, # Takes a user object: this is the NEW info, not the current info.
+    user: schemas.UserInfoUpdate, # Takes a user object: this is the NEW info, not the current info.
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), # Authentication.
     db: Session = Depends(accounts.getDBSession) # Initializes a DB.
 ):

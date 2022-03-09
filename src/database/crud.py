@@ -70,6 +70,11 @@ def getClassesCount(db) -> int:
 def getClassesCancelledCount(db) -> int:
     return db.query(models.CancelledClass).count()
 
+def getUserSettings(db, user: schemas.UserReturn) -> models.UserSettings:
+    if user.uid != None:
+        return db.query(models.UserSettings).filter(models.UserSettings.uid == user.uid).first()
+    return None
+
 def addUser(db, user: schemas.UserCreate) -> models.User:
     if user.gid != None: # Checks for GID as this is the only mandatory field.
         uid = str(uuid4()) # Generates UUID.
@@ -226,9 +231,12 @@ def updateProfile(db, profile: schemas.UserBase, uid: str) -> models.User:
     return result # Returns new profile.
 
 def updateUserSettings(db, settings: schemas.UserSettings, uid: str) -> models.UserSettings:
-    result = db.execute(update(models.UserSettings).where(models.UserSettings.uid == uid).values(**settings.dict()).execution_options(synchronize_session="fetch"))
+    db.query(models.UserSettings).where(models.UserSettings.uid == uid).delete()
+    settingsModel = models.UserSettings(**settings.dict())
+    settingsModel.uid = uid
+    db.add(settingsModel)
     db.commit()
-    return result
+    return True
     
 def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserSession:
     result = db.execute(update(models.UserSession).where(models.UserSession.uid == uid, models.UserSession.sid == sid).values(fcm_token = token.token, fcm_timestamp = datetime.now()).execution_options(synchronize_session="fetch"))

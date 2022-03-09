@@ -17,6 +17,7 @@ class User(Base):
 
     schedule = relationship("Class", back_populates="user")
     sessions = relationship("UserSession", back_populates="user")
+    settings = relationship("UserSettings", back_populates="user")
 
     caseInsensitiveFirst = collate('first', 'NOCASE')
     caseInsensitiveLast = collate('last', 'NOCASE')
