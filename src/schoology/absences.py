@@ -62,11 +62,11 @@ class AbsencePuller:
     # Meant to avoid the need for ENV variables
     def addAbsence(self, absence) -> bool:
         try:
-            # print(absence)
             crud.addAbsence(self.db, absence)
             return True
         except Exception as e:
-            # print(e)
+            self.db.rollback()
+            print(e)
             print(f"{absence} already exists in DB")
             return False
 

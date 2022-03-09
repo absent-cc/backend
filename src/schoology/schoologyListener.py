@@ -34,11 +34,11 @@ class SchoologyListener:
             for absence in absences:
                 # Check if the absence is already in the database.
                 self.sc.addAbsence(absence)
-                # if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
-                #     print("SOUTH: Absence already in database.")
+                #if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                #print("SOUTH: Absence already in database.")
                 #     statuses[self.south].absences = True # Update status that action was committed previously.
                 #     break
-            statuses[self.south].absences = True # Update status that action was committed previously.
+            #statuses[self.south].absences = True # Update status that action was committed previously.
                 
             if not statuses[self.south].notifications:
                 print("SOUTH: ADD IN NOTIFY CODE HERE LATER")
@@ -54,10 +54,10 @@ class SchoologyListener:
             # Add the absences to the database.
             for absence in absences:
                 # Check if the absence is already in the database.
-                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
-                    print("NORTH: Absence already in database.")
-                    statuses[self.north].absences = True # Update status that action was committed previously.
-                    break
+                self.sc.addAbsence(absence) # If action was unsuccessful, then the absence is already in the database.
+                #    print("NORTH: Absence already in database.")
+                #    statuses[self.north].absences = True # Update status that action was committed previously.
+                #    break
                 
             if not statuses[self.north].notifications:
                 print("NORTH: ADD IN NOTIFY CODE HERE LATER")
