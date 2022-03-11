@@ -54,9 +54,9 @@ class Users(unittest.TestCase):
             print(response.json())
             print(self.TROJANHORSE.pseudo_info)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json()["first"], self.TROJANHORSE.pseudo_info["first"])
-            self.assertEqual(response.json()["last"], self.TROJANHORSE.pseudo_info["last"])
-            self.assertEqual(response.json()["gid"], self.TROJANHORSE.pseudo_info["gid"])
+            self.assertEqual(response.json()["profile"]["first"], self.TROJANHORSE.pseudo_info["first"])
+            self.assertEqual(response.json()["profile"]["last"], self.TROJANHORSE.pseudo_info["last"])
+            self.assertEqual(response.json()["profile"]["gid"], self.TROJANHORSE.pseudo_info["gid"])
         
         def runTest(self):
             self.test_get_users()
