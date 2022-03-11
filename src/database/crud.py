@@ -67,9 +67,6 @@ def getClassesByUser(db, user: schemas.UserReturn) -> List[models.Class]:
 def getClassesCount(db) -> int:
     return db.query(models.Class).count()
 
-def getClassesCancelledCount(db) -> int:
-    return db.query(models.CancelledClass).count()
-
 def getUserSettings(db, user: schemas.UserReturn) -> models.UserSettings:
     if user.uid != None:
         return db.query(models.UserSettings).filter(models.UserSettings.uid == user.uid).first()
