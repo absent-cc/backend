@@ -1,6 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 from pydantic import BaseModel
 
 #
@@ -137,7 +137,7 @@ class ListenerStatus:
     def __repr__(self) -> str:
         return f"Statuses: \n\tAbsence: {self.absences}\n\tNotifications: {self.notifications}"
 
-class ColumnMapper(Dict[TableColumn, Tuple[int, int]]):
+class ColumnMap(Dict[TableColumn, Tuple[int, int]]):
     def __init__(self):
         super().__init__()
         self.update({
@@ -148,8 +148,10 @@ class ColumnMapper(Dict[TableColumn, Tuple[int, int]]):
             TableColumn.LENGTH: (-1, -1),
             TableColumn.WEEKDAY: (-1, -1),
             TableColumn.NOTE: (-1, -1),
-            TableColumn.DATE: (-1, -1)
-            
+            TableColumn.DATE: (-1, -1),
+            "CS_MAP": (-1, -1)
         })
-# TODO: Replace MAP with ColumnMapper class
 
+class Confidence(BaseModel):
+    confidences: dict
+    csMap: Union[Tuple, None]

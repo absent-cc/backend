@@ -5,7 +5,6 @@ from typing import Dict, Tuple
 from fuzzywuzzy import fuzz
 
 from ..dataTypes import structs
-
 FUZZY_MATCH_THRESHOLD = 90
 
 class ColumnDetection:
@@ -23,7 +22,7 @@ class ColumnDetection:
 
     # Function that dynamically counts the number of columns in a schoology absence table
     def countColumns(self, table: list) -> Tuple[int, float]:
-        lineBreaks = [i for i, x in enumerate(table) if x in ["", "\r", "\n"]] # Generates list of linebreaks and their indexes.
+        lineBreaks = [i for i, x in enumerate(table) if x in ["", "\r", "\n",]] # Generates list of linebreaks and their indexes.
         possibleColumns = []
         index = 1 # Counter for rows counted.
         for i, lineBreak in enumerate(lineBreaks): # Iterates through a list of linebreaks and their indexes.
@@ -90,7 +89,7 @@ class ColumnDetection:
         WEEKDAY_KEYWORDS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "MON", "TUES", "WEDS", "THURS", "FRI", "SAT", "SUN"] # Keywords that usually appear in weekday
         CS_NAME_KEYWORDS = [',']
         contentPoints = 5 / len(column)
-
+        csPossibilites = set()
         # Title Of Column Check
         for i, item in enumerate(column):
             if i == 0:
@@ -136,22 +135,34 @@ class ColumnDetection:
                     confidence[structs.TableColumn.WEEKDAY] += contentPoints
             for entry in CS_NAME_KEYWORDS:
                 if entry in item:
-                    confidence[structs.TableColumn.CS_NAME]
-        return confidence
+                    confidence[structs.TableColumn.CS_NAME] += contentPoints
+            if confidence[structs.TableColumn.CS_NAME] > 0:
+                item = item.split(',')
+                addition = (-1, -1)
+                if len(item) == 2:
+                    if self.isFirst(item[0]):
+                        addition = (0, -1)
+                    elif self.isFirst(item[1]):
+                        addition = (1, -1)
+                    elif self.isLast(item[0]):
+                        addition = (addition[0], 0)
+                    elif self.isLast(item[1]):
+                        addition[1] = (addition[0], 1)
+                    else:
+                        confidence[structs.TableColumn.CS_NAME] -= contentPoints
+                        addition = (-1, -1)
+                    csPossibilites.add(addition)
+        locTuple = None
+        if csPossibilites != set():
+            firstLoc = max(csPossibilites,key=lambda item:item[0])[0]
+            lastLoc = max(csPossibilites,key=lambda item:item[1])[1]
+            locTuple = (firstLoc, lastLoc)
+        return structs.Confidence(confidences=confidence, csMap=locTuple)
 
     def mapColumns(self, table: structs.RawUpdate) -> Dict[structs.TableColumn, Tuple[int, int]]:
         confidences = []
-        map = {
-            structs.TableColumn.FIRST_NAME: (-1, -1),
-            structs.TableColumn.LAST_NAME: (-1, -1),
-            structs.TableColumn.CS_NAME: (-1, -1),
-            structs.TableColumn.WEEKDAY: (-1, -1),
-            structs.TableColumn.DATE: (-1, -1),
-            structs.TableColumn.NOTE: (-1, -1),
-            structs.TableColumn.LENGTH: (-1, -1),
-            structs.TableColumn.POSITION: (-1, -1),
-        } # PLEASE REPLACE ME WITH COLUMN MAPPER CLASS!
 
+        map = structs.ColumnMap()
         for col in range(table.columns - 2):
             column = []
             for row in table.content:
@@ -167,15 +178,14 @@ class ColumnDetection:
             oldMap = map
             for i, col in enumerate(confidences):
                 for _ in range(8):
-                    maxKey = max(col, key=col.get)
-                    if col[maxKey] != 0 and col[maxKey] > map[maxKey][1]:
-                        map[maxKey] = (i, col[maxKey])
+                    maxKey = max(col.confidences, key=col.confidences.get)
+                    if col.confidences[maxKey] != 0 and col.confidences[maxKey] > map[maxKey][1]:
+                        map[maxKey] = (i, col.confidences[maxKey])
                         break
                     else:
-                        del col[maxKey]
-        return map
-        
-        
+                        del col.confidences[maxKey]
+        map["CS_MAP"] = confidences[map[structs.TableColumn.CS_NAME][0]].csMap
+        return map       
         
         
 
