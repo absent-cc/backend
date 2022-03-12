@@ -206,6 +206,12 @@ def removeClassesByUser(db, user: schemas.UserReturn) -> bool: # Used for updati
     db.commit()
     return True
 
+def removeAbsencesByDate(db, date: datetime) -> bool:
+    print("DELETIG ABSENCES on " + str(date))
+    db.query(models.Absence).filter(models.Absence.date == date).delete()
+    db.commit()
+    return True
+
 def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> bool:
     if user.school == None:
         user = getUser(db, user)

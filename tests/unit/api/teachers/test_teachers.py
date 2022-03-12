@@ -36,36 +36,38 @@ class TestTeachers(unittest.TestCase):
 
 
                 for row in raw_absences:
+
+                    stripped_row = {k: v.strip() for k, v in row.items()} # Strip whitespace from all values.
+
                     # Add teacher to DB
                     teacherMeta: models.Absence = crud.addAbsence(TestTeachers._db, AbsenceCreate(
                         teacher=TeacherCreate(
-                            first=row['First'],
-                            last=row['Last'],
-                            school=row['School']
+                            first=stripped_row['First'],
+                            last=stripped_row['Last'],
+                            school=stripped_row['School']
                             ),
-                        length=row['Length'],
-                        note=row['Note'],
-                        date=row['Date']
+                        length=stripped_row['Length'],
+                        note=stripped_row['Note'],
+                        date=stripped_row['Date']
                         )
                     )
                     tid: str = teacherMeta.tid
 
                     teacherReturn: TeacherReturn = TeacherReturn(
                         tid=tid,
-                        first=row['First'], 
-                        last=row['Last'],
-                        school=row['School']
+                        first=stripped_row['First'], 
+                        last=stripped_row['Last'],
+                        school=stripped_row['School']
                         )
 
                     absenceReturn: AbsenceReturn= AbsenceReturn(
-                        length=row['Length'],
+                        length=stripped_row['Length'],
                         teacher=teacherReturn,
-                        note=row['Note'],
+                        note=stripped_row['Note'],
                     )
                     self.ABSENCES[tid] = absenceReturn
-                    self.dates.append(row['Date'])
+                    self.dates.append(stripped_row['Date'])
 
-                    print(teacherMeta)
             
         def runTest(self):
             self.load_absences()
