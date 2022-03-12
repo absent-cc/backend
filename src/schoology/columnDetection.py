@@ -1,7 +1,6 @@
 import csv as c
 import statistics
 from typing import Dict, Tuple
-
 from fuzzywuzzy import fuzz
 
 from ..dataTypes import structs
@@ -89,7 +88,10 @@ class ColumnDetection:
         WEEKDAY_KEYWORDS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "MON", "TUES", "WEDS", "THURS", "FRI", "SAT", "SUN"] # Keywords that usually appear in weekday
         CS_NAME_KEYWORDS = [',']
         contentPoints = 5 / len(column)
-        csPossibilites = set()
+
+        firstPosPop = []
+        lastPosPop = []
+
         # Title Of Column Check
         for i, entry in enumerate(column):
             if i == 0:
@@ -115,6 +117,7 @@ class ColumnDetection:
                 confidence[structs.TableColumn.LENGTH] += points 
 
             # Content Confidence Check
+            # Rewards when keyword exists in entry
             if self.isFirst(entry):
                 confidence[structs.TableColumn.FIRST_NAME] += contentPoints
             if self.isLast(entry):
@@ -133,35 +136,33 @@ class ColumnDetection:
             for keyword in WEEKDAY_KEYWORDS:
                 if self.isFuzzyMatch(entry, keyword):
                     confidence[structs.TableColumn.WEEKDAY] += contentPoints
-            for entry in CS_NAME_KEYWORDS:
-                if entry in item:
+            for keyword in CS_NAME_KEYWORDS:
+                if keyword in entry:
                     confidence[structs.TableColumn.CS_NAME] += contentPoints
+
             if confidence[structs.TableColumn.CS_NAME] > 0:
-                item = item.split(',')
-                addition = (-1, -1)
-                if len(item) == 2:
-                    if self.isFirst(item[0]):
-                        addition = (0, -1)
-                    elif self.isFirst(item[1]):
-                        addition = (1, -1)
-                    elif self.isLast(item[0]):
-                        addition = (addition[0], 0)
-                    elif self.isLast(item[1]):
-                        addition[1] = (addition[0], 1)
-                    else:
-                        confidence[structs.TableColumn.CS_NAME] -= contentPoints
-                        addition = (-1, -1)
-                    csPossibilites.add(addition)
+                items = entry.split(',')
+                if len(items) == 2:
+                    if self.isFirst(items[0]): # If first item is first, 
+                        firstPosPop.append(0)
+                    if self.isFirst(items[1]):
+                        firstPosPop.append(1)
+                    if self.isLast(items[0]):
+                        lastPosPop.append(0)
+                    if self.isLast(items[1]):
+                        lastPosPop.append(1)
+                else:
+                    confidence[structs.TableColumn.CS_NAME] -= contentPoints
+                    mapper = (-1, -1)
+
         locTuple = None
-        if csPossibilites != set():
-            firstLoc = max(csPossibilites,key=lambda item:item[0])[0]
-            lastLoc = max(csPossibilites,key=lambda item:item[1])[1]
-            locTuple = (firstLoc, lastLoc)
+        if len(firstPosPop) != 0 and len(lastPosPop) != 0:
+            locTuple = (statistics.mode(firstPosPop), statistics.mode(lastPosPop))
+            print(locTuple)
         return structs.Confidence(confidences=confidence, csMap=locTuple)
 
     def mapColumns(self, table: structs.RawUpdate) -> Dict[structs.TableColumn, Tuple[int, int]]:
         confidences = []
-
         map = structs.ColumnMap()
         for col in range(table.columns - 2):
             column = []
@@ -169,7 +170,7 @@ class ColumnDetection:
                 try:
                     column.append(row[col])
                 except IndexError:
-                    continue 
+                    continue
             colConfidence = self.columnConfidence(column)
             confidences.append(colConfidence)
 

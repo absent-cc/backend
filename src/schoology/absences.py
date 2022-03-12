@@ -20,6 +20,7 @@ class AbsencePuller:
             structs.SchoolName.NEWTON_NORTH: schoolopy.Schoology(schoolopy.Auth(northkey, northsecret)),
             structs.SchoolName.NEWTON_SOUTH: schoolopy.Schoology(schoolopy.Auth(southkey, southsecret))
         }
+        
         self.api[structs.SchoolName.NEWTON_NORTH].limit = 20
         self.api[structs.SchoolName.NEWTON_SOUTH].limit = 20
         self.db = SessionLocal()
@@ -99,7 +100,7 @@ class ContentParser:
         objList = []
         for row in update.content:
             try:
-                if map['CS_MAP'] == (-1, -1):
+                if map['CS_MAP'] == None:
                     teacher = schemas.TeacherCreate(first=row[map[structs.TableColumn.FIRST_NAME][0]], last=row[map[structs.TableColumn.LAST_NAME][0]], school=school)
                 else:
                     splitName = row[map[structs.TableColumn.CS_NAME][0]].split(", ")
@@ -107,7 +108,6 @@ class ContentParser:
             except IndexError:
                 print("INDEX ERROR TRY STATEMENT")
                 continue
-
             try:
                 length = row[map[structs.TableColumn.LENGTH][0]]
             except IndexError:
