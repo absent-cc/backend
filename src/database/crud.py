@@ -39,6 +39,9 @@ def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
 def getAllUsers(db) -> List[models.User]:
     return db.query(models.User).all()
 
+def getUsersByName(db, first, last) -> List[models.User]:
+    return db.query(models.User).filter(models.User.first == first.lower(), models.User.last == last.lower()).all()
+    
 def getUserCount(db) -> int:
     return db.query(models.User).count()
 
@@ -51,7 +54,6 @@ def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
 def getAbsenceList(db, searchDate: date=datetime.today().date(), school: Optional[structs.SchoolName] = None) -> List[models.Absence]:
     if school != None:
         absences = db.query(models.Absence).join(models.Teacher).filter(models.Absence.date == searchDate, models.Teacher.school == school.upper()).all()
-        print(school.lower())
         return absences
     absences = db.query(models.Absence).filter(models.Absence.date == searchDate).all()
     return absences

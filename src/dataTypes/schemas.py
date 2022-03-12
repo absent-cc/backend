@@ -65,6 +65,8 @@ class Schedule(BaseModel):
     G: List[TeacherBase] = None
     EXTRA: List[TeacherBase] = None
 
+    class Config:
+        orm_mode = True
 class ScheduleReturn(BaseModel):
     A: List[TeacherReturn] = None
     ADVISORY: List[TeacherReturn] = None
@@ -171,6 +173,10 @@ class UserInfoUpdate(UserInfoBase):
 class UserInfoReturn(UserInfoBase):
     schedule: ScheduleReturn = None
     profile: UserProfile = None
+    onboarded: bool = None
+
+class UsersInfoReturn(BaseModel):
+    users: List[UserInfoReturn] = []
 
 class SessionCredentials(BaseModel):
     token: Optional[str] = None
