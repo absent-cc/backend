@@ -27,6 +27,5 @@ def getNameFromHTMLEntry(entry) -> (str, str): # First Last
     first = nameSpaceSplit[0]
     last = nameSpaceSplit[1]
 
-    print(first, last) 
     return first, last
 

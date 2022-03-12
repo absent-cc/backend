@@ -92,50 +92,50 @@ class ColumnDetection:
         contentPoints = 5 / len(column)
 
         # Title Of Column Check
-        for i, item in enumerate(column):
+        for i, entry in enumerate(column):
             if i == 0:
                 points = 2.5
             else:
                 points = 1.0
 
-            if item == structs.TableColumn.FIRST_NAME:
+            if entry == structs.TableColumn.FIRST_NAME:
                 confidence[structs.TableColumn.FIRST_NAME] += points
-            if item == structs.TableColumn.LAST_NAME:
+            if entry == structs.TableColumn.LAST_NAME:
                 confidence[structs.TableColumn.LAST_NAME] += points
-            if item == structs.TableColumn.POSITION:
+            if entry == structs.TableColumn.POSITION:
                 confidence[structs.TableColumn.POSITION] += points 
-            if item == structs.TableColumn.CS_NAME:
+            if entry == structs.TableColumn.CS_NAME:
                 confidence[structs.TableColumn.CS_NAME] += points 
-            if item == structs.TableColumn.WEEKDAY:
+            if entry == structs.TableColumn.WEEKDAY:
                 confidence[structs.TableColumn.WEEKDAY] += points 
-            if item == structs.TableColumn.NOTE:
+            if entry == structs.TableColumn.NOTE:
                 confidence[structs.TableColumn.NOTE] += points
-            if item == structs.TableColumn.DATE:
+            if entry == structs.TableColumn.DATE:
                 confidence[structs.TableColumn.DATE] += points 
-            if item == structs.TableColumn.LENGTH:
+            if entry == structs.TableColumn.LENGTH:
                 confidence[structs.TableColumn.LENGTH] += points 
 
             # Content Confidence Check
-            if self.isFirst(item):
+            if self.isFirst(entry):
                 confidence[structs.TableColumn.FIRST_NAME] += contentPoints
-            if self.isLast(item):
+            if self.isLast(entry):
                 confidence[structs.TableColumn.LAST_NAME] += contentPoints
-            if self.isDate(item):
+            if self.isDate(entry):
                 confidence[structs.TableColumn.DATE] += contentPoints
-            for entry in POSITION_KEYWORDS:
-                if entry in item:
+            for keyword in POSITION_KEYWORDS:
+                if keyword in entry:
                     confidence[structs.TableColumn.POSITION] += contentPoints
-            for entry in NOTE_KEYWORDS:
-                if self.isFuzzyMatch(item, entry):
+            for keyword in NOTE_KEYWORDS:
+                if self.isFuzzyMatch(entry, keyword):
                     confidence[structs.TableColumn.NOTE] += contentPoints
-            for entry in LENGTH_KEYWORDS:
-                if self.isFuzzyMatch(item, entry):
+            for keyword in LENGTH_KEYWORDS:
+                if self.isFuzzyMatch(entry, keyword):
                     confidence[structs.TableColumn.LENGTH] += contentPoints
-            for entry in WEEKDAY_KEYWORDS:
-                if self.isFuzzyMatch(item, entry):
+            for keyword in WEEKDAY_KEYWORDS:
+                if self.isFuzzyMatch(entry, keyword):
                     confidence[structs.TableColumn.WEEKDAY] += contentPoints
-            for entry in CS_NAME_KEYWORDS:
-                if entry in item:
+            for keyword in CS_NAME_KEYWORDS:
+                if keyword in entry:
                     confidence[structs.TableColumn.CS_NAME]
         return confidence
 
