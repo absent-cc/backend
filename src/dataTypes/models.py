@@ -67,15 +67,6 @@ class Absence(Base):
 
     teacher = relationship("Teacher")
 
-class CancelledClass(Base):
-    __tablename__ = "cancelled"
-    index = Column(Integer, primary_key=True, autoincrement=True)
-    cid = Column(String(8), ForeignKey(Class.cid, ondelete='CASCADE'),)
-    date = Column(TIMESTAMP)
-    
-    parent = relationship("Class")
-    __table_args__ = (UniqueConstraint('cid', 'date'),)
-
 class UserSettings(Base):
     __tablename__ = "settings"
     uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'), primary_key=True)

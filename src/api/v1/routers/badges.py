@@ -12,7 +12,7 @@ from typing import List
 
 router = APIRouter(prefix="/badges", tags=["Shields.io Badges"])
 
-@router.get("/user/count/", response_model=schemas.AbsencesBadge)
+@router.get("/users/count/", response_model=schemas.AbsencesBadge)
 def getUserCount(
     db: Session = Depends(accounts.getDBSession)
 ) -> schemas.UserCountBadge:
@@ -37,13 +37,4 @@ def getClasses(
     classes = crud.getClassesCount(db)
     return schemas.ClassCountBadge(
         message=str(classes)
-        )
-
-@router.get("/classes/cancelled/", response_model=schemas.ClassCanceledBadge)
-def getClasses(
-    db: Session = Depends(accounts.getDBSession)
-) -> schemas.ClassCanceledBadge:
-    cancelledCount = crud.getClassesCancelledCount(db)
-    return schemas.ClassCanceledBadge(
-        message=str(cancelledCount)
         )
