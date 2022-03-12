@@ -17,7 +17,14 @@ def returnUserInfo(
     user = crud.getUser(db, user) # Gets the rest of the info.
     userReturn = schemas.UserReturn.from_orm(user) # Builds a Pydantic model from this Alchemy model.
     userSettings = crud.getUserSettings(db, user)
-    userInfo = schemas.UserInfoReturn(profile=userReturn, schedule=schemas.ScheduleReturn.scheduleFromList(user.schedule), settings=userSettings) # Converts list-schedule into Schedule object.
+    onboardedStatus = crud.checkOnboarded(db, uid=user.uid)
+
+    userInfo = schemas.UserInfoReturn(
+        profile=userReturn, 
+        schedule=schemas.ScheduleReturn.scheduleFromList(user.schedule), 
+        settings=userSettings,
+        onboarded= onboardedStatus[0] and onboardedStatus[1]
+        ) # Converts list-schedule into Schedule object.
 
     return userInfo # Returns user.
 

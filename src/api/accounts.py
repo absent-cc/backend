@@ -10,6 +10,7 @@ from fastapi import Depends, Security, FastAPI
 from loguru import logger
 from ..database.database import SessionLocal
 from fastapi.security.api_key import APIKeyHeader, APIKey
+import configparser
 
 API_KEY_NAME = "absent-auth"
 credsHeader = APIKeyHeader(name=API_KEY_NAME, auto_error=True)

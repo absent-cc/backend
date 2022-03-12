@@ -1,5 +1,6 @@
 from re import T
 from typing import Any
+from src.dataTypes.structs import SchoolName
 from src.database.database import SessionLocal
 from src.database import crud
 from src.dataTypes import schemas
@@ -15,6 +16,8 @@ class TrojanHorse():
         "gid": "0", # Could literaly be anything
         "first": "Trojan",
         "last": "Horse",
+        "school": SchoolName.NEWTON_SOUTH,
+        "grade": "10"
     }
 
     # Static Vars:
@@ -38,13 +41,20 @@ class TrojanHorse():
         husk["gid"] = str(TrojanHorse.counter)
         husk["first"] = TrojanHorse.pseudo_info["first"] + str(TrojanHorse.counter)
         husk["last"] = TrojanHorse.pseudo_info["last"] + str(TrojanHorse.counter)
-        
+        husk["school"] = TrojanHorse.pseudo_info["school"]
+        husk["grade"] = TrojanHorse.pseudo_info["grade"] 
         return husk
     
     def __init__ (self):
         self.pseudo_info = TrojanHorse.increment()
         print(self.pseudo_info)
-        self.husk_user = schemas.UserCreate(gid=int(self.pseudo_info["gid"]), first=self.pseudo_info["first"], last=self.pseudo_info["last"]) # Create husk user to add
+        self.husk_user = schemas.UserCreate(
+            gid=int(self.pseudo_info["gid"]), 
+            first=self.pseudo_info["first"], 
+            last=self.pseudo_info["last"], 
+            school=TrojanHorse.husk_user.school, 
+            grade=TrojanHorse.husk_user.grade
+        ) # Create husk user to add
 
         self.trojanIn()
 
