@@ -1,5 +1,6 @@
 import time
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from .v1 import main as v1
@@ -59,6 +60,12 @@ def init_app():
         },
         openapi_tags=tags_metadata
     )
+
+    @absent.middleware("http")
+    async def addCorsHeader(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        return response
 
     @absent.middleware("http")
     async def addProcessTime(request: Request, call_next):

@@ -3,7 +3,6 @@ import configparser
 import secrets
 from typing import List
 from fastapi import APIRouter, Depends
-
 from ....database.database import SessionLocal
 
 from src.api import accounts
