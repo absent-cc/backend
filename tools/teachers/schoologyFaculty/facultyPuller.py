@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import requests
 from requests.structures import CaseInsensitiveDict
 
+from typing import Tuple
+
 BASE_URL = "https://schoology.newton.k12.ma.us/school/40673949/faculty"
 
 cookies = {
@@ -16,14 +18,15 @@ def pullPage(n: int):
     soup = BeautifulSoup(page.content, "html.parser")
     raw_HTML_teachers = soup.findAll(class_="faculty-name")
     for entry in raw_HTML_teachers:
-        getNameFromHTMLEntry(entry)
-
-def getNameFromHTMLEntry(entry) -> (str, str): # First Last
+        name = getNameFromHTMLEntry(entry)
+        print(name)
+        
+def getNameFromHTMLEntry(entry) -> Tuple(str, str): # First Last
     a_tag = entry.find("a")
     split1 = str(a_tag).split(">")[1]
     split2 = split1.split("<")[0]
 
-    nameSpaceSplit = split2.split(" ")
+    nameSpaceSplit = split2.split(" ", maxsplit=1)
     first = nameSpaceSplit[0]
     last = nameSpaceSplit[1]
 
