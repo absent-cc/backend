@@ -8,6 +8,7 @@ from uuid import uuid4
 from sqlalchemy import update
 
 from ..dataTypes import schemas, models, structs
+from ..utils.prettifyTeacherName import prettify
 
 def getUser(db, user: schemas.UserReturn) -> models.User:
     if user.uid != None:
@@ -96,7 +97,8 @@ def addClass(db, newClass: schemas.Class) -> models.Class:
 def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
     if newTeacher.first != None and newTeacher.last != None and newTeacher.school != None: # Checks for required fields.
         tid = secrets.token_hex(4) # Generates hexadecimal TID.
-        teacherModel = models.Teacher(tid=tid, first=newTeacher.first, last=newTeacher.last, school=newTeacher.school) # Creates a model.
+        newTeacher = prettify(schemas.TeacherReturn(**newTeacher.dict(), tid=tid))
+        teacherModel = models.Teacher(**newTeacher.dict()) # Creates a model.
         db.add(teacherModel) # Adds teacher.
         db.commit()
         logger.info("Teacher added: " + tid) # Logs the action.

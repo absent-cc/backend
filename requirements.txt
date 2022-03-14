@@ -55,3 +55,4 @@ typing-extensions==4.0.1
 uritemplate==4.1.1
 urllib3==1.26.8
 uvicorn==0.17.1
+sqlalchemy-citext

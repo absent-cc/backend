@@ -1,5 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, String, collate, Boolean
 from sqlalchemy.orm import relationship
+from citext import CIText
 
 if "alembic.env" in __name__:
     from ..database.database import Base # CHANGE THIS TO ..database for ALEMBIC
@@ -19,22 +20,15 @@ class User(Base):
     sessions = relationship("UserSession", back_populates="user")
     settings = relationship("UserSettings", back_populates="user")
 
-    caseInsensitiveFirst = collate('first', 'NOCASE')
-    caseInsensitiveLast = collate('last', 'NOCASE')
-
 class Teacher(Base):
     __tablename__ = "teachers"
     tid = Column(String(8), primary_key=True)
-    first = Column(String(255))
-    last = Column(String(255))
-    school = Column(String(4))
+    first = Column(CIText())
+    last = Column(CIText())
+    school = Column(CIText())
 
     schedule = relationship("Class", back_populates="teacher")
     __table_args__ = (UniqueConstraint('first', 'last', 'school'),)
-    
-    caseInsensitiveFirst = collate('first', 'NOCASE')
-    caseInsensitiveLast = collate('last', 'NOCASE')
-    caseInsensitiveLast = collate('school', 'NOCASE')
 
 class UserSession(Base):
     __tablename__ = "sessions"
@@ -51,7 +45,7 @@ class Class(Base):
     __tablename__ = "classes"
     cid = Column(String(8), primary_key=True)
     tid = Column(String(8), ForeignKey(Teacher.tid, ondelete='CASCADE'))
-    block = Column(String(8))
+    block = Column(CIText())
     uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'))
 
     teacher = relationship("Teacher")
