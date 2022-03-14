@@ -21,7 +21,7 @@ class UserBase(BaseModel):
     first: str = None
     last: str = None
     school: structs.SchoolName = None
-    grade: Literal[9, 10, 11, 12] = None
+    grade: structs.Grade = None
 
     def __str__(self) -> str:
         return f"{self.first} {self.last}"
@@ -67,6 +67,7 @@ class Schedule(BaseModel):
 
     class Config:
         orm_mode = True
+    
 class ScheduleReturn(BaseModel):
     A: List[TeacherReturn] = None
     ADVISORY: List[TeacherReturn] = None
@@ -197,26 +198,14 @@ class AbsenceCreate(AbsenceBase):
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
 
-class CanceledClassCreate(Class):
-    date: date
-
-    def __repr__(self) -> str:
-        return super().__repr__()
-
 class PartialName(BaseModel):
     name: str 
-    school: str
+    school: structs.SchoolName
 
     @validator('name')
     def checkPartialName(cls, v):
         if (len(v)) < 3:
             raise ValueError('Phrase too short.')
-        return v
-        
-    @validator('school')
-    def checkSchoolName(cls, v):
-        if (v != "NNHS") and (v != "NSHS"):
-            raise ValueError('Invalid school.')
         return v
 
 class SessionList(BaseModel):
@@ -274,5 +263,6 @@ class ClassCountBadge(Badges):
 class ClassCanceledBadge(Badges):
     label = "Classes Cancelled"
     message: str
+    
 class Date(BaseModel):
     date: date

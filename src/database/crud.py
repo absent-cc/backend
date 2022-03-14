@@ -116,36 +116,6 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     db.commit()
     return absenceModel
 
-def addCanceledClass(db, canceledClass: schemas.CanceledClassCreate) -> bool:
-    if canceledClass.tid == None:
-        teacher = getTeacher(db, schemas.TeacherReturn(**canceledClass.teacher.dict()))
-    else:
-        teacher = getTeacher(db, schemas.TeacherReturn(tid=canceledClass.tid))
-
-    if teacher == None: # Verify if teacher exists.
-        print("Add canceled class: Teacher does not exist.")
-        return False
-    
-    if canceledClass.uid == None: 
-        user = getUser(db, schemas.UserReturn(**canceledClass.user.dict()))
-    else:
-        user = getUser(db, schemas.UserReturn(uid=canceledClass.uid))
-    
-    if user == None: # Verify if user exists.
-        print("User does not exist")
-        return False
-    
-    canceledClassModel = models.CanceledClass(
-                            tid=teacher.tid,
-                            date=canceledClass.date, 
-                            block=canceledClass.block,
-                            uid=user.uid
-                    )
-    
-    db.add(canceledClassModel)
-    db.commit()
-    return True
-
 # Peek the top entry in the absences table by date.
 def peekAbsence(db, date: datetime) -> tuple:
     query = db.query(models.Absence).filter(models.Absence.date == datetime.today().date()).first()

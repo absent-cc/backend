@@ -31,6 +31,12 @@ class SchoolBlock(str, Enum):
     G: str = "G"
     EXTRA: str = "EXTRA"
 
+class Grade(int, Enum):
+    NINE: int = 9
+    TEN: int = 10
+    ELEVEN: int = 11
+    TWELEE: int = 12 
+
 class TableColumn(str, Enum):
     POSITION = ["Position",]
     CS_NAME = ["Name",]

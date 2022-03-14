@@ -123,7 +123,7 @@ class ContentParser:
             object = schemas.AbsenceCreate(
                 teacher = teacher,
                 length = length,
-                date = self.date,
+                date = self.date.date(),
                 note = note
             )
             # print("THE OBJECT CREATED IS:", object)

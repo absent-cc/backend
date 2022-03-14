@@ -1,6 +1,6 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, String, collate, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, Date, String, collate, Boolean, Enum
 from sqlalchemy.orm import relationship
-from citext import CIText
+from . import structs
 
 if "alembic.env" in __name__:
     from ..database.database import Base # CHANGE THIS TO ..database for ALEMBIC
@@ -13,8 +13,8 @@ class User(Base):
     gid = Column(String(255), unique=True)
     first = Column(String(255))
     last = Column(String(255))
-    school = Column(String(4))
-    grade = Column(Integer)
+    school = Column(Enum(structs.SchoolName))
+    grade = Column(Enum(structs.Grade))
 
     schedule = relationship("Class", back_populates="user")
     sessions = relationship("UserSession", back_populates="user")
@@ -23,10 +23,10 @@ class User(Base):
 class Teacher(Base):
     __tablename__ = "teachers"
     tid = Column(String(8), primary_key=True)
-    first = Column(CIText())
-    last = Column(CIText())
-    school = Column(CIText())
-
+    first = Column(String(255, collation='nocase'))
+    last = Column(String(255, collation='nocase'))
+    school = Column(Enum(structs.SchoolName))
+    
     schedule = relationship("Class", back_populates="teacher")
     __table_args__ = (UniqueConstraint('first', 'last', 'school'),)
 
@@ -45,7 +45,7 @@ class Class(Base):
     __tablename__ = "classes"
     cid = Column(String(8), primary_key=True)
     tid = Column(String(8), ForeignKey(Teacher.tid, ondelete='CASCADE'))
-    block = Column(CIText())
+    block = Column(Enum(structs.SchoolBlock))
     uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'))
 
     teacher = relationship("Teacher")
@@ -57,7 +57,7 @@ class Absence(Base):
     tid = Column(String(8), ForeignKey(Teacher.tid, ondelete='CASCADE'), primary_key=True)
     length = Column(String(255))
     note = Column(String(255))
-    date = Column(TIMESTAMP, primary_key=True)
+    date = Column(Date, primary_key=True)
 
     teacher = relationship("Teacher")
 
