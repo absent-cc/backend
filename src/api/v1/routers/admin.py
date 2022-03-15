@@ -16,7 +16,7 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 def adminAuth(creds: schemas.SessionReturn):
     config = configparser.ConfigParser()
-    config.read('config.ini')
+    config.read('config.ini'    )
     admin_uids = config['ADMIN']['uids']
     
     if creds.uid in admin_uids:
@@ -71,9 +71,9 @@ def deleteAbsencesOnDay(
         return schemas.Bool(success=result)
     return utils.raiseError(401, "Unauthorized. None admin privileges", structs.ErrorType.AUTH)
 
-@router.put("absences/manual/", response_model=schemas.ManualAbsencesReturn, status_code=200)
-def manualAbsencesPut(
-    db: Session = Depends(accounts.getDBSession),
-    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials)
+# @router.put("absences/manual/", response_model=schemas.ManualAbsencesReturn, status_code=200)
+# def manualAbsencesPut(
+#     db: Session = Depends(accounts.getDBSession),
+#     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials)
     
-)
+# )

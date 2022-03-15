@@ -8,6 +8,7 @@ from uuid import uuid4
 from sqlalchemy import update
 
 from ..dataTypes import schemas, models, structs
+from ..utils.prettifyTeacherName import prettify
 
 def getUser(db, user: schemas.UserReturn) -> models.User:
     if user.uid != None:
@@ -96,7 +97,8 @@ def addClass(db, newClass: schemas.Class) -> models.Class:
 def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
     if newTeacher.first != None and newTeacher.last != None and newTeacher.school != None: # Checks for required fields.
         tid = secrets.token_hex(4) # Generates hexadecimal TID.
-        teacherModel = models.Teacher(tid=tid, first=newTeacher.first, last=newTeacher.last, school=newTeacher.school) # Creates a model.
+        newTeacher = prettify(schemas.TeacherReturn(**newTeacher.dict(), tid=tid))
+        teacherModel = models.Teacher(**newTeacher.dict()) # Creates a model.
         db.add(teacherModel) # Adds teacher.
         db.commit()
         logger.info("Teacher added: " + tid) # Logs the action.
@@ -113,36 +115,6 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     db.add(absenceModel)
     db.commit()
     return absenceModel
-
-def addCanceledClass(db, canceledClass: schemas.CanceledClassCreate) -> bool:
-    if canceledClass.tid == None:
-        teacher = getTeacher(db, schemas.TeacherReturn(**canceledClass.teacher.dict()))
-    else:
-        teacher = getTeacher(db, schemas.TeacherReturn(tid=canceledClass.tid))
-
-    if teacher == None: # Verify if teacher exists.
-        print("Add canceled class: Teacher does not exist.")
-        return False
-    
-    if canceledClass.uid == None: 
-        user = getUser(db, schemas.UserReturn(**canceledClass.user.dict()))
-    else:
-        user = getUser(db, schemas.UserReturn(uid=canceledClass.uid))
-    
-    if user == None: # Verify if user exists.
-        print("User does not exist")
-        return False
-    
-    canceledClassModel = models.CanceledClass(
-                            tid=teacher.tid,
-                            date=canceledClass.date, 
-                            block=canceledClass.block,
-                            uid=user.uid
-                    )
-    
-    db.add(canceledClassModel)
-    db.commit()
-    return True
 
 # Peek the top entry in the absences table by date.
 def peekAbsence(db, date: datetime) -> tuple:
