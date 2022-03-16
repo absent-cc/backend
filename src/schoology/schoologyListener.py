@@ -1,15 +1,23 @@
 from datetime import datetime, timedelta, timezone
 
+from src.dataTypes import models
+from src.dataTypes.schemas import TeacherReturn
+
 from ..dataTypes import structs
 from ..notifications import firebase
 from .absences import AbsencePuller
 from configparser import ConfigParser
+from ..database.database import SessionLocal
+
+from database import crud
+
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
         self.south = structs.SchoolName.NEWTON_SOUTH
         self.restTime = timedelta(seconds=30)
         self.sc = AbsencePuller(SCHOOLOGYCREDS)
+        self.db = SessionLocal()
 
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
@@ -41,7 +49,18 @@ class SchoologyListener:
             #statuses[self.south].absences = True # Update status that action was committed previously.
                 
             if not statuses[self.south].notifications:
-                print("SOUTH: ADD IN NOTIFY CODE HERE LATER")
+                # Grab absences
+                absences: models.Absence = crud.getAbsenceList(self.db)
+                # Send notifications
+                for teacher in absences:
+                    teacherObject = TeacherReturn(
+                        tid = teacher.tid,
+                        school=teacher.school,
+                        
+                    )
+
+
+                # print("SOUTH: ADD IN NOTIFY CODE HERE LATER")
                 return True
 
         def northRun() -> bool:

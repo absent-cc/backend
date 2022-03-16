@@ -31,6 +31,17 @@ class SchoolBlock(str, Enum):
     G: str = "G"
     EXTRA: str = "EXTRA"
 
+class SchoolBlocksOnDay(dict[int, SchoolBlock]):
+    def __init__(self):
+        super().__init__()
+        self.update({
+            0 : [SchoolBlock.A, SchoolBlock.ADV, SchoolBlock.B, SchoolBlock.C, SchoolBlock.D, SchoolBlock.E],
+            1 : [SchoolBlock.A, SchoolBlock.B, SchoolBlock.F, SchoolBlock.G],
+            2 : [SchoolBlock.C, SchoolBlock.D, SchoolBlock.E, SchoolBlock.F],
+            3 : [SchoolBlock.A, SchoolBlock.B, SchoolBlock.G, SchoolBlock.E],
+            4 : [SchoolBlock.C, SchoolBlock.D, SchoolBlock.F, SchoolBlock.G],
+        })
+
 class Grade(int, Enum):
     NINE: int = 9
     TEN: int = 10
@@ -161,3 +172,5 @@ class ColumnMap(Dict[TableColumn, Tuple[int, int]]):
 class Confidence(BaseModel):
     confidences: dict
     csMap: Union[Tuple, None]
+
+

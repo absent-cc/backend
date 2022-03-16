@@ -52,6 +52,21 @@ def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
         return sessions
     return None
 
+def getClassesByTeacher(db, teacher: schemas.TeacherReturn, block: structs.SchoolBlock) -> List[models.Class]:
+    if teacher.tid != None:
+        return db.query(models.Class).filter(models.Class.tid == teacher.tid, models.Class.block == block).all()
+    return None
+
+def getClassesByTeacherForDay(db, teacher: schemas.TeacherReturn, day: int) -> List[models.Class]:
+    if teacher.tid != None:
+        returnClasses = []
+        for block in structs.SchoolBlocksOnDay(day):
+            classes = getClassesByTeacher(db, teacher, block)
+            if classes != None:
+                returnClasses.append(classes) 
+        return returnClasses
+    return None
+
 def getAbsenceList(db, searchDate: date=datetime.today().date(), school: Optional[structs.SchoolName] = None) -> List[models.Absence]:
     if school != None:
         absences = db.query(models.Absence).join(models.Teacher).filter(models.Absence.date == searchDate, models.Teacher.school == school.upper()).all()
