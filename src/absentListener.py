@@ -4,6 +4,8 @@ from .dataTypes import structs, tools
 from .schoology.schoologyListener import *
 from .database.database import *
 from datetime import timedelta, datetime, timezone
+import firebase_admin
+from firebase_admin import credentials
 
 # Get secrets info from config.ini
 config_path = 'config.ini'
@@ -34,10 +36,10 @@ def listener():
     holidays = []
 
     # debug mode
-    debugMode = True
+    debugMode = False
 
     dailyCheckTimeStart = 7 # hour
-    dailyCheckTimeEnd = 12 # hour
+    dailyCheckTimeEnd = 20 # hour
     
     resetTimeOne = (0, 0) # Midnight
     resetTimeTwo = (4, 20) # Light It Up
@@ -84,4 +86,6 @@ def listener():
         time.sleep(15) # Sleep for 15 seconds.
 
 if __name__ == '__main__':
+    cred = credentials.Certificate("creds/firebase.json")
+    firebase = firebase_admin.initialize_app(cred)
     listener()
