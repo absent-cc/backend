@@ -9,7 +9,7 @@ from .absences import AbsencePuller
 from configparser import ConfigParser
 from ..database.database import SessionLocal
 
-from database import crud
+from ..database import crud
 
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):

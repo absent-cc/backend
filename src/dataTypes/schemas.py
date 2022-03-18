@@ -230,6 +230,18 @@ class TeacherValid(BaseModel):
 class ClassList(BaseModel):
     classes: List[structs.SchoolBlock] = None
 
+class NotificationBuild(BaseModel):
+    uid: str = None
+    tid: str = None
+    block: structs.SchoolBlock = None
+    date: date = None
+
+class NotificationSend(NotificationBuild):
+    fcm: Token = None
+    title: str = None
+    body: str = None
+    data: dict = None
+
 class Analytics(BaseModel):
     userCount: int
     totalAbsences: int
