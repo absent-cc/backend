@@ -31,7 +31,7 @@ class SchoolBlock(str, Enum):
     G: str = "G"
     EXTRA: str = "EXTRA"
 
-class SchoolBlocksOnDay(dict[int, SchoolBlock]):
+class SchoolBlocksOnDay(Dict[int, SchoolBlock]):
     def __init__(self):
         super().__init__()
         self.update({
