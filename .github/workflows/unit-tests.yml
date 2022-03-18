@@ -18,7 +18,7 @@ jobs:
     
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         # python-version: ["3.8", "3.9", "3.10"]
         python-versions: ["3.8"]
@@ -70,7 +70,9 @@ jobs:
 
     - name: Set up NOCASE collation for p0stgres
       run: |
-        PGPASSWORD=password psql -h postgres -U absent -d absent -c "CREATE COLLATION nocase (provider = icu, locale = 'und-u-ks-level2', deterministic = false);"
+        psql -h postgres -U absent -d absent -c 'CREATE COLLATION nocase (provider = icu, locale = 'und-u-ks-level2', deterministic = false);'
+      env:
+         PGPASSWORD: password 
       
     - name: Set up postgres
       env: 
