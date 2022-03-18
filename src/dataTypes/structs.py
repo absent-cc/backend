@@ -174,3 +174,7 @@ class Confidence(BaseModel):
     csMap: Union[Tuple, None]
 
 
+class Message(BaseModel):
+    title: str
+    body: str
+    token: str

@@ -1,27 +1,30 @@
 import firebase_admin
-from firebase_admin import messaging
+from firebase_admin import messaging, credentials
+from ..dataTypes import structs
+from loguru import logger
 
+cred = credentials.Certificate("creds/firebase.json")
+firebase = firebase_admin.initialize_app(cred)
+APN_HEADERS = {          
+        "apns_priority": "10",
+}
 
-class NotificationsDriver:
-    def __init__(self):
-        self.TITLE = "abSENT: cancelled class notification"
-        self.IMAGE_URL = None
-        self.firebase = firebase_admin.initialize_app()
+def sendMessage(message: structs.Message):
+    notification = messaging.Notification(
+        title=message.title, 
+        body=message.body, 
+    )
 
-    def sendMessage(self, token: str, content: str):
-        notification = messaging.Notification(
-            title=self.TITLE,
-            body=content,
-            image=sef.IMAGE_URL
-        )
+    message = messaging.Message(
+        notification=notification,
+        token=message.token,
+        android=messaging.AndroidConfig(priority="high"),
+        apns=messaging.APNSConfig(headers=APN_HEADERS)
+    )
 
-        message = messaging.Message(
-            notification=notification,
-            token=token
-        )
-
-        response = messaging.send(message)
-        return response
+    response = messaging.send(message)
+    logger.info(f"Notification sent: {response}")
+    return response
 
 TOKEN = "frdpfVydRWmZiSWMJpq09g:APA91bEhOPsiXVmqHOCcIaj9Xpld-rDBwR26FRvI1tAgivdSHgT1QYBORbOc4oE39DPZ6Vw3EtHC4qdJWAv5ZPySfwg4ZY9nKND5QS2Gy2_6AC97Fbna_INOgiKCBAes_re4kaFlUpS_"
-        
+sendMessage(structs.Message(token=TOKEN, title="nwq", body="Test"))
