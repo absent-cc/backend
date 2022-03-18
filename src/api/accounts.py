@@ -69,7 +69,8 @@ def validateGoogleToken(token) -> dict:
     ]
 
     NEWTON = "newton.k12.ma.us"
-    
+    ABSENT = "absent.cc"
+
     try:
         idInfo = id_token.verify_token(token.token, requests.Request(), audience=CLIEND_IDs)
         logger.info(f"Sucessful Google login: {idInfo['sub']}")
@@ -77,7 +78,9 @@ def validateGoogleToken(token) -> dict:
         logger.info(f"Invalid Google token POSTed.")
         utils.raiseError(401, error, structs.ErrorType.AUTH)
     try:
-        if idInfo['hd'] != NEWTON:
+        domain = idInfo['email'].split("@")[1]
+        verified = idInfo['email_verified']
+        if domain != NEWTON and domain != ABSENT and not verified:
             logger.info(f"Google token for a non-NPS account POSTed")
             utils.raiseError(401, "Not an NPS issued account", structs.ErrorType.AUTH)
     except BaseException:
