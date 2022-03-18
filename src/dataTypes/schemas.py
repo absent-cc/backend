@@ -215,6 +215,10 @@ class AbsenceList(BaseModel):
     absences: List[AbsenceReturn]
     date: date
 
+class ManualAbsencesReturn(BaseModel):
+    absences: List[AbsenceList]
+    success: bool
+
 class AutoComplete(BaseModel):
     suggestions: list
 

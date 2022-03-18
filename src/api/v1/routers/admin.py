@@ -1,22 +1,22 @@
 
 import configparser
-import secrets
+import datetime
 from typing import List
+
 from fastapi import APIRouter, Depends
-from ....database.database import SessionLocal
-
-from src.api import accounts
 from sqlalchemy.orm import Session
+from src.api import accounts
 from src.dataTypes import models, schemas, structs
-from ....api import utils
 
+from ....api import utils
 from ....database import crud
+from ....database.database import SessionLocal
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 def adminAuth(creds: schemas.SessionReturn):
     config = configparser.ConfigParser()
-    config.read('config.ini')
+    config.read('config.ini'    )
     admin_uids = config['ADMIN']['uids']
     
     if creds.uid in admin_uids:
@@ -34,7 +34,7 @@ def getUserInfo(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
     db: Session = Depends(accounts.getDBSession), # Initializes a DB.
 ):
-    # if adminAuth(creds):
+    if adminAuth(creds):
         if first == None and last == None:
             users: List[models.User] = crud.getAllUsers(db)
         if first != None and last != None:
@@ -56,4 +56,24 @@ def getUserInfo(
             returnList.append(user)
 
         return schemas.UsersInfoReturn(users=returnList)
-    # return utils.raiseError(401, "Unauthorized. None admin privileges", structs.ErrorType.AUTH)
+    return utils.raiseError(401, "Unauthorized. None admin privileges", structs.ErrorType.AUTH)
+
+@router.delete("/absences/delete/", response_model=schemas.Bool, status_code = 200)
+def deleteAbsencesOnDay(
+    date: datetime.date = None,
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials)
+):
+    if adminAuth(creds):
+        if date == None:
+            date = datetime.date.today()
+        result = crud.removeAbsencesByDate(db, datetime(date.year, date.month, date.day))
+        return schemas.Bool(success=result)
+    return utils.raiseError(401, "Unauthorized. None admin privileges", structs.ErrorType.AUTH)
+
+# @router.put("absences/manual/", response_model=schemas.ManualAbsencesReturn, status_code=200)
+# def manualAbsencesPut(
+#     db: Session = Depends(accounts.getDBSession),
+#     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials)
+    
+# )

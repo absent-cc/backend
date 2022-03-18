@@ -18,7 +18,7 @@ jobs:
     
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         # python-version: ["3.8", "3.9", "3.10"]
         python-versions: ["3.8"]
@@ -33,6 +33,7 @@ jobs:
           POSTGRES_USER: absent
           POSTGRES_DB: absent
           POSTGRES_PASSWORD: password
+         
          # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
@@ -67,7 +68,13 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    
+
+    - name: Set up NOCASE collation for p0stgres
+      run: |
+        psql -h localhost -U absent -d absent -c "CREATE COLLATION nocase (provider = icu, locale = 'und-u-ks-level2', deterministic = false);"
+      env:
+         PGPASSWORD: password 
+      
     - name: Set up postgres
       env: 
         TESTING: True

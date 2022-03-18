@@ -3,6 +3,7 @@ from logging import raiseExceptions
 import time
 import secrets
 from typing import List, Optional, Tuple
+from xxlimited import new
 from loguru import logger
 from uuid import uuid4
 from sqlalchemy import update
@@ -40,6 +41,9 @@ def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
 def getAllUsers(db) -> List[models.User]:
     return db.query(models.User).all()
 
+def getUsersBySchool(db, school: structs.SchoolName):
+    return db.query(models.User).filter(models.User.school == school)
+
 def getUsersByName(db, first, last) -> List[models.User]:
     return db.query(models.User).filter(models.User.first == first.lower(), models.User.last == last.lower()).all()
     
@@ -52,9 +56,24 @@ def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
         return sessions
     return None
 
+def getClassesByTeacher(db, teacher: schemas.TeacherReturn, block: structs.SchoolBlock) -> List[models.Class]:
+    if teacher.tid != None:
+        return db.query(models.Class).filter(models.Class.tid == teacher.tid, models.Class.block == block).all()
+    return None
+
+def getClassesByTeacherForDay(db, teacher: schemas.TeacherReturn, day: int) -> List[models.Class]:
+    if teacher.tid != None:
+        returnClasses = []
+        for block in structs.SchoolBlocksOnDay(day):
+            classes = getClassesByTeacher(db, teacher, block)
+            if classes != None:
+                returnClasses.append(classes) 
+        return returnClasses
+    return None
+
 def getAbsenceList(db, searchDate: date=datetime.today().date(), school: Optional[structs.SchoolName] = None) -> List[models.Absence]:
     if school != None:
-        absences = db.query(models.Absence).join(models.Teacher).filter(models.Absence.date == searchDate, models.Teacher.school == school.upper()).all()
+        absences = db.query(models.Absence).join(models.Teacher).filter(models.Absence.date == searchDate, models.Teacher.school == school).all()
         return absences
     absences = db.query(models.Absence).filter(models.Absence.date == searchDate).all()
     return absences
@@ -110,6 +129,7 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     if absence.teacher.first != None and absence.teacher.last != None and absence.teacher.school != None:
         teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
     if teacher == None:
+        print("HERE")
         teacher = addTeacher(db, absence.teacher)
     absenceModel = models.Absence(date=absence.date, tid=teacher.tid, note=absence.note, length=absence.length)
     db.add(absenceModel)
@@ -147,11 +167,6 @@ def removeSession(db, session: schemas.SessionReturn) -> bool:
         db.commit()
         return True
     return False
-
-def removeDayAbsences(db, date: datetime) -> bool:
-    db.query(models.Absence).filter(models.Absence.date == date).delete()
-    db.commit()
-    return True
 
 def removeUser(db, user: schemas.UserReturn) -> bool:
     if user.uid != None: # Checks for required fields.

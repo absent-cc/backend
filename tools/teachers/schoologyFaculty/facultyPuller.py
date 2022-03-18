@@ -30,7 +30,7 @@ def pullPage(n: int):
 
     return names
 
-def getNameFromHTMLEntry(entry) -> (str, str): # First Last
+def getNameFromHTMLEntry(entry) -> Tuple(str, str): # First Last
     a_tag = entry.find("a")
     split1 = str(a_tag).split(">")[1]
     split2 = split1.split("<")[0]

@@ -27,7 +27,7 @@ class Teacher(Base):
     last = Column(String(255, collation='nocase'))
     school = Column(Enum(structs.SchoolName))
     
-    schedule = relationship("Class", back_populates="teacher")
+    classes = relationship("Class", back_populates="teacher")
     __table_args__ = (UniqueConstraint('first', 'last', 'school'),)
 
 class UserSession(Base):
