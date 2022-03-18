@@ -71,7 +71,7 @@ jobs:
 
     - name: Set up NOCASE collation for p0stgres
       run: |
-        psql -h localhost -U absent -d absent -c "CREATE COLLATION nocase (provider = icu, locale = 'und-u-ks-level2', deterministic = false);""
+        psql -h localhost -U absent -d absent -c "CREATE COLLATION nocase (provider = icu, locale = 'und-u-ks-level2', deterministic = false);"
       env:
          PGPASSWORD: password 
       
