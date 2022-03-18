@@ -3,6 +3,7 @@ from logging import raiseExceptions
 import time
 import secrets
 from typing import List, Optional, Tuple
+from xxlimited import new
 from loguru import logger
 from uuid import uuid4
 from sqlalchemy import update
@@ -125,6 +126,7 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     if absence.teacher.first != None and absence.teacher.last != None and absence.teacher.school != None:
         teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
     if teacher == None:
+        print("HERE")
         teacher = addTeacher(db, absence.teacher)
     absenceModel = models.Absence(date=absence.date, tid=teacher.tid, note=absence.note, length=absence.length)
     db.add(absenceModel)
