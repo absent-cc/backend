@@ -60,19 +60,22 @@ def validateGoogleToken(token) -> dict:
     EXPO_ID = "349911558418-rusr95n8ttq00iujmk3je4q5fmkiib5t.apps.googleusercontent.com"
     IOS_ID = "349911558418-9tm5hh1jgk7k7obhcor3k9l3l2ejt3ue.apps.googleusercontent.com"
     ANDROID_ID = "349911558418-tbkntqmdvhb1j71e52ptl4kagp3q23pi.apps.googleusercontent.com"
-
-    CLIEND_IDs = [
+    DEV_IOS_ID = "349911558418-6ps5ft9k690fva0ouc7popfbtr1s0l6a.apps.googleusercontent.com"
+    DEV_ANDROID_ID = "349911558418-5l3t76k9vkajjvn685geu7gephos3c2t.apps.googleusercontent.com"
+    CLIENT_IDs = [
         BACKEND_ID,
         EXPO_ID,
         IOS_ID,
-        ANDROID_ID
+        ANDROID_ID,
+        DEV_IOS_ID,
+        DEV_ANDROID_ID
     ]
 
     NEWTON = "newton.k12.ma.us"
     ABSENT = "absent.cc"
 
     try:
-        idInfo = id_token.verify_token(token.token, requests.Request(), audience=CLIEND_IDs)
+        idInfo = id_token.verify_token(token.token, requests.Request(), audience=CLIENT_IDs)
         logger.info(f"Sucessful Google login: {idInfo['sub']}")
     except BaseException as error:
         logger.info(f"Invalid Google token POSTed.")
