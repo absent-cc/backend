@@ -9,7 +9,7 @@ APN_HEADERS = {
         "apns_priority": "10",
 }
 
-def sendMessage(message: structs.Message):
+def sendMessage(message):
     notification = messaging.Notification(
         title=message.title, 
         body=message.body, 
@@ -27,4 +27,3 @@ def sendMessage(message: structs.Message):
     return response
 
 TOKEN = "frdpfVydRWmZiSWMJpq09g:APA91bEhOPsiXVmqHOCcIaj9Xpld-rDBwR26FRvI1tAgivdSHgT1QYBORbOc4oE39DPZ6Vw3EtHC4qdJWAv5ZPySfwg4ZY9nKND5QS2Gy2_6AC97Fbna_INOgiKCBAes_re4kaFlUpS_"
-sendMessage(structs.Message(token=TOKEN, title="nwq", body="Test"))

@@ -10,29 +10,25 @@ class Notify():
         self.school = school
         self.date = date
         self.absences: Optional[List[models.Absence]] = crud.getAbsenceList(self.db, self.date, self.school)
+        self.classDict = {
+            0: [structs.SchoolBlock.A, structs.SchoolBlock.ADV, structs.SchoolBlock.B, structs.SchoolBlock.C, structs.SchoolBlock.D, structs.SchoolBlock.E],
+            1: [structs.SchoolBlock.A, structs.SchoolBlock.B, structs.SchoolBlock.F, structs.SchoolBlock.G],
+            2: [structs.SchoolBlock.C, structs.SchoolBlock.D, structs.SchoolBlock.E, structs.SchoolBlock.F],
+            3: [structs.SchoolBlock.A, structs.SchoolBlock.B, structs.SchoolBlock.G, structs.SchoolBlock.E],
+            4: [structs.SchoolBlock.C, structs.SchoolBlock.D, structs.SchoolBlock.F, structs.SchoolBlock.G],
+            5: None,
+            6: None
+        }
 
-    def computeTotalClassesCancelled(self) -> Optional[List[schemas.NotificationBuild]]:
-        # Compute the all the classes that are cancelled
-        cancelledClasses: List[schemas.Class] = []
-
-        if self.absences is None:
-            return None
-
-        for entry in self.absences:
-            absence: schemas.AbsenceReturn = schemas.AbsenceReturn(
-                tid=entry.tid,
-                first=entry.first,
-                last=entry.last,
-                length=entry.length,
-                date=entry.date,
-                note=entry.note
-            )
-            cancelled: schemas.Class = crud.getClassesByTeacherForDay(self.db, absence.teacher, self.date.weekday())
-            cancelledClasses.append(cancelled)
-        
-        return cancelledClasses
+    def buildNotifications(self):
+        validBlocks = self.classDict[self.date.weekday()]
+        absences = crud.getAbsenceList(self.db, self.date, self.school)
+        for absence in absences:
+            for cls in absence.teacher.classes:
+                if cls.block in validBlocks:
+                    print(cls)
 
 if __name__ == "__main__":
     test = Notify(structs.SchoolName.NEWTON_SOUTH, datetime.date.today())
-    print(test.computeTotalClassesCancelled())
+    print(test.buildNotifications())
             

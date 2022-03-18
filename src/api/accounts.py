@@ -59,9 +59,9 @@ def validateGoogleToken(token) -> dict:
     BACKEND_ID = "349911558418-9d07ptkk7pg7aqq58qkj5tshi8bq9s5v.apps.googleusercontent.com"
     EXPO_ID = "349911558418-rusr95n8ttq00iujmk3je4q5fmkiib5t.apps.googleusercontent.com"
     IOS_ID = "349911558418-9tm5hh1jgk7k7obhcor3k9l3l2ejt3ue.apps.googleusercontent.com"
-    ANDROID_ID = "349911558418-tbkntqmdvhb1j71e52ptl4kagp3q23pi.apps.googleusercontent.com"
+    ANDROID_ID = "349911558418-mjtpkjiuqfd5lcihfdi2kni73ja13ou5.apps.googleusercontent.com"
     DEV_IOS_ID = "349911558418-6ps5ft9k690fva0ouc7popfbtr1s0l6a.apps.googleusercontent.com"
-    DEV_ANDROID_ID = "349911558418-5l3t76k9vkajjvn685geu7gephos3c2t.apps.googleusercontent.com"
+    DEV_ANDROID_ID = "349911558418-t8ld1clvadk0jg04rn3q86hms34h9js0.apps.googleusercontent.com"
     CLIENT_IDs = [
         BACKEND_ID,
         EXPO_ID,
