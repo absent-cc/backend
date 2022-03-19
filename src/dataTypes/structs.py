@@ -175,4 +175,14 @@ class Confidence(BaseModel):
     confidences: dict
     csMap: Union[Tuple, None]
 
+class NotificationBuild(BaseModel):
+    uid: str = None
+    tid: str = None
+    block: SchoolBlock = None
+    date: date = None
 
+class NotificationSend(NotificationBuild):
+    fcm: str = None
+    title: str = None
+    body: str = None
+    data: dict = None

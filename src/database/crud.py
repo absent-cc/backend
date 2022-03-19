@@ -41,6 +41,9 @@ def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
 def getAllUsers(db) -> List[models.User]:
     return db.query(models.User).all()
 
+def getUsersBySchool(db, school: structs.SchoolName):
+    return db.query(models.User).filter(models.User.school == school)
+
 def getUsersByName(db, first, last) -> List[models.User]:
     return db.query(models.User).filter(models.User.first == first.lower(), models.User.last == last.lower()).all()
     
@@ -70,7 +73,7 @@ def getClassesByTeacherForDay(db, teacher: schemas.TeacherReturn, day: int) -> L
 
 def getAbsenceList(db, searchDate: date=datetime.today().date(), school: Optional[structs.SchoolName] = None) -> List[models.Absence]:
     if school != None:
-        absences = db.query(models.Absence).join(models.Teacher).filter(models.Absence.date == searchDate, models.Teacher.school == school.upper()).all()
+        absences = db.query(models.Absence).join(models.Teacher).filter(models.Absence.date == searchDate, models.Teacher.school == school).all()
         return absences
     absences = db.query(models.Absence).filter(models.Absence.date == searchDate).all()
     return absences

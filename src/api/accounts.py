@@ -59,25 +59,31 @@ def validateGoogleToken(token) -> dict:
     BACKEND_ID = "349911558418-9d07ptkk7pg7aqq58qkj5tshi8bq9s5v.apps.googleusercontent.com"
     EXPO_ID = "349911558418-rusr95n8ttq00iujmk3je4q5fmkiib5t.apps.googleusercontent.com"
     IOS_ID = "349911558418-9tm5hh1jgk7k7obhcor3k9l3l2ejt3ue.apps.googleusercontent.com"
-    ANDROID_ID = "349911558418-tbkntqmdvhb1j71e52ptl4kagp3q23pi.apps.googleusercontent.com"
-
-    CLIEND_IDs = [
+    ANDROID_ID = "349911558418-mjtpkjiuqfd5lcihfdi2kni73ja13ou5.apps.googleusercontent.com"
+    DEV_IOS_ID = "349911558418-6ps5ft9k690fva0ouc7popfbtr1s0l6a.apps.googleusercontent.com"
+    DEV_ANDROID_ID = "349911558418-t8ld1clvadk0jg04rn3q86hms34h9js0.apps.googleusercontent.com"
+    CLIENT_IDs = [
         BACKEND_ID,
         EXPO_ID,
         IOS_ID,
-        ANDROID_ID
+        ANDROID_ID,
+        DEV_IOS_ID,
+        DEV_ANDROID_ID
     ]
 
     NEWTON = "newton.k12.ma.us"
-    
+    ABSENT = "absent.cc"
+
     try:
-        idInfo = id_token.verify_token(token.token, requests.Request(), audience=CLIEND_IDs)
+        idInfo = id_token.verify_token(token.token, requests.Request(), audience=CLIENT_IDs)
         logger.info(f"Sucessful Google login: {idInfo['sub']}")
     except BaseException as error:
         logger.info(f"Invalid Google token POSTed.")
         utils.raiseError(401, error, structs.ErrorType.AUTH)
     try:
-        if idInfo['hd'] != NEWTON:
+        domain = idInfo['email'].split("@")[1]
+        verified = idInfo['email_verified']
+        if domain != NEWTON and domain != ABSENT and not verified:
             logger.info(f"Google token for a non-NPS account POSTed")
             utils.raiseError(401, "Not an NPS issued account", structs.ErrorType.AUTH)
     except BaseException:

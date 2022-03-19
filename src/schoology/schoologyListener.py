@@ -4,7 +4,7 @@ from src.dataTypes import models
 from src.dataTypes.schemas import TeacherReturn
 
 from ..dataTypes import structs
-from ..notifications import firebase
+from ..notifications.notify import Notify
 from .absences import AbsencePuller
 from configparser import ConfigParser
 from ..database.database import SessionLocal
@@ -49,6 +49,7 @@ class SchoologyListener:
             #statuses[self.south].absences = True # Update status that action was committed previously.
                 
             if not statuses[self.south].notifications:
+                pass
                 # Grab absences
                 # absences: models.Absence = crud.getAbsenceList(self.db)
                 # Send notifications
@@ -58,8 +59,9 @@ class SchoologyListener:
                 #         school=teacher.school,
                 #     )
 
-
-                # print("SOUTH: ADD IN NOTIFY CODE HERE LATER")
+            if not statuses[self.south].notifications:
+                Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
+                statuses[self.south].notifications = True
                 return True
 
         def northRun() -> bool:
@@ -73,12 +75,14 @@ class SchoologyListener:
             for absence in absences:
                 # Check if the absence is already in the database.
                 self.sc.addAbsence(absence) # If action was unsuccessful, then the absence is already in the database.
-                #    print("NORTH: Absence already in database.")
-                #    statuses[self.north].absences = True # Update status that action was committed previously.
-                #    break
+                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                    print("NORTH: Absence already in database.")
+                    statuses[self.south].absences = True # Update status that action was committed previously.
+                    break
                 
             if not statuses[self.north].notifications:
-                print("NORTH: ADD IN NOTIFY CODE HERE LATER")
+                Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
+                statuses[self.north].notifications = True
                 return True
         
         southRes = southRun()
