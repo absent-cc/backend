@@ -32,11 +32,11 @@ class Notify:
                 for cls in classes:
                     if cls.user.settings[0].notify: # Add the people with absent teachers.
                         for session in cls.user.sessions:
-                            if session.fcm_token != None:
+                            if session.fcm_token != None and not(session.fcm_token and session.fcm_token.strip()):
                                 hasAbsentTeacher.add(session.fcm_token)
                     elif cls.user.settings[0].notifyWhenNone: # Add the always notify people/
                         for session in cls.user.sessions:
-                            if session.fcm_token != None:
+                            if session.fcm_token != None and not(session.fcm_token and session.fcm_token.strip()):
                                 alwaysNotify.add(session.fcm_token)
 
         return hasAbsentTeacher, alwaysNotify
