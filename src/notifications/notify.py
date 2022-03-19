@@ -72,8 +72,3 @@ class Notify:
                 logger.info(f"Notification sent: {response}")
             except:
                 logger.info("Message failed to send")
-
-if __name__ == "__main__":
-    test = Notify(structs.SchoolName.NEWTON_NORTH, datetime.date.today())
-    print(test.sendMessages(test.buildMessages()))
-            
