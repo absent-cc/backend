@@ -20,7 +20,6 @@ class Notify:
         }
 
     def calculateAbsences(self):
-
         notifDict = {}
 
         validBlocks = structs.SchoolBlocksOnDay()[self.date.weekday()]
@@ -52,7 +51,6 @@ class Notify:
         return userMessages
 
     def buildMessages(self):
-
         notifDict = self.calculateAbsences()
         messages = []
         for user in crud.getUsersBySchool(self.db, self.school):
