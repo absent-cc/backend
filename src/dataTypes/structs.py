@@ -40,6 +40,8 @@ class SchoolBlocksOnDay(Dict[int, SchoolBlock]):
             2 : [SchoolBlock.C, SchoolBlock.D, SchoolBlock.E, SchoolBlock.F],
             3 : [SchoolBlock.A, SchoolBlock.B, SchoolBlock.G, SchoolBlock.E],
             4 : [SchoolBlock.C, SchoolBlock.D, SchoolBlock.F, SchoolBlock.G],
+            5: [],
+            6: []
         })
 
 class Grade(int, Enum):

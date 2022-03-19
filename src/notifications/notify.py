@@ -10,6 +10,7 @@ class Notify():
         self.school = school
         self.date = date
         self.absences: Optional[List[models.Absence]] = crud.getAbsenceList(self.db, self.date, self.school)
+        print(self.absences)
 
     def computeTotalClassesCancelled(self) -> Optional[List[schemas.NotificationBuild]]:
         # Compute the all the classes that are cancelled
@@ -20,19 +21,25 @@ class Notify():
 
         for entry in self.absences:
             absence: schemas.AbsenceReturn = schemas.AbsenceReturn(
-                tid=entry.tid,
-                first=entry.first,
-                last=entry.last,
-                length=entry.length,
-                date=entry.date,
-                note=entry.note
+                teacher = schemas.TeacherReturn(
+                    tid = entry.teacher.tid,
+                    first = entry.teacher.first,
+                    last = entry.teacher.last,
+                    school = entry.teacher.school
+                ),
+                length = entry.length,
+                note = entry.note
             )
             cancelled: schemas.Class = crud.getClassesByTeacherForDay(self.db, absence.teacher, self.date.weekday())
+            print(cancelled)
             cancelledClasses.append(cancelled)
         
         return cancelledClasses
 
 if __name__ == "__main__":
-    test = Notify(structs.SchoolName.NEWTON_SOUTH, datetime.date.today())
-    print(test.computeTotalClassesCancelled())
-            
+    test = Notify(structs.SchoolName.NEWTON_SOUTH)
+    print("Running")
+    test_cancelled = test.computeTotalClassesCancelled()
+    for classs in test_cancelled:
+        print(classs)
+    

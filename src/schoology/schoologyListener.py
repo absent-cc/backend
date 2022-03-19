@@ -50,14 +50,13 @@ class SchoologyListener:
                 
             if not statuses[self.south].notifications:
                 # Grab absences
-                absences: models.Absence = crud.getAbsenceList(self.db)
+                # absences: models.Absence = crud.getAbsenceList(self.db)
                 # Send notifications
-                for teacher in absences:
-                    teacherObject = TeacherReturn(
-                        tid = teacher.tid,
-                        school=teacher.school,
-                        
-                    )
+                # for teacher in absences:
+                #     teacherObject = TeacherReturn(
+                #         tid = teacher.tid,
+                #         school=teacher.school,
+                #     )
 
 
                 # print("SOUTH: ADD IN NOTIFY CODE HERE LATER")
