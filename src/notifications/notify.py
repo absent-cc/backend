@@ -14,31 +14,22 @@ class Notify:
         self.school = school
         self.date = date
         self.absences: Optional[List[models.Absence]] = crud.getAbsenceList(self.db, self.date, self.school)
-        self.classDict = {
-            0: [structs.SchoolBlock.A, structs.SchoolBlock.ADV, structs.SchoolBlock.B, structs.SchoolBlock.C, structs.SchoolBlock.D, structs.SchoolBlock.E],
-            1: [structs.SchoolBlock.A, structs.SchoolBlock.B, structs.SchoolBlock.F, structs.SchoolBlock.G],
-            2: [structs.SchoolBlock.C, structs.SchoolBlock.D, structs.SchoolBlock.E, structs.SchoolBlock.F],
-            3: [structs.SchoolBlock.A, structs.SchoolBlock.B, structs.SchoolBlock.G, structs.SchoolBlock.E],
-            4: [structs.SchoolBlock.C, structs.SchoolBlock.D, structs.SchoolBlock.F, structs.SchoolBlock.G],
-            5: None,
-            6: None
-        }
+
         self.APN_HEADERS = {
         "apns_priority": "10",
         }
 
     def calculateAbsences(self):
-
         notifDict = {}
 
-        validBlocks = self.classDict[self.date.weekday()]
+        validBlocks = structs.SchoolBlocksOnDay()[self.date.weekday()]
         absences = crud.getAbsenceList(self.db, self.date, self.school)
         for absence in absences:
             for block in validBlocks:
                 classes = absence.teacher.classes
                 for cls in classes:
                     notifDict[cls.uid] = True
-
+        
         return notifDict
 
     def buildMessage(self, user, content: str):
@@ -60,7 +51,6 @@ class Notify:
         return userMessages
 
     def buildMessages(self):
-
         notifDict = self.calculateAbsences()
         messages = []
         for user in crud.getUsersBySchool(self.db, self.school):

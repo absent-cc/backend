@@ -42,10 +42,22 @@ class SchoologyListener:
             for absence in absences:
                 # Check if the absence is already in the database.
                 self.sc.addAbsence(absence)
-                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
-                    print("SOUTH: Absence already in database.")
-                    statuses[self.south].absences = True # Update status that action was committed previously.
-                    break
+                #if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                #print("SOUTH: Absence already in database.")
+                #     statuses[self.south].absences = True # Update status that action was committed previously.
+                #     break
+            #statuses[self.south].absences = True # Update status that action was committed previously.
+                
+            if not statuses[self.south].notifications:
+                pass
+                # Grab absences
+                # absences: models.Absence = crud.getAbsenceList(self.db)
+                # Send notifications
+                # for teacher in absences:
+                #     teacherObject = TeacherReturn(
+                #         tid = teacher.tid,
+                #         school=teacher.school,
+                #     )
 
             if not statuses[self.south].notifications:
                 Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()

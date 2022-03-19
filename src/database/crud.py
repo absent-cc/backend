@@ -64,7 +64,7 @@ def getClassesByTeacher(db, teacher: schemas.TeacherReturn, block: structs.Schoo
 def getClassesByTeacherForDay(db, teacher: schemas.TeacherReturn, day: int) -> List[models.Class]:
     if teacher.tid != None:
         returnClasses = []
-        for block in structs.SchoolBlocksOnDay(day):
+        for block in structs.SchoolBlocksOnDay()[day]:
             classes = getClassesByTeacher(db, teacher, block)
             if classes != None:
                 returnClasses.append(classes) 
@@ -129,7 +129,6 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     if absence.teacher.first != None and absence.teacher.last != None and absence.teacher.school != None:
         teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
     if teacher == None:
-        print("HERE")
         teacher = addTeacher(db, absence.teacher)
     absenceModel = models.Absence(date=absence.date, tid=teacher.tid, note=absence.note, length=absence.length)
     db.add(absenceModel)
