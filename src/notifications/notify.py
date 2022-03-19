@@ -20,7 +20,9 @@ class Notify:
         }
 
     def calculateAbsences(self):
-        notifDict = {}
+
+        hasAbsentTeacher = set()
+        alwaysNotify = set()
 
         validBlocks = structs.SchoolBlocksOnDay()[self.date.weekday()]
         absences = crud.getAbsenceList(self.db, self.date, self.school)
@@ -28,47 +30,61 @@ class Notify:
             for block in validBlocks:
                 classes = absence.teacher.classes
                 for cls in classes:
-                    notifDict[cls.uid] = True
-        
-        return notifDict
+                    if cls.user.settings[0].notify: # Add the people with absent teachers.
+                        for session in cls.user.sessions:
+                            if session.fcm_token != None:
+                                hasAbsentTeacher.add(session.fcm_token)
+                    elif cls.user.settings[0].notifyWhenNone: # Add the always notify people/
+                        for session in cls.user.sessions:
+                            if session.fcm_token != None:
+                                alwaysNotify.add(session.fcm_token)
 
-    def buildMessage(self, user, content: str):
-        userMessages = []
-        for session in user.sessions:
-            notification = messaging.Notification(
-                title="Absence list notification.",
-                body=content,
-            )
-
-            message = messaging.Message(
-                notification=notification,
-                token=session.fcm_token,
-                android=messaging.AndroidConfig(priority="high"),
-                apns=messaging.APNSConfig(headers=self.APN_HEADERS)
-            )
-
-            userMessages.append(message)
-        return userMessages
-
-    def buildMessages(self):
-        notifDict = self.calculateAbsences()
-        messages = []
-        for user in crud.getUsersBySchool(self.db, self.school):
-            if user.settings[0].notify and user.uid in notifDict:
-                for message in self.buildMessage(user, "Hey there! You have absent teachers. Click this notification for more info."):
-                    messages.append(message)
-            elif user.settings[0].notifyWhenNone:
-                for message in self.buildMessage(user, "The absence list has been posted. Check it out!"):
-                    messages.append(message)
-        return messages
+        return hasAbsentTeacher, alwaysNotify
 
     def sendMessages(self):
 
-        messages = self.buildMessages()
+        hasAbsentTeacherSet, alwaysNotifySet = self.calculateAbsences()
 
-        for message in messages:
-            try:
-                response = messaging.send(message)
-                logger.info(f"Notification sent: {response}")
-            except:
-                logger.info("Message failed to send")
+        hasAbsentTeacher = list(hasAbsentTeacherSet)
+        alwaysNotify = list(alwaysNotifySet)
+
+        del hasAbsentTeacherSet
+        del alwaysNotifySet
+
+        hasAbsentTeacher = [hasAbsentTeacher[i:i + 500] for i in range(0, len(hasAbsentTeacher), 500)]
+        alwaysNotify = [alwaysNotify[i:i + 500] for i in range(0, len(alwaysNotify), 500)]
+
+        # Notify the people with absent teachers.
+
+        multicastMessages = []
+        for chunk in hasAbsentTeacher:
+            msg = messaging.MulticastMessage(
+                tokens = chunk,
+                notification = messaging.Notification(
+                    title="Your teacher is abSENT",
+                    body="Hey there! You have an absent teacher today. Click me to learn more."
+                ),
+                android = messaging.AndroidConfig(priority="high"),
+                apns = messaging.APNSConfig(headers=self.APN_HEADERS)
+            )
+            multicastMessages.append(msg)
+
+        # Notify the always notify people.
+
+        for chunk in alwaysNotify:
+            msg = messaging.MulticastMessage(
+                tokens = chunk,
+                notification = messaging.Notification(
+                    title="abSENT List Posted",
+                    body="Hey there! Today's absent list has been posted. Click me to view."
+                ),
+                android = messaging.AndroidConfig(priority="high"),
+                apns = messaging.APNSConfig(headers=self.APN_HEADERS)
+            )
+            multicastMessages.append(msg)
+
+        for message in multicastMessages:
+            response = messaging.send_multicast(message)
+            logger.info(f"Notifications for {self.school} sent. # of failures: {response.failure_count}")
+
+        return True
