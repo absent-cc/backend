@@ -1,5 +1,6 @@
 import configparser
 import threading, time, yaml
+from loguru import logger
 from .dataTypes import structs, tools
 from .schoology.schoologyListener import *
 from .database.database import *
@@ -58,6 +59,7 @@ def listener():
             print(f"Schoology Success: {schoologySuccessCheck}")
             if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
                 if dayoffLatch == False:
+                    logger.info(f"abSENT DAY OFF. LATCHIG TO SLEEP! Day: {dayofTheWeek}")
                     print(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
                     dayoffLatch = True
             else:
@@ -78,10 +80,10 @@ def listener():
         if (currentTime.hour == resetTimeOne[0] or currentTime.hour == resetTimeTwo[0]):
             # Reset schoologySuccessCheck to false @ midnight
             # Only change value when it is latched (true)
-            if schoologySuccessCheck == True:
-                print("RESETTING STATE!", currentTime)
-                dayoffLatch = False
-                schoologySuccessCheck = False
+            logger.info("RESETTING all states to false")
+            print("RESETTING STATE!", currentTime)
+            dayoffLatch = False
+            schoologySuccessCheck = False
 
         time.sleep(15) # Sleep for 15 seconds.
 
