@@ -72,13 +72,15 @@ class SchoologyListener:
                 return False
 
             # Add the absences to the database.
+            successCount = 0
             for absence in absences:
                 # Check if the absence is already in the database.
-                self.sc.addAbsence(absence) # If action was unsuccessful, then the absence is already in the database.
-                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                if self.sc.addAbsence(absence):
+                    successCount += 1
+                else:
                     print("NORTH: Absence already in database.")
-                    statuses[self.south].absences = True # Update status that action was committed previously.
-                    break
+            if successCount == 0:
+                statuses[self.south].absences = True # Update status that action was committed previously.            
                 
             if not statuses[self.north].notifications:
                 Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()

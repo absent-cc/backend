@@ -38,8 +38,8 @@ def listener():
     # debug mode
     debugMode = False
 
-    dailyCheckTimeStart = 7 # hour
-    dailyCheckTimeEnd = 20 # hour
+    dailyCheckTimeStart = 0 # hour
+    dailyCheckTimeEnd = 24 # hour
     
     resetTimeOne = (0, 0) # Midnight
     resetTimeTwo = (4, 20) # Light It Up

@@ -50,6 +50,7 @@ class AbsencePuller:
     def filterAbsencesNorth(self, date):       
         table = self.getCurrentTable(structs.SchoolName.NEWTON_NORTH, date)
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_NORTH)
+        print(absences)
         return absences 
 
     # Same as the above, but the parsing is handled slightly differently due to the South absence table being differenct in formatting.
@@ -131,7 +132,7 @@ class ContentParser:
         return objList
 
     def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
-        while not (('position' in update.content[0].lower()) or ('name' in update.content[0].lower())) and len(update.content) > 1:
+        while not (('position' in update.content[0].lower()) or (('administrator' in update.content[0].lower())) or ('name' in update.content[0].lower())) and len(update.content) > 1:
             update.content.pop(0)
         return update
 
