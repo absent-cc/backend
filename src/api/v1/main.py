@@ -64,3 +64,7 @@ def refresh(cid = Depends(accounts.verifyRefreshToken)): # Here, the refresh tok
         return schemas.SessionCredentials(token=token, onboarded=(inSystem and hasClasses), refresh=cid) # Return this using our credentials schema.
     else:
         utils.raiseError(401, "Invalid refresh token provided", structs.ErrorType.AUTH) # Otherwise, raise an error of type AUTH, signifying an invalid token.
+
+@router.put("/logout/", status_code=201, tags=["Main"])
+def logout(creds: schemas.SessionReturn = Depends(accounts.verifyCredentials), db: Session = Depends(accounts.getDBSession)):
+    return crud.removeSession(db, creds)
