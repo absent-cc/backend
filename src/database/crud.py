@@ -117,6 +117,10 @@ def getUserSettings(db, user: schemas.UserReturn) -> models.UserSettings:
     logger.info("GET user settings FAILED: " + user.uid)
     return None
 
+def getAlwaysNotify(db) -> models.User:
+    logger.info("GET always notify people")
+    return db.query(models.UserSettings).filter(models.UserSettings.notifyWhenNone == True).all()
+
 # Peek the top entry in the absences table by date.
 def peekAbsence(db, date: datetime) -> tuple:
     query = db.query(models.Absence).filter(models.Absence.date == datetime.today().date()).first()

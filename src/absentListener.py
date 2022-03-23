@@ -39,8 +39,8 @@ def listener():
     # debug mode
     debugMode = False
 
-    dailyCheckTimeStart = 0 # hour
-    dailyCheckTimeEnd = 24 # hour
+    dailyCheckTimeStart = 7 # hour
+    dailyCheckTimeEnd = 11 # hour
     
     resetTimeOne = (0, 0) # Midnight
     resetTimeTwo = (4, 20) # Light It Up
@@ -59,7 +59,7 @@ def listener():
             print(f"Schoology Success: {schoologySuccessCheck}")
             if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
                 if dayoffLatch == False:
-                    logger.info(f"abSENT DAY OFF. LATCHIG TO SLEEP! Day: {dayofTheWeek}")
+                    logger.info(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayofTheWeek}")
                     print(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
                     dayoffLatch = True
             else:

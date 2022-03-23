@@ -38,3 +38,12 @@ def getClasses(
     return schemas.ClassCountBadge(
         message=str(classes)
         )
+
+@router.get("/classes/cancelled", response_model=schemas.ClassCanceledBadge)
+def getClasses(
+    db: Session = Depends(accounts.getDBSession)
+) -> schemas.ClassCanceledBadge:
+    cancelledCount = crud.getClassesCancelledCount(db)
+    return schemas.ClassCanceledBadge(
+        message=str(cancelledCount)
+        )
