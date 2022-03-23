@@ -1,0 +1,38 @@
+Courtney Albert : ('Courtney', 'Albert Baugher') 138, 88, 50
+Michael Barrington-Haber : ('Michael', 'Barrington Haber') 167, 86, 81
+Alicia Carrillo : ('Alicia', 'Bartosik') 121, 83, 38
+David Bennett : ('Dave', 'Bennett') 130, 44, 86
+Riley Brown : ('Rilie', 'Brown') 140, 60, 80
+Beth Busa : ('Betherin', 'Busa') 125, 50, 75
+Carolyn Fertig : ('Carolyn', 'Camerato') 129, 86, 43
+Tom Donnellan : ('Thomas', 'Donnellan') 133, 44, 89
+Kristen Durocher : ('Kris', 'Durocher') 143, 55, 88
+Dan Fabrizio : ('Daniel', 'Fabrizio') 132, 44, 88
+Tim Finnegan : ('Timothy', 'Finnegan') 128, 40, 88
+Phil Golando : ('Philip', 'Golando') 146, 60, 86
+Lisa Goldthwaite : ('Lisa', 'Goldthwaite Wright') 144, 75, 69
+Peter Hamel : ('Peter', 'Hamel') 160, 80, 80 // Appears Twice
+Steve Hess : ('Stephen', 'Hess') 125, 50, 75
+Ben Hoadley : ('Benjamin', 'Hoadley') 122, 36, 86
+Mary-Ellen Hurd : ('Mary-Ellen', 'Hurd') 155, 80, 75
+Heather Gilbert : ('Heather', 'Irber') 136, 86, 50 // Appears Twice
+Danielle Johnson : ('Dani', 'Johnson') 136, 50, 86
+Tim Lesinski : ('Timothy', 'Lesinski') 128, 40, 88
+Emily Lew : ('Emily', 'Lew') 147, 80, 67 // Appears Twice
+Emily Lewis : ('Emily', 'Lew') 130, 80, 50 // Appears Twice
+Ming Lu : ('Ming', 'Lu') 125, 75, 50 // Appears Twice
+Liz Mansfield : ('Lizabeth', 'Mansfield') 125, 36, 89
+Bill McAndrews : ('William', 'McAndrews') 133, 55, 78
+Lisa McKinney : ('Elizabeth', 'McKinney') 121, 46, 75
+Melynda Meszko-Cameron : ('Melynda', 'Meszko-Cameron') 172, 86, 86
+Tim Murphy : ('Timothy', 'Murphy') 123, 40, 83
+Allison Newton : ('Ali', 'Newton') 123, 40, 83
+Beth O'Brien : ('Elizabeth', "O'Brien") 133, 62, 71
+Caitlin O'Rourke : ('Caitlin', "O'Rourke") 161, 86, 75
+Madeleine O'Donovan : ('Madeleine', 'Odonovan') 171, 89, 82
+Caitlin O'Rourke : ('Caitlin', 'Orourke') 166, 86, 80
+Nick Pfeifer : ('Eric', 'Pfeifer') 136, 50, 86
+Pam Pistiner : ('Pamela', 'Pistiner') 132, 44, 88
+Brian Reardon : ('Brian', 'Redmond') 137, 80, 57 // Appears Twice
+Aaron Sanders, Jr. : ('Aaron', 'Sanders') 143, 80, 63
+Mike Schlegelmilch : ('Michael', 'Schlegelmilch') 128, 36, 92
