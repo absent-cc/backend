@@ -265,7 +265,7 @@ class ClassCountBadge(Badges):
     message: str
 
 class ClassCanceledBadge(Badges):
-    label = "Classes Cancelled"
+    label = "Free Blocks Recorded"
     message: str
     
 class Date(BaseModel):
