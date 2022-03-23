@@ -26,30 +26,19 @@ class Notify:
 
         validBlocks = structs.SchoolBlocksOnDay()[self.date.weekday()]
         absences = crud.getAbsenceList(self.db, self.date, self.school)
-       
         for absence in absences:
             for block in validBlocks:
                 classes = absence.teacher.classes
-                for _class in classes:
-                    if _class.user.settings[0].notify: # Add the people with absent teachers.
-                        for session in _class.user.sessions:
-                            print(session.fcm_token)
-                            if session.fcm_token != None and (bool(session.fcm_token) and bool(session.fcm_token.strip())) != False:
+                for cls in classes:
+                    if cls.user.settings[0].notify: # Add the people with absent teachers.
+                        for session in cls.user.sessions:
+                            if session.fcm_token != None and not(session.fcm_token and session.fcm_token.strip()):
                                 hasAbsentTeacher.add(session.fcm_token)
-                    # elif _class.user.settings[0].notifyWhenNone: # Add the always notify people
-                    #     for session in _class.user.sessions:
-                    #         if session.fcm_token != None and (bool(session.fcm_token) and bool(session.fcm_token.strip())) != False:
-                    #             alwaysNotify.add(session.fcm_token)
-        
-        alwaysNotifyUsers = crud.getAlwaysNotify(self.db)
+                    elif cls.user.settings[0].notifyWhenNone: # Add the always notify people/
+                        for session in cls.user.sessions:
+                            if session.fcm_token != None and not(session.fcm_token and session.fcm_token.strip()):
+                                alwaysNotify.add(session.fcm_token)
 
-        for notifyEntry in alwaysNotifyUsers:
-            user = notifyEntry.user
-            for session in user.sessions:
-                print(session.fcm_token)
-                if session.fcm_token != None and (bool(session.fcm_token) and bool(session.fcm_token.strip())) != False:
-                    alwaysNotify.add(session.fcm_token)
-            
         return hasAbsentTeacher, alwaysNotify
 
     def sendMessages(self):
@@ -58,7 +47,7 @@ class Notify:
 
         hasAbsentTeacher = list(hasAbsentTeacherSet)
         alwaysNotify = list(alwaysNotifySet)
-        print(hasAbsentTeacherSet, alwaysNotifySet)
+
         del hasAbsentTeacherSet
         del alwaysNotifySet
 
@@ -96,6 +85,6 @@ class Notify:
 
         for message in multicastMessages:
             response = messaging.send_multicast(message)
-            logger.info(f"Notifications for {self.school} sent. Number sent: {len(hasAbsentTeacher) + len(alwaysNotify)} in {len(multicastMessages)} multicasts. Number of failures: {response.failure_count}")
+            logger.info(f"Notifications for {self.school} sent. # of failures: {response.failure_count}")
 
         return True
