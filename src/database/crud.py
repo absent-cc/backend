@@ -135,6 +135,9 @@ def getAbsencesCount(db) -> int:
     logger.info("GET absences count requested")
     return len(getAllAbsences(db))
 
+def getClassesCancelledCount(db) -> int:
+    return db.query(models.CancelledClass).count()
+
 def addUser(db, user: schemas.UserCreate) -> models.User:
     if user.gid != None: # Checks for GID as this is the only mandatory field.
         uid = str(uuid4()) # Generates UUID.
