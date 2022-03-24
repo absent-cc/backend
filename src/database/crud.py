@@ -309,7 +309,7 @@ def checkOnboarded(db, gid: str = None, uid: str = None) -> Tuple[bool, bool]:
     
     # If user is not in the table, they could not have possibly been onboarded.
     if resUser == None: 
-        logger.info("CHECK User not onboarded: " + gid + '.' + uid + " | User does not exist in users table.")
+        logger.info("CHECK User not onboarded: " + gid + "| User does not exist in users table.")
         return (False, False)
     
     # If user is in the table, check if they have any classes.
