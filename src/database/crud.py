@@ -138,6 +138,19 @@ def getAbsencesCount(db) -> int:
 def getClassesCancelledCount(db) -> int:
     return db.query(models.CancelledClass).count()
 
+def getSpecialDay(db, date: date) -> int:
+    logger.info(f"GET special day requested: {date}")
+    return db.query(models.SpecialDay).count()
+
+def addSpecialDay(db, date: date, schedule: List[structs.SchoolBlock]) -> bool:
+    logger.info(f"ADD special day requested: {date}")
+    try:
+        db.add(models.SpecialDay(date, schedule))
+    except Exception as e:
+        logger.error(f"ADD special day failed: {e}")
+        return False
+    return True
+
 def addUser(db, user: schemas.UserCreate) -> models.User:
     if user.gid != None: # Checks for GID as this is the only mandatory field.
         uid = str(uuid4()) # Generates UUID.
@@ -227,6 +240,15 @@ def removeClass(db, cls: schemas.Class) -> bool:
         return True
     logger.info("REMOVE Class FAILED: " + "TID:" + cls.tid + ' UID:' + cls.uid + ' block:' + cls.block)
     return False
+
+def removeSpecialDay(db, date: date) -> bool:
+    logger.info(f"REMOVE special day requested: {date}")
+    try:
+        db.query(models.SpecialDay).filter(models.SpecialDay.date == date).delete()
+    except Exception as e:
+        logger.error(f"REMOVE special day failed: {e}")
+        return False
+    return True
 
 def removeClassesByUser(db, user: schemas.UserReturn) -> bool: # Used for updating schedule and cancellation.
     classes: List[models.Class] = getClassesByUser(db, user) # Gets a student's classes.

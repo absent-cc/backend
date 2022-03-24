@@ -59,7 +59,7 @@ def listener():
             print(f"Schoology Success: {schoologySuccessCheck}")
             if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
                 if dayoffLatch == False:
-                    logger.info(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayofTheWeek}")
+                    logger.info(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
                     print(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
                     dayoffLatch = True
             else:

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, Date, String, collate, Boolean, Enum
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, Date, String, collate, Boolean, Enum, ARRAY
 from sqlalchemy.orm import relationship
 from . import structs
 
@@ -69,3 +69,8 @@ class UserSettings(Base):
     notifyWhenNone = Column(Boolean)
     
     user = relationship("User")
+
+class SpecialDays(Base):
+    __tablename__ = "special_days"
+    date = Column(Date, primary_key=True)
+    schedule = Column(ARRAY(Enum(structs.SchoolBlock)))

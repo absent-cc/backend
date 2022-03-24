@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import List, Tuple, Dict, Union
 from pydantic import BaseModel
 
+from datetime import date
+
 #
 # SCHOOL ENUMS (BLOCK AND NAME) 
 #
@@ -48,7 +50,7 @@ class Grade(int, Enum):
     NINE: int = 9
     TEN: int = 10
     ELEVEN: int = 11
-    TWELEE: int = 12 
+    TWELEE: int = 12 # KEEP TWELEE, NICE ARTIFACT
 
 class TableColumn(str, Enum):
     POSITION = ["Position",]

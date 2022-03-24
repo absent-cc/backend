@@ -77,3 +77,11 @@ def deleteAbsencesOnDay(
 #     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials)
     
 # )
+
+if __name__ == "__main__":
+    print("Admin router")
+    _db = SessionLocal()
+    specialDay: List[structs.SchoolBlock] = [structs.SchoolBlock.A, structs.SchoolBlock.B, structs.SchoolBlock.C]
+
+    crud.addSpecialDay(_db, datetime.date(2020, 1, 1), specialDay)
+    print(crud.getSpecialDay(_db, datetime.date(2020, 1, 1)))
