@@ -34,11 +34,16 @@ class Notify:
                         for session in cls.user.sessions:
                             if session.fcm_token != None and not(session.fcm_token and session.fcm_token.strip()):
                                 hasAbsentTeacher.add(session.fcm_token)
-                    elif cls.user.settings[0].notifyWhenNone: # Add the always notify people/
-                        for session in cls.user.sessions:
-                            if session.fcm_token != None and not(session.fcm_token and session.fcm_token.strip()):
-                                alwaysNotify.add(session.fcm_token)
 
+        alwaysNotifyUsers = crud.getAlwaysNotify(self.db)
+
+        for notifyEntry in alwaysNotifyUsers:
+            user = notifyEntry.user
+            for session in user.sessions:
+                print(session.fcm_token)
+                if session.fcm_token != None and (bool(session.fcm_token) and bool(session.fcm_token.strip())) != False:
+                    alwaysNotify.add(session.fcm_token)
+        
         return hasAbsentTeacher, alwaysNotify
 
     def sendMessages(self):
