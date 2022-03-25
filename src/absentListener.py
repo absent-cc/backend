@@ -30,14 +30,16 @@ SCHOOLOGYCREDS = structs.SchoologyCreds(
     
     )
 
+logger.add("logs/{time:YYYY-MM-DD}/absentListener.log", rotation="1 day", retention="7 days", format="{time} {level} {message}", filter="xxlimited", level="INFO")
+
 # Listen for Schoology updates.
 def listener():
     saturday = 5
     sunday = 6
-    holidays = []
-
     # debug mode
-    debugMode = False
+    debugMode = True
+
+    holidays = []
 
     dailyCheckTimeStart = 7 # hour
     dailyCheckTimeEnd = 11 # hour
@@ -57,6 +59,7 @@ def listener():
             print("LISTENING", currentTime)
 
             print(f"Schoology Success: {schoologySuccessCheck}")
+            
             if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
                 if dayoffLatch == False:
                     logger.info(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
@@ -88,6 +91,6 @@ def listener():
         time.sleep(15) # Sleep for 15 seconds.
 
 if __name__ == '__main__':
-    cred = credentials.Certificate("creds/firebase.json")
-    firebase = firebase_admin.initialize_app(cred)
+    # cred = credentials.Certificate("creds/firebase.json")
+    # firebase = firebase_admin.initialize_app(cred)
     listener()

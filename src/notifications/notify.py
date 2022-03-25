@@ -56,8 +56,8 @@ class Notify:
         del hasAbsentTeacherSet
         del alwaysNotifySet
 
-        hasAbsentTeacher = [hasAbsentTeacher[i:i + 500] for i in range(0, len(hasAbsentTeacher), 500)]
-        alwaysNotify = [alwaysNotify[i:i + 500] for i in range(0, len(alwaysNotify), 500)]
+        hasAbsentTeacher = [hasAbsentTeacher[i:(i + 500)] for i in range(0, len(hasAbsentTeacher), 500)]
+        alwaysNotify = [alwaysNotify[i:(i + 500)] for i in range(0, len(alwaysNotify), 500)]
 
         # Notify the people with absent teachers.
 
@@ -93,3 +93,8 @@ class Notify:
             logger.info(f"Notifications for {self.school} sent. # of failures: {response.failure_count}")
 
         return True
+
+    
+if __name__ == "__main__":
+    test = Notify(structs.SchoolName.NEWTON_SOUTH)
+    print(test.calculateAbsences())
