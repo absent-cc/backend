@@ -50,7 +50,8 @@ class SchoologyListener:
             #statuses[self.south].absences = True # Update status that action was committed previously.
                 
             if not statuses[self.south].notifications:
-                Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
+                print("SHOULD BE SENDING NOTIFICATIONS")
+                # Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
                 statuses[self.south].notifications = True
                 return True
 
@@ -71,7 +72,8 @@ class SchoologyListener:
                     break
                 
             if not statuses[self.north].notifications:
-                Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
+                print("SHOULD BE SENDING NOTIFICATIONS")
+                # Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
                 statuses[self.north].notifications = True
                 return True
         
@@ -79,9 +81,9 @@ class SchoologyListener:
         northRes = northRun()
         return southRes and northRes
 
-if __name__ == "__main__":
-    config = ConfigParser()
-    config.read('config.ini')
-    creds = config['SCHOOLOGY']
-    sl = SchoologyListener(creds)
-    sl.run()
+# if __name__ == "__main__":
+#     config = ConfigParser()
+#     config.read('config.ini')
+#     creds = config['SCHOOLOGY']
+#     sl = SchoologyListener(creds)
+#     sl.run()
