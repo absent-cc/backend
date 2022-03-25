@@ -42,11 +42,11 @@ class SchoologyListener:
             for absence in absences:
                 # Check if the absence is already in the database.
                 self.sc.addAbsence(absence)
-                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                # if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
                 #print("SOUTH: Absence already in database.")
-                    statuses[self.south].absences = True # Update status that action was committed previously.
-                    statuses[self.south].notifications = True # Update status was probably action was committed previously.
-                    break
+                    # statuses[self.south].absences = True # Update status that action was committed previously.
+                    # statuses[self.south].notifications = True # Update status was probably action was committed previously.
+                    # break
             #statuses[self.south].absences = True # Update status that action was committed previously.
                 
             if not statuses[self.south].notifications:
@@ -66,10 +66,10 @@ class SchoologyListener:
             for absence in absences:
                 # Check if the absence is already in the database.
                 self.sc.addAbsence(absence) # If action was unsuccessful, then the absence is already in the database.
-                if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
-                    statuses[self.south].absences = True # Update status that action was committed previously.
-                    statuses[self.south].notifications = True # Update status was probably action was committed previously.
-                    break
+                # if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
+                    # statuses[self.south].absences = True # Update status that action was committed previously.
+                    # statuses[self.south].notifications = True # Update status was probably action was committed previously.
+                    # break
                 
             if not statuses[self.north].notifications:
                 print("SHOULD BE SENDING NOTIFICATIONS")
