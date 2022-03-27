@@ -54,6 +54,7 @@ class SchoologyListener:
                 # Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
                 statuses[self.south].notifications = True
                 return True
+            return False
 
         def northRun() -> bool:
             # Get the absences
@@ -76,9 +77,14 @@ class SchoologyListener:
                 # Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
                 statuses[self.north].notifications = True
                 return True
+            return False
         
         southRes = southRun()
         northRes = northRun()
+
+        if southRes == None or northRes == None:
+            print("South res or North Res is None. That is WRONG!")
+
         return southRes and northRes
 
 # if __name__ == "__main__":
