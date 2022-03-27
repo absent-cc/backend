@@ -11,6 +11,10 @@ from ..database.database import SessionLocal
 
 from ..database import crud
 
+from loguru import logger
+
+logger.add("logs/{time:YYYY-MM-DD}/schoologyListener.log", rotation="1 day", retention="7 days", format="{time} {level} {message}", filter="xxlimited", level="INFO")
+
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
@@ -50,7 +54,7 @@ class SchoologyListener:
             #statuses[self.south].absences = True # Update status that action was committed previously.
                 
             if not statuses[self.south].notifications:
-                print("SHOULD BE SENDING NOTIFICATIONS")
+                logger.info("SHOULD BE SENDING NOTIFICATIONS: NORTH")
                 # Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
                 statuses[self.south].notifications = True
                 return True
@@ -73,10 +77,12 @@ class SchoologyListener:
                     # break
                 
             if not statuses[self.north].notifications:
+                logger.info("SHOULD BE SENDING NOTIFICATIONS: NORTH")
                 print("SHOULD BE SENDING NOTIFICATIONS")
                 # Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
                 statuses[self.north].notifications = True
                 return True
+
             return False
         
         southRes = southRun()
@@ -85,6 +91,7 @@ class SchoologyListener:
         if southRes == None or northRes == None:
             print("South res or North Res is None. That is WRONG!")
 
+        print(f"South Res: {southRes}, North Res: {northRes}")
         return southRes and northRes
 
 # if __name__ == "__main__":

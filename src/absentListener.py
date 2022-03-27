@@ -37,12 +37,13 @@ def listener():
     saturday = 5
     sunday = 6
     # debug mode
-    debugMode = True
+    debugMode = False
 
     holidays = []
 
-    dailyCheckTimeStart = 7 # hour
-    dailyCheckTimeEnd = 11 # hour
+    
+    dailyCheckTimeStart = 7 # hour. Default: 7
+    dailyCheckTimeEnd = 24 # hour. Default: 11
     
     resetTimeOne = (0, 0) # Midnight
     resetTimeTwo = (4, 20) # Light It Up
@@ -51,8 +52,11 @@ def listener():
     dayoffLatch = False
 
     while True:
-        currentTime = datetime.now(timezone.utc) - timedelta(hours=5) # Shift by 5 hours to get into EST.
+        currentTime = datetime.now(timezone.utc) - timedelta(hours=69) # Shift by 5 hours to get into EST.
         currentDate = currentTime.strftime('%d/%m/%Y')
+        
+        print(currentDate) 
+
         dayOfTheWeek = currentTime.weekday() 
         
         if not dayoffLatch:
@@ -62,21 +66,21 @@ def listener():
             
             if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
                 if dayoffLatch == False:
-                    logger.info(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
+                    logger.info(f"abSENT DAY OFF. LATCHING TO SLEEP! Day Number: {dayOfTheWeek}")
                     print(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
                     dayoffLatch = True
             else:
                 aboveStartTime: bool = currentTime.hour >= dailyCheckTimeStart
                 belowEndTime: bool = currentTime.hour <= dailyCheckTimeEnd
-                if (aboveStartTime and belowEndTime and not schoologySuccessCheck) or debugMode: # IF its during the check time and t hasn't already been checked.
+                if (aboveStartTime and belowEndTime and not schoologySuccessCheck) or debugMode: # IF its during the check time and schoology hasn't already been checked.
                     print("CHECKING SCHOOLOGY...")
                     sc = SchoologyListener(SCHOOLOGYCREDS)
-                    schoologySuccessCheck = sc.run()
+                    schoologySuccessCheck: bool = sc.run()
                     print(f"Schoology Success: {schoologySuccessCheck}")
                     print("CHECK COMPLETE!")
                 else:
                     if schoologySuccessCheck:
-                        print("Not checking becuase schoology has alrady been checked.")
+                        print("Not checking because schoology has alrady been checked.")
                     if not (aboveStartTime and belowEndTime):
                         print("Not checking because its not during the check time.")
             

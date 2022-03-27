@@ -12,6 +12,7 @@ from ..dataTypes import schemas, models, structs
 from ..utils.prettifyTeacherName import prettify
 
 logger.add("logs/{time:YYYY-MM-DD}/crud.log", format="{time} {level} {message}", filter="xxlimited", level="INFO")
+logger.info("HI")
 
 def getUser(db, user: schemas.UserReturn) -> models.User:
     if user.uid != None:

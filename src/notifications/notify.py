@@ -7,7 +7,14 @@ from firebase_admin import messaging, credentials
 from typing import Optional, List, Tuple
 from loguru import logger
 
+logger.add("logs/{time:YYYY-MM-DD}/notify.log", rotation="1 day", retention="7 days", format="{time} {level} {message}", filter="xxlimited", level="INFO")
+
 class Notify:
+
+    # REMOVE ME LATER
+    NUMBER_OF_CALLS: int = 0
+    # REMOVE ME LATER
+
     def __init__(self, school: structs.SchoolName, date: datetime.date = datetime.date.today()):
 
         self.db = SessionLocal()
@@ -92,6 +99,7 @@ class Notify:
             response = messaging.send_multicast(message)
             logger.info(f"Notifications for {self.school} sent. # of failures: {response.failure_count}")
 
+        Notify.NUMBER_OF_CALLS += 1
         return True
 
     
