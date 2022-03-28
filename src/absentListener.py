@@ -92,6 +92,7 @@ def listener():
             dayoffLatch = False
             schoologySuccessCheck = False
 
+        print("NOTIFY CALL TIMES: ", Notify.NUMBER_OF_CALLS)
         time.sleep(15) # Sleep for 15 seconds.
 
 if __name__ == '__main__':

@@ -8,10 +8,10 @@ from ..notifications.notify import Notify
 from .absences import AbsencePuller
 from configparser import ConfigParser
 from ..database.database import SessionLocal
-
 from ..database import crud
 
 from loguru import logger
+
 
 logger.add("logs/{time:YYYY-MM-DD}/schoologyListener.log", rotation="1 day", retention="7 days", format="{time} {level} {message}", filter="xxlimited", level="INFO")
 
@@ -52,10 +52,13 @@ class SchoologyListener:
                     # statuses[self.south].notifications = True # Update status was probably action was committed previously.
                     # break
             #statuses[self.south].absences = True # Update status that action was committed previously.
-                
-            if not statuses[self.south].notifications:
-                logger.info("SHOULD BE SENDING NOTIFICATIONS: NORTH")
-                # Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
+            
+            southAbsences = crud.getAbsenceList(self.db, school=structs.SchoolName.NEWTON_SOUTH)
+            southAbsencesExist = len(southAbsences) != 0
+
+            if (not statuses[self.south].notifications) and southAbsencesExist:
+                logger.info("SHOULD BE SENDING NOTIFICATIONS: SOUTH")
+                Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
                 statuses[self.south].notifications = True
                 return True
             return False
@@ -75,11 +78,14 @@ class SchoologyListener:
                     # statuses[self.south].absences = True # Update status that action was committed previously.
                     # statuses[self.south].notifications = True # Update status was probably action was committed previously.
                     # break
-                
-            if not statuses[self.north].notifications:
+
+            northAbsences = crud.getAbsenceList(self.db, school=structs.SchoolName.NEWTON_NORTH)
+            northAbsencesExist = len(northAbsences) != 0
+
+            if (not statuses[self.north].notifications) and northAbsencesExist:
                 logger.info("SHOULD BE SENDING NOTIFICATIONS: NORTH")
                 print("SHOULD BE SENDING NOTIFICATIONS")
-                # Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
+                Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
                 statuses[self.north].notifications = True
                 return True
 

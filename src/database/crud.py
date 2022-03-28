@@ -12,7 +12,6 @@ from ..dataTypes import schemas, models, structs
 from ..utils.prettifyTeacherName import prettify
 
 logger.add("logs/{time:YYYY-MM-DD}/crud.log", format="{time} {level} {message}", filter="xxlimited", level="INFO")
-logger.info("HI")
 
 def getUser(db, user: schemas.UserReturn) -> models.User:
     if user.uid != None:
@@ -120,9 +119,9 @@ def getUserSettings(db, user: schemas.UserReturn) -> models.UserSettings:
     logger.info("GET user settings FAILED: " + user.uid)
     return None
 
-def getAlwaysNotify(db) -> models.User:
+def getAlwaysNotify(db, school: structs.SchoolName) -> models.User:
     logger.info("GET always notify people")
-    return db.query(models.UserSettings).filter(models.UserSettings.notifyWhenNone == True).all()
+    return db.query(models.UserSettings).join(models.User).filter(models.UserSettings.notifyWhenNone == True, models.User.school == school).all()
 
 # Peek the top entry in the absences table by date.
 def peekAbsence(db, date: datetime) -> tuple:
