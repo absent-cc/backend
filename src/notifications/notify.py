@@ -42,7 +42,7 @@ class Notify:
                             if session.fcm_token != None and not(session.fcm_token and session.fcm_token.strip()):
                                 hasAbsentTeacher.add(session.fcm_token)
 
-        alwaysNotifyUsers = crud.getAlwaysNotify(self.db)
+        alwaysNotifyUsers = crud.getAlwaysNotify(self.db, self.school)
 
         for notifyEntry in alwaysNotifyUsers:
             user = notifyEntry.user
@@ -69,9 +69,9 @@ class Notify:
         # Notify the people with absent teachers.
 
         multicastMessages = []
-        for chunk in hasAbsentTeacher:
+        for fcm_token in hasAbsentTeacher:
             msg = messaging.MulticastMessage(
-                tokens = chunk,
+                tokens = fcm_token,
                 notification = messaging.Notification(
                     title="Your teacher is abSENT",
                     body="Hey there! You have an absent teacher today. Click me to learn more."
@@ -83,9 +83,9 @@ class Notify:
 
         # Notify the always notify people.
 
-        for chunk in alwaysNotify:
+        for fcm_token in alwaysNotify:
             msg = messaging.MulticastMessage(
-                tokens = chunk,
+                tokens = fcm_token,
                 notification = messaging.Notification(
                     title="abSENT List Posted",
                     body="Hey there! Today's absent list has been posted. Click me to view."
@@ -94,11 +94,12 @@ class Notify:
                 apns = messaging.APNSConfig(headers=self.APN_HEADERS)
             )
             multicastMessages.append(msg)
-
+        
         for message in multicastMessages:
             response = messaging.send_multicast(message)
+            print(f"NOTIFICATIONS SENT for {self.school}.")
             logger.info(f"Notifications for {self.school} sent. # of failures: {response.failure_count}")
-
+        
         Notify.NUMBER_OF_CALLS += 1
         return True
 

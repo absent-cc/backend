@@ -5,6 +5,8 @@ from pydantic import BaseModel
 
 from datetime import date
 
+import configparser
+
 #
 # SCHOOL ENUMS (BLOCK AND NAME) 
 #
@@ -148,15 +150,69 @@ class RawUpdate(BaseModel):
 #
 # SESSION AND TOKEN OBJECTS
 #
+class ListenerStatus():
 
-@dataclass
-class ListenerStatus:
     # Represents if action has already been done or not
+    state_path: str = "src/state.ini"
+
     absences: bool = False 
     notifications: bool = False
-
+    date: date
+    
+    def __init__(self, school: SchoolName, date: date = date.today()):
+        self.school = school
+        self.date = date
+        self.absences, self.notifications = self.readState()
+    
     def __repr__(self) -> str:
         return f"Statuses: \n\tAbsence: {self.absences}\n\tNotifications: {self.notifications}"
+
+    def readState(self) -> Tuple[bool, bool]:
+        absences: bool = False
+        notifications: bool = False
+
+        config = configparser.ConfigParser()
+        config.read(ListenerStatus.state_path)
+
+        if config[self.school.value]["absences"] == str(self.date):
+            absences = True
+        
+        if config[self.school.value]["notifications"] == str(self.date):
+            notifications = True
+
+        return absences, notifications
+    
+    def updateState(self, absences: bool, notifications: bool):
+        
+        config = configparser.ConfigParser()
+        config.read(ListenerStatus.state_path)
+        
+        if absences:
+            config[self.school.value]["absences"] = str(self.date)
+
+        if notifications:
+            config[self.school.value]["notifications"] = str(self.date)
+        
+        with open(ListenerStatus.state_path, 'w') as config_file:
+            config.write(config_file)
+    
+    def resetState(school: SchoolName):
+        config = configparser.ConfigParser()
+        config.read(ListenerStatus.state_path)
+        
+        config[school.value]["absences"] = str(date(year=2022, month=3, day=23))
+
+        config[school.value]["notifications"] = str(date(year=2022, month=3, day=23))
+        
+        with open(ListenerStatus.state_path, 'w') as config_file:
+            config.write(config_file)
+        
+    def resetAll():
+        for school in SchoolName:
+            ListenerStatus.resetState(school)
+        
+        
+        
 
 class ColumnMap(Dict[TableColumn, Tuple[int, int]]):
     def __init__(self):

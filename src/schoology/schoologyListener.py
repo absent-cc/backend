@@ -39,6 +39,7 @@ class SchoologyListener:
         def southRun() -> bool:
             # Get the absences
             absences = self.sc.filterAbsencesSouth(date)
+
             if absences == None:
                 return False
              
@@ -61,6 +62,7 @@ class SchoologyListener:
                 Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
                 statuses[self.south].notifications = True
                 return True
+                
             return False
 
         def northRun() -> bool:
