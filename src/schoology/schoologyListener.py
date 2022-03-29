@@ -57,13 +57,18 @@ class SchoologyListener:
             southAbsences = crud.getAbsenceList(self.db, school=structs.SchoolName.NEWTON_SOUTH)
             southAbsencesExist = len(southAbsences) != 0
 
+            if southAbsencesExist:
+                print("HERE")
+                statuses[self.south].updateState(True, None)
+
             if (not statuses[self.south].notifications) and southAbsencesExist:
                 logger.info("SHOULD BE SENDING NOTIFICATIONS: SOUTH")
+                print("SHOULD BE SENDING NOTIFS SOUTH")
                 Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
                 statuses[self.south].updateState(True, True)
                 return True
                 
-            return False
+            return (statuses[self.south].notifications and statuses[self.south].absences)
 
         def northRun() -> bool:
             # Get the absences
@@ -86,12 +91,12 @@ class SchoologyListener:
 
             if (not statuses[self.north].notifications) and northAbsencesExist:
                 logger.info("SHOULD BE SENDING NOTIFICATIONS: NORTH")
-                print("SHOULD BE SENDING NOTIFICATIONS")
+                print("SHOULD BE SENDING NOTIFICATIONS NORTH")
                 Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
                 statuses[self.north].notifications = True
                 return True
 
-            return False
+            return (statuses[self.north].notifications and statuses[self.north].absences)
         
         southRes = southRun()
         northRes = northRun()
