@@ -89,11 +89,15 @@ class SchoologyListener:
             northAbsences = crud.getAbsenceList(self.db, school=structs.SchoolName.NEWTON_NORTH)
             northAbsencesExist = len(northAbsences) != 0
 
+            if northAbsencesExist:
+                statuses[self.north].updateState(True, None)
+            
             if (not statuses[self.north].notifications) and northAbsencesExist:
                 logger.info("SHOULD BE SENDING NOTIFICATIONS: NORTH")
                 print("SHOULD BE SENDING NOTIFICATIONS NORTH")
                 Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
                 statuses[self.north].notifications = True
+                statuses[self.north].updateState(True, True)
                 return True
 
             return (statuses[self.north].notifications and statuses[self.north].absences)

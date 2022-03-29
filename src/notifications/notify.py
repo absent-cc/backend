@@ -100,6 +100,7 @@ class Notify:
             print(f"NOTIFICATIONS SENT for {self.school}.")
             logger.info(f"Notifications for {self.school} sent. # of failures: {response.failure_count}")
         
+        print(f"SENDING NOTIFICATIONS: {self.school}")
         Notify.NUMBER_OF_CALLS += 1
         return True
 
