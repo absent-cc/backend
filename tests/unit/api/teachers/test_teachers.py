@@ -99,8 +99,8 @@ class TestTeachers(unittest.TestCase):
         absences_test = TestTeachers.Absences()
         absences_test.runTest()
     
-if __name__ == '__main__':
-    _db = SessionLocal()
-    crud.reset(_db)
-    test = TestTeachers().Absences()
-    test.runTest()
+# if __name__ == '__main__':
+#     _db = SessionLocal()
+#     crud.reset(_db)
+#     test = TestTeachers().Absences()
+#     test.runTest()
