@@ -1,6 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, Optional
 from pydantic import BaseModel
 
 from datetime import date
@@ -182,27 +182,29 @@ class ListenerStatus():
 
         return absences, notifications
     
-    def updateState(self, absences: bool, notifications: bool):
+    def updateState(self, absences: Optional[bool], notifications: Optional[bool]):
         
         config = configparser.ConfigParser()
-        config.read(ListenerStatus.state_path)
+        config.read(ListenerStatus.state_path) # Create dict from existing state file
         
-        if absences:
+        if absences: # Update dict state when True
             config[self.school.value]["absences"] = str(self.date)
+            self.absences = True
 
-        if notifications:
+        if notifications: # Update dict state when True
             config[self.school.value]["notifications"] = str(self.date)
-        
-        with open(ListenerStatus.state_path, 'w') as config_file:
+            self.notifications = True
+
+        with open(ListenerStatus.state_path, 'w') as config_file: # Write new states to file
             config.write(config_file)
     
     def resetState(school: SchoolName):
         config = configparser.ConfigParser()
         config.read(ListenerStatus.state_path)
         
-        config[school.value]["absences"] = str(date(year=2022, month=3, day=23))
+        config[school.value]["absences"] = str(date(year=2022, month=3, day=23)) # Set to abSENT launch date (Default date)
 
-        config[school.value]["notifications"] = str(date(year=2022, month=3, day=23))
+        config[school.value]["notifications"] = str(date(year=2022, month=3, day=23)) # Set to abSENT launch date (Default date)
         
         with open(ListenerStatus.state_path, 'w') as config_file:
             config.write(config_file)
