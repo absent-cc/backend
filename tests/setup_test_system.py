@@ -38,5 +38,5 @@ def generate_ssh_keys(creds_folder = 'creds'):
         f.write(public_key)
     
 
-# if __name__ == "__main__":
-#     generate_ssh_keys() # Generate ssh keys for testing. These keys are completly unsafe and are used for testing only.
+if __name__ == "__main__":
+    generate_ssh_keys() # Generate ssh keys for testing. These keys are completly unsafe and are used for testing only.
