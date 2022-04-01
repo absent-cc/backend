@@ -80,7 +80,7 @@ def listener():
                     print("CHECK COMPLETE!")
                 else:
                     if schoologySuccessCheck:
-                        print("Not checking because schoology has alrady been checked.")
+                        print("Not checking because schoology has already been checked.")
                     if not (aboveStartTime and belowEndTime):
                         print("Not checking because its not during the check time.")
             
@@ -96,6 +96,6 @@ def listener():
         time.sleep(15) # Sleep for 15 seconds.
 
 if __name__ == '__main__':
-    # cred = credentials.Certificate("creds/firebase.json")
-    # firebase = firebase_admin.initialize_app(cred)
+    cred = credentials.Certificate("creds/firebase.json")
+    firebase = firebase_admin.initialize_app(cred)
     listener()

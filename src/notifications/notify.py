@@ -39,17 +39,24 @@ class Notify:
                 for cls in classes:
                     if cls.user.settings[0].notify: # Add the people with absent teachers.
                         for session in cls.user.sessions:
-                            if session.fcm_token != None and not(session.fcm_token and session.fcm_token.strip()):
+                            print(f"RUNNING INSIDE SESSION CALL: {session.fcm_token}")
+                            if session.fcm_token != None and len(session.fcm_token.strip()) != 0 and (bool(session.fcm_token) and bool(session.fcm_token.strip())) != False:
+                                # Check if not None, not empty str, and if it does not contain a leading whitespace (which breaks stuff)
                                 hasAbsentTeacher.add(session.fcm_token)
-
+                                print(f"TOKEN THAT HAS BEEN ADDED: {session.fcm_token} THAT HAS BEEN ADDED FROM absences")
+                            else:
+                                logger.info(f"{cls.user} has invalid FCM token formats!")
+                            
         alwaysNotifyUsers = crud.getAlwaysNotify(self.db, self.school)
 
         for notifyEntry in alwaysNotifyUsers:
             user = notifyEntry.user
             for session in user.sessions:
                 print(session.fcm_token)
-                if session.fcm_token != None and (bool(session.fcm_token) and bool(session.fcm_token.strip())) != False:
+                if session.fcm_token != None and len(session.fcm_token.strip()) != 0 and (bool(session.fcm_token) and bool(session.fcm_token.strip())) != False:
+                    # Check if not None, not empty str, and if it does not contain a leading whitespace (which breaks stuff)
                     alwaysNotify.add(session.fcm_token)
+                    print(f"TOKEN THAT HAS BEEN ADDED: {session.fcm_token} FROM ALWAYS NOTIFY")
         
         return hasAbsentTeacher, alwaysNotify
 
@@ -96,10 +103,12 @@ class Notify:
             multicastMessages.append(msg)
         
         for message in multicastMessages:
+            print(message)
             response = messaging.send_multicast(message)
             print(f"NOTIFICATIONS SENT for {self.school}.")
             logger.info(f"Notifications for {self.school} sent. # of failures: {response.failure_count}")
         
+        print(f"SENDING NOTIFICATIONS: {self.school}")
         Notify.NUMBER_OF_CALLS += 1
         return True
 

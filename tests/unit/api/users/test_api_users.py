@@ -90,5 +90,5 @@ class Users(unittest.TestCase):
         self.Sessions().runTest()
         self.HeaderAuth().runTest()
     
-if __name__ == "__main__":
-    unittest.main()
+# if __name__ == "__main__":
+#     unittest.main()

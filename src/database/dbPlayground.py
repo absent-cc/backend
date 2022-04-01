@@ -16,5 +16,7 @@ status = structs.ListenerStatus(structs.SchoolName.NEWTON_SOUTH)
 print(status)
 
 status.updateState(True, True)
+print(status.notifications)
+print(status.absences)
 
 print(status.readState())
