@@ -32,8 +32,8 @@ class SchoologyListener:
         ## They then update the statuses to reflect that, so in essence the state is now stored as a computed property of the absences table in the database.
         statuses = {
             # School : Tuple(pull status, notify status)
-            structs.SchoolName.NEWTON_SOUTH: structs.ListenerStatus(), # Default is False, False (Always pull, always notify)
-            structs.SchoolName.NEWTON_NORTH: structs.ListenerStatus()
+            structs.SchoolName.NEWTON_SOUTH: structs.ListenerStatus(school = self.south), # Default is False, False (Always pull, always notify)
+            structs.SchoolName.NEWTON_NORTH: structs.ListenerStatus(school = self.north)
         }
 
         def southRun() -> bool:

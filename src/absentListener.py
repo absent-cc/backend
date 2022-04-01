@@ -52,7 +52,7 @@ def listener():
     dayoffLatch = False
 
     while True:
-        currentTime = datetime.now(timezone.utc) - timedelta(hours=69) # Shift by 5 hours to get into EST.
+        currentTime = datetime.now(timezone.utc) - timedelta(hours=5) # Shift by 5 hours to get into EST.
         currentDate = currentTime.strftime('%d/%m/%Y')
         
         print(currentDate) 
