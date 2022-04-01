@@ -51,6 +51,7 @@ class Notify:
                     except Exception as e:
                         logger.error(f"{cls.user} has invalid FCM token formats!")
                         logger.error(e)
+
         alwaysNotifyUsers = crud.getAlwaysNotify(self.db, self.school)
 
         for notifyEntry in alwaysNotifyUsers:
@@ -61,7 +62,6 @@ class Notify:
                     # Check if not None, not empty str, and if it does not contain a leading whitespace (which breaks stuff)
                     alwaysNotify.add(session.fcm_token)
                     print(f"TOKEN THAT HAS BEEN ADDED: {session.fcm_token} FROM ALWAYS NOTIFY")
-        
         return hasAbsentTeacher, alwaysNotify
 
     def sendMessages(self):

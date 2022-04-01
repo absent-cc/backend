@@ -73,8 +73,8 @@ def getAbsenceList(
         "Sikeeeeeee",
         "Click me, you won't: https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "Skip class, you won't.",
-        "I'm sorry Dave, I'm afraid I can't do that.",
-        "This mission is too important for me to allow you to jeopardize it",
+        "You best have submit your homework on schoology",
+        "Class is cancelled, reschedule yourself"
     ]
     list: List[models.Absence] = [models.Absence(teacher=teacher, length="All Day Baby", note=randomMsg[random.randint(0,len(randomMsg)-1)]) for teacher in allTeachers]
 
