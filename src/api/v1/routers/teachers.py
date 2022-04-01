@@ -1,5 +1,6 @@
 import csv as c
 import datetime
+import random
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Body
@@ -42,6 +43,19 @@ classDict = {
 
 router = APIRouter(prefix="/teachers", tags=["Teachers"])
 
+# @router.get("/absences/", response_model=schemas.AbsenceList, status_code=200)
+# def getAbsenceList(
+#     date: datetime.date = None,
+#     db: Session = Depends(accounts.getDBSession), # Initializes a DB. 
+#     school: Optional[structs.SchoolName] = None # Initializes a school.
+# ):  
+#     if date == None:
+#         date = datetime.date.today()
+#     list: List[models.Absence] = crud.getAbsenceList(db, date, school)
+#     returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=prettify(absence.teacher), note=absence.note) for absence in list ]
+
+#     return schemas.AbsenceList(absences=returnAbsences, date=date)
+
 @router.get("/absences/", response_model=schemas.AbsenceList, status_code=200)
 def getAbsenceList(
     date: datetime.date = None,
@@ -50,8 +64,21 @@ def getAbsenceList(
 ):  
     if date == None:
         date = datetime.date.today()
-    list: List[models.Absence] = crud.getAbsenceList(db, date, school)
-    returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=prettify(absence.teacher), note=absence.note) for absence in list ]
+    allTeachers = crud.getAllTeachersBySchool(db, school)
+    for item in allTeachers:
+        print(item.tid, item.first, item.last)
+
+    randomMsg = [
+        "April Fools Day!",
+        "Sikeeeeeee",
+        "Click me, you won't: https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "Skip class, you won't.",
+        "I'm sorry Dave, I'm afraid I can't do that.",
+        "This mission is too important for me to allow you to jeopardize it",
+    ]
+    list: List[models.Absence] = [models.Absence(teacher=teacher, length="All Day Baby", note=randomMsg[random.randint(0,len(randomMsg)-1)]) for teacher in allTeachers]
+
+    returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher = absence.teacher, note=absence.note) for absence in list ]
 
     return schemas.AbsenceList(absences=returnAbsences, date=date)
 

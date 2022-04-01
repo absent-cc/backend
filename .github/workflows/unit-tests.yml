@@ -5,7 +5,7 @@ name: Unit Tests
 
 on:
   discussion:
-    types: [opened, edited, answered]
+    types: [edited, answered]
   push:
     branches: [ main, prod ]
   pull_request:

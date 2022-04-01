@@ -33,9 +33,10 @@ class Notify:
 
         validBlocks = structs.SchoolBlocksOnDay()[self.date.weekday()]
         absences = crud.getAbsenceList(self.db, self.date, self.school)
+
         for absence in absences:
             for block in validBlocks:
-                classes = absence.teacher.classes
+                classes = [ cls for cls in absence.teacher.classes if cls.block == block ]
                 for cls in classes:
                     if cls.user.settings[0].notify: # Add the people with absent teachers.
                         for session in cls.user.sessions:

@@ -33,6 +33,12 @@ def getTeacher(db, teacher: schemas.TeacherReturn) -> models.Teacher:
     logger.info("GET Teacher FAILED: " + teacher.tid + ' ' + teacher.first + ' ' + teacher.last + ' ' + teacher.school)
     return None
 
+def getAllTeachersBySchool(db, school: structs.SchoolName) -> List[models.Teacher]:
+    if school != None:
+        logger.info("GET teachers by school requested: " + school)
+        return db.query(models.Teacher).filter(models.Teacher.school == school).all()
+    return []
+
 def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
     if session.sid != None and session.uid != None: # These two values are used to look up sessions, much exist.
         q = update(models.UserSession).where(models.UserSession.uid == session.uid, models.UserSession.sid == session.sid).values(last_accessed=datetime.now()).\
