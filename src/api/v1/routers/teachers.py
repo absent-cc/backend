@@ -1,6 +1,5 @@
 import csv as c
 import datetime
-import random
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Body
@@ -123,3 +122,12 @@ async def isRealTeacher(partialName: schemas.PartialName):
                 matches.append(str)
 
     return schemas.TeacherValid(value=False, suggestions=matches)
+
+@router.get("/schedule/", response_model=structs.ScheduleWithTimes, status_code=200)
+async def getSchedule(
+    date: datetime.date = None,
+):
+    if date == None:
+        date = datetime.date.today()
+    # Check if its a special day
+    return structs.SchoolBlocksOnDayWithTimes()[1]

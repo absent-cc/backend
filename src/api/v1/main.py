@@ -1,5 +1,5 @@
 from fastapi import Depends, APIRouter
-from .routers import teachers, users, analytics, badges, admin
+from .routers import teachers, users, analytics, badges, admin, info
 from ...dataTypes import structs, models, schemas
 from sqlalchemy.orm import Session
 from fuzzywuzzy import fuzz
@@ -14,6 +14,7 @@ router.include_router(teachers.router)
 router.include_router(analytics.router)
 router.include_router(badges.router)
 router.include_router(admin.router)
+router.include_router(info.router)
 
 @router.get("/", status_code=200, tags=["Main"])
 async def serviceInfo():
