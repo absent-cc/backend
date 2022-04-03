@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from logging import raiseExceptions
+from sqlite3 import Date
 import time
 import secrets
 from typing import List, Optional, Tuple
@@ -95,6 +96,19 @@ def getClassesByTeacherForDay(db, teacher: schemas.TeacherReturn, day: int) -> L
     logger.info("GET classes by teacher FAILED: " + teacher.tid + ' ' + str(day))
     return None
 
+def getClassesByTeacherForDate(db, teacher: schemas.TeacherReturn, date: date) -> List[models.Class]:
+    if teacher.tid != None:
+        returnClasses = []
+        blocks: structs.ScheduleWithTimes = getSchoolDaySchedule(db, date)
+        for block in blocks.blocks():
+            classes = getClassesByTeacher(db, teacher, block)
+            if classes != None:
+                returnClasses.append(classes) 
+        logger.info("GET classes by teacher requested: " + teacher.tid + ' ' + str(date))
+        return returnClasses
+    logger.info("GET classes by teacher FAILED: " + teacher.tid + ' ' + str(date))
+    return None
+
 def getAbsenceList(db, searchDate: date=datetime.today().date(), school: Optional[structs.SchoolName] = None) -> List[models.Absence]:
     if school != None:
         absences = db.query(models.Absence).join(models.Teacher).filter(models.Absence.date == searchDate, models.Teacher.school == school).all()
@@ -150,6 +164,13 @@ def getClassesCancelledCount(db) -> int:
 def getSpecialDay(db, date: date) -> models.SpecialDays:
     logger.info(f"GET special day requested: {date}")
     return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
+
+def getSchoolDaySchedule(db, date: date) -> structs.SchoolBlocksOnDayWithTimes:
+    logger.info("GET school day schedule requested: " + str(date))
+    specialDayCheck: models.SpecialDays = getSpecialDay(db, date)
+    if specialDayCheck != None:
+        return specialDayCheck.schedule
+    return structs.SchoolBlocksOnDayWithTimes()[date.weekday()]
 
 def addSpecialDay(db, specialDay: structs.SpecialDay) -> bool:
     logger.info(f"ADD special day requested: {specialDay.date}")

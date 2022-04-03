@@ -270,3 +270,18 @@ class ClassCanceledBadge(Badges):
     
 class Date(BaseModel):
     date: date
+
+class SchoolDay(BaseModel):
+    date: date
+    name: str
+    schedule: structs.ScheduleWithTimes
+    note: str
+    special: bool
+
+class SpecialDay(SchoolDay):
+    special = True
+
+class NormalDay(SchoolDay):
+    name = "Normal Day"
+    note = "No special schedule"
+    special = False
