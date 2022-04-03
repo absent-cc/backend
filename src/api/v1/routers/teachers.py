@@ -123,4 +123,3 @@ async def isRealTeacher(partialName: schemas.PartialName):
                 matches.append(str)
 
     return schemas.TeacherValid(value=False, suggestions=matches)
-

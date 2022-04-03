@@ -73,4 +73,15 @@ class UserSettings(Base):
 class SpecialDays(Base):
     __tablename__ = "special_days"
     date = Column(Date, primary_key=True)
+    name = Column(String(255))
     schedule = Column(ARRAY(Enum(structs.SchoolBlock)))
+    note = Column(String(255))
+
+class Aliases(Base):
+    __tablename__ = "aliases"
+    aid = Column(String(8), primary_key=True)
+    first = Column(String(255), primary_key=True)
+    last = Column(String(255), primary_key=True)
+    tid = Column(String(36), ForeignKey(Teacher.tid, ondelete='CASCADE'))
+
+    teacher = relationship("Teacher", back_populates="aliases")

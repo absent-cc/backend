@@ -2,21 +2,18 @@ from . import crud
 
 from .database import SessionLocal
 from ..dataTypes import structs
-
+from datetime import date
 db = SessionLocal()
 
-print(crud.getAllAbsences(db))
+# specialDay = structs.SpecialDay(
+#     date=date(2020, 1, 1),
+#     name="New Year's Day",
+#     schedule=[structs.SchoolBlock.A, structs.SchoolBlock.B, structs.SchoolBlock.C, structs.SchoolBlock.D, structs.SchoolBlock.E],
+#     notes = "Happy New Year!",
+#     )
 
-print(crud.getAlwaysNotify(db, structs.SchoolName.NEWTON_SOUTH))
+    
+# crud.addSpecialDay(db, )
 
-structs.ListenerStatus.resetAll()
-
-print(structs.SchoolName.NEWTON_NORTH.value)
-status = structs.ListenerStatus(structs.SchoolName.NEWTON_SOUTH)
-print(status)
-
-status.updateState(True, True)
-print(status.notifications)
-print(status.absences)
-
-print(status.readState())
+if __name__ == "__main__":
+    print(structs.SchoolBlocksOnDayWithTimes())

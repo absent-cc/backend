@@ -146,14 +146,14 @@ def getAbsencesCount(db) -> int:
 def getClassesCancelledCount(db) -> int:
     return db.query(models.CancelledClass).count()
 
-def getSpecialDay(db, date: date) -> int:
+def getSpecialDay(db, date: date) -> models.SpecialDays:
     logger.info(f"GET special day requested: {date}")
-    return db.query(models.SpecialDay).count()
+    return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
 
-def addSpecialDay(db, date: date, schedule: List[structs.SchoolBlock]) -> bool:
-    logger.info(f"ADD special day requested: {date}")
+def addSpecialDay(db, specialDay: structs.SpecialDay) -> bool:
+    logger.info(f"ADD special day requested: {specialDay.date}")
     try:
-        db.add(models.SpecialDay(date, schedule))
+        db.add(models.SpecialDays(specialDay.date, specialDay.schedule, specialDay.note))
     except Exception as e:
         logger.error(f"ADD special day failed: {e}")
         return False
