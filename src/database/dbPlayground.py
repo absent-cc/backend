@@ -2,19 +2,20 @@ from . import crud
 
 from .database import SessionLocal
 from ..dataTypes import structs
-from datetime import date
+from datetime import date, time
 db = SessionLocal()
 
+crud.reset(db)
 specialDay = structs.SpecialDay(
     date=date(2020, 1, 1),
     name="New Year's Day",
-    schedule=[structs.SchoolBlock.A, structs.SchoolBlock.B, structs.SchoolBlock.C, structs.SchoolBlock.D, structs.SchoolBlock.E],
+    schedule = structs.SchoolBlocksOnDayWithTimes()[6],
     note = "Happy New Year!",
     )
 
-    
-crud.addSpecialDay(db, specialDay=specialDay)
-print(crud.getSpecialDay(db, date(2020, 1, 1)))
+print(crud.addSpecialDay(db, specialDay=specialDay))
+returnVal = crud.getSpecialDay(db, date=specialDay.date)
+print(returnVal.schedule)
 
 # if __name__ == "__main__":
 #     print(structs.SchoolBlocksOnDayWithTimes())

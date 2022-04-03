@@ -153,10 +153,11 @@ def getSpecialDay(db, date: date) -> models.SpecialDays:
 def addSpecialDay(db, specialDay: structs.SpecialDay) -> bool:
     logger.info(f"ADD special day requested: {specialDay.date}")
     try:
-        db.add(models.SpecialDays(date = specialDay.date, schedule = specialDay.schedule, name = specialDay.name, note = specialDay.note))
+        db.add(models.SpecialDays(date = specialDay.date, name=specialDay.name, schedule=specialDay.schedule, note=specialDay.note))
     except Exception as e:
         logger.error(f"ADD special day failed: {e}")
         return False
+    db.commit()
     return True
 
 def addUser(db, user: schemas.UserCreate) -> models.User:
@@ -325,6 +326,7 @@ def reset(db):
     db.query(models.Class).delete()
     db.query(models.Absence).delete()
     db.query(models.UserSession).delete()
+    db.query(models.SpecialDays).delete()
     db.commit()
     logger.info("RESET DB!!!!!")
 

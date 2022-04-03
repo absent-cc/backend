@@ -222,8 +222,6 @@ class ListenerStatus():
         for school in SchoolName:
             ListenerStatus.resetState(school)
         
-        
-        
 
 class ColumnMap(Dict[TableColumn, Tuple[int, int]]):
     def __init__(self):
@@ -271,9 +269,11 @@ class BlockWithTimes(BaseModel):
     lunches: Lunches = None
 
 class ScheduleWithTimes(BaseModel):
-    schedule: List[BlockWithTimes] = None
+    schedule: Optional[List[BlockWithTimes]]
 
     def __repr__ (self) -> str:
+        if self.schedule is None:
+            return "Schedule=None"
         printOut = "\n"
         for block in self.schedule:
             printOut += f"\t{block.block}: {block.startTime}-{block.endTime}\n"
@@ -281,6 +281,12 @@ class ScheduleWithTimes(BaseModel):
                 for lunch in block.lunches.lunches:
                     printOut += f"\t\t{lunch.lunch}: {lunch.startTime}-{lunch.endTime}\n"
         return f"Schedule: {printOut}"
+     
+    def __str__(self) -> str:
+        return self.__repr__()
+    
+    class Config:
+        orm_mode = True
 
 class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
     def __init__(self):
@@ -391,8 +397,8 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                 ]
             ),
             # ADD IN OTHER DAYS LATER!
-            5: ScheduleWithTimes(),
-            6: ScheduleWithTimes()
+            5: ScheduleWithTimes(schedule=None),
+            6: ScheduleWithTimes(schedule=None),
         
             # # 1 : [SchoolBlock.A, SchoolBlock.B, SchoolBlock.F, SchoolBlock.G],
             # 2 : [SchoolBlock.C, SchoolBlock.D, SchoolBlock.E, SchoolBlock.F],
@@ -408,6 +414,6 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
 
 class SpecialDay(BaseModel):
     date: date
-    schedule: List[SchoolBlock]
+    schedule: ScheduleWithTimes
     name: str
     note: str
