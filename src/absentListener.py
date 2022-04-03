@@ -51,12 +51,10 @@ def listener():
 
     while True:
         currentTime = datetime.now(timezone.utc) - timedelta(hours=5) # Shift by 5 hours to get into EST.
-        currentDate = currentTime.strftime('%d/%m/%Y')
-        
+
         holiday: bool = False
 
-        # dayOfTheWeek = currentTime.weekday() 
-        dayOfTheWeek = 1
+        dayOfTheWeek = currentTime.weekday() 
 
         if not dayoffLatch:
             print("LISTENING", currentTime)
@@ -70,7 +68,7 @@ def listener():
 
             if holidayCheck != None:
                 print("There is a special day today.")
-                if len(holidayCheck.schedule) == 0:
+                if len(holidayCheck.schedule) == 0: # If there is no schedule, it's a holiday. Remember that length property is defined in ScheduleWithTimes class.
                     holiday = True
                     print(f"Holiday: {holidayCheck.name}")
                 else:
