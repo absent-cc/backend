@@ -31,7 +31,8 @@ class Notify:
         hasAbsentTeacher = set()
         alwaysNotify = set()
 
-        validBlocks = structs.SchoolBlocksOnDay()[self.date.weekday()]
+        validBlocks = structs.SchoolBlocksOnDayWithTimes()[self.date.weekday()].blocks()
+        # validBlocks = structs.SchoolBlocksOnDay()[self.date.weekday()]
         absences = crud.getAbsenceList(self.db, self.date, self.school)
 
         for absence in absences:

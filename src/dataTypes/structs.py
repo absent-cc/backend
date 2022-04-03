@@ -1,5 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
+from tokenize import Special
 from typing import List, Tuple, Dict, Union, Optional
 from pydantic import BaseModel
 
@@ -35,9 +36,14 @@ class SchoolBlock(str, Enum):
     G: str = "G"
     EXTRA: str = "EXTRA" # Lion/Tiger block
     
-    # WIN: str = "WIN"
+    def __str__ (self):
+        return self.value
     
-    # LUNCH: str = "LUNCH" # Will only need during short day since lunch is seperate from a block, unlike in the normal situation. This should not be in use yet!
+    def __repr__ (self):
+        return self.value
+    
+    WIN: str = "WIN"
+    LUNCH: str = "LUNCH" # Will only need during short day since lunch is seperate from a block, unlike in the normal situation. This should not be in use yet!
     
 class LunchBlock(str, Enum):
     L1 = "1st Lunch"
@@ -222,8 +228,6 @@ class ListenerStatus():
         for school in SchoolName:
             ListenerStatus.resetState(school)
         
-        
-        
 
 class ColumnMap(Dict[TableColumn, Tuple[int, int]]):
     def __init__(self):
@@ -271,16 +275,34 @@ class BlockWithTimes(BaseModel):
     lunches: Lunches = None
 
 class ScheduleWithTimes(BaseModel):
-    schedule: List[BlockWithTimes] = None
+    schedule: Optional[List[BlockWithTimes]]
 
     def __repr__ (self) -> str:
+        if self.schedule is None:
+            return "Schedule=None"
         printOut = "\n"
         for block in self.schedule:
-            printOut += f"\t{block.block}: {block.startTime}-{block.endTime}\n"
+            printOut += f"\t{block.block}: {block.startTime.strftime('%I:%M')}-{block.endTime.strftime('%H:%M')}\n"
             if block.lunches:
                 for lunch in block.lunches.lunches:
-                    printOut += f"\t\t{lunch.lunch}: {lunch.startTime}-{lunch.endTime}\n"
+                    printOut += f"\t\t{lunch.lunch}: {lunch.startTime.strftime('%I:%M')}-{lunch.endTime.strftime('%H:%M')}\n"
         return f"Schedule: {printOut}"
+     
+    def __str__(self) -> str:
+        return self.__repr__()
+    
+    def __len__(self) -> int:
+        if self.schedule is None:
+            return 0
+        return len(self.schedule)
+    
+    def blocks(self) -> List[SchoolBlock]:
+        if self.schedule is None:
+            return []
+        return [block.block for block in self.schedule]
+    
+    class Config:
+        orm_mode = True
 
 class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
     def __init__(self):
@@ -308,7 +330,7 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                     BlockWithTimes(
                         block=SchoolBlock.C, 
                         startTime=time(hour=11, minute=45), 
-                        endTime=time(hour=1, minute=25), 
+                        endTime=time(hour=13, minute=25), 
                         lunches=Lunches(
                             lunches=[
                                 Lunch(
@@ -390,9 +412,155 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                     ),
                 ]
             ),
-            # ADD IN OTHER DAYS LATER!
-            5: ScheduleWithTimes(),
-            6: ScheduleWithTimes()
+            2: ScheduleWithTimes(
+                schedule=
+                [
+                    BlockWithTimes(
+                        block=SchoolBlock.C,
+                        startTime=time(hour=9, minute=0),
+                        endTime=time(hour=10, minute=15)
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.WIN,
+                        startTime=time(hour=10, minute=20),
+                        endTime=time(hour=11, minute=10)
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.D,
+                        startTime=time(hour=11, minute=15),
+                        endTime=time(hour=1, minute=5),
+                        lunches=Lunches(
+                            lunches=[
+                                Lunch(
+                                    lunch=LunchBlock.L1,
+                                    startTime=time(hour=11, minute=15),
+                                    endTime=time(hour=11, minute=45),
+                                    ),
+                                Lunch(
+                                    lunch=LunchBlock.L2,
+                                    startTime=time(hour=11, minute=55),
+                                    endTime=time(hour=12, minute=25),
+                                    ),
+                                Lunch(
+                                    lunch=LunchBlock.L3,
+                                    startTime=time(hour=12, minute=35),
+                                    endTime=time(hour=13, minute=5),
+                                    )
+                                ]
+                            )
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.E,
+                        startTime=time(hour=13, minute=10),
+                        endTime=time(hour=14, minute=25)
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.F,
+                        startTime=time(hour=14, minute=30),
+                        endTime=time(hour=15, minute=45)
+                    ),
+                ]
+            ),
+            3: ScheduleWithTimes(
+                schedule=
+                [
+                    BlockWithTimes(
+                        block=SchoolBlock.A,
+                        startTime=time(hour=9, minute=0),
+                        endTime=time(hour=10, minute=15),
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.B,
+                        startTime=time(hour=10, minute=20),
+                        endTime=time(hour=11, minute=35),
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.G,
+                        startTime=time(hour=11, minute=40),
+                        endTime=time(hour=13, minute=30),
+                        lunches=Lunches(
+                            lunches=[
+                                Lunch(
+                                    lunch=LunchBlock.L1,
+                                    startTime=time(hour=11, minute=40),
+                                    endTime=time(hour=12, minute=10),
+                                    ),
+                                Lunch(
+                                    lunch=LunchBlock.L2,
+                                    startTime=time(hour=12, minute=20),
+                                    endTime=time(hour=12, minute=50),
+                                    ),
+                                Lunch(
+                                    lunch=LunchBlock.L3,
+                                    startTime=time(hour=13, minute=0),
+                                    endTime=time(hour=13, minute=30),
+                                    )
+                                ]
+                            )
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.E,
+                        startTime=time(hour=13, minute=35),
+                        endTime=time(hour=14, minute=50)
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.WIN,
+                        startTime=time(hour=14, minute=55),
+                        endTime=time(hour=15, minute=45)
+                    ),
+                ]
+            ),
+            4: ScheduleWithTimes(
+                schedule=
+                [
+                    BlockWithTimes(
+                        block=SchoolBlock.C,
+                        startTime=time(hour=9, minute=0),
+                        endTime=time(hour=10, minute=15)
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.WIN,
+                        startTime=time(hour=10, minute=20),
+                        endTime=time(hour=11, minute=10)
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.D,
+                        startTime=time(hour=11, minute=15),
+                        endTime=time(hour=13, minute=5),
+                        lunches=Lunches(
+                            lunches=[
+                                Lunch(
+                                    lunch=LunchBlock.L1,
+                                    startTime=time(hour=11, minute=15),
+                                    endTime=time(hour=11, minute=45),
+                                    ),
+                                Lunch(
+                                    lunch=LunchBlock.L2,
+                                    startTime=time(hour=11, minute=55),
+                                    endTime=time(hour=12, minute=25),
+                                    ),
+                                Lunch(
+                                    lunch=LunchBlock.L3,
+                                    startTime=time(hour=12, minute=35),
+                                    endTime=time(hour=13, minute=5),
+                                    )
+                                ]
+                            )
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.F,
+                        startTime=time(hour=13, minute=10),
+                        endTime=time(hour=14, minute=25)
+                    ),
+                    BlockWithTimes(
+                        block=SchoolBlock.G,
+                        startTime=time(hour=14, minute=30),
+                        endTime=time(hour=15, minute=45)
+                    ),
+                ]
+            ),
+            5: ScheduleWithTimes(schedule=None),
+            6: ScheduleWithTimes(schedule=None),
         
             # # 1 : [SchoolBlock.A, SchoolBlock.B, SchoolBlock.F, SchoolBlock.G],
             # 2 : [SchoolBlock.C, SchoolBlock.D, SchoolBlock.E, SchoolBlock.F],
@@ -406,8 +574,17 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
         def __repr__ (self):
             return str(self.__dict__)
 
-class SpecialDay(BaseModel):
+class SchoolDay(BaseModel):
     date: date
-    schedule: List[SchoolBlock]
     name: str
+    schedule: ScheduleWithTimes
     note: str
+    special: bool
+
+class SpecialDay(SchoolDay):
+    special = True
+
+class NormalDay(SchoolDay):
+    name = "Normal Day"
+    note = "No special schedule"
+    special = False

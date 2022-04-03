@@ -1,5 +1,6 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, Date, String, collate, Boolean, Enum, ARRAY
-from sqlalchemy.orm import relationship
+from idna import valid_contextj
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, Date, String, collate, Boolean, Enum, PickleType
+from sqlalchemy.orm import relationship, validates
 from . import structs
 
 if "alembic.env" in __name__:
@@ -74,9 +75,15 @@ class SpecialDays(Base):
     __tablename__ = "special_days"
     date = Column(Date, primary_key=True)
     name = Column(String(255))
-    schedule = Column(ARRAY(Enum(structs.SchoolBlock)))
+    schedule = Column(PickleType)
     note = Column(String(255))
 
+    @validates('schedule')
+    def validate_schedule_type(self, key, value):
+        if type(value) != structs.ScheduleWithTimes:
+            raise ValueError('Schedule must be of type ScheduleWithTimes')
+        return value
+        
 class Aliases(Base):
     __tablename__ = "aliases"
     aid = Column(String(8), primary_key=True)

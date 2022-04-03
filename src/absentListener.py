@@ -7,6 +7,7 @@ from .database.database import *
 from datetime import timedelta, datetime, timezone
 import firebase_admin
 from firebase_admin import credentials
+from .database.database import SessionLocal
 
 # Get secrets info from config.ini
 config_path = 'config.ini'
@@ -39,9 +40,6 @@ def listener():
     # debug mode
     debugMode = False
 
-    holidays = []
-
-    
     dailyCheckTimeStart = 7 # hour. Default: 7
     dailyCheckTimeEnd = 24 # hour. Default: 11
     
@@ -53,18 +51,30 @@ def listener():
 
     while True:
         currentTime = datetime.now(timezone.utc) - timedelta(hours=5) # Shift by 5 hours to get into EST.
-        currentDate = currentTime.strftime('%d/%m/%Y')
-        
-        print(currentDate) 
+
+        holiday: bool = False
 
         dayOfTheWeek = currentTime.weekday() 
-        
+
         if not dayoffLatch:
             print("LISTENING", currentTime)
 
             print(f"Schoology Success: {schoologySuccessCheck}")
             
-            if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or currentDate in holidays) and not debugMode:
+            db = SessionLocal()
+
+            holidayCheck = crud.getSpecialDay(db, date=currentTime.date())
+            print(holidayCheck)
+
+            if holidayCheck != None:
+                print("There is a special day today.")
+                if len(holidayCheck.schedule) == 0: # If there is no schedule, it's a holiday. Remember that length property is defined in ScheduleWithTimes class.
+                    holiday = True
+                    print(f"Holiday: {holidayCheck.name}")
+                else:
+                    print("There is a schedule for today, no holiday :(")
+
+            if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or holiday) and not debugMode:
                 if dayoffLatch == False:
                     logger.info(f"abSENT DAY OFF. LATCHING TO SLEEP! Day Number: {dayOfTheWeek}")
                     print(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
