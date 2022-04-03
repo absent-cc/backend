@@ -5,11 +5,10 @@ from ..dataTypes import structs
 from datetime import date, time
 db = SessionLocal()
 
-crud.reset(db)
 specialDay = structs.SpecialDay(
-    date=date(2020, 1, 1),
+    date=date(2022, 4, 3),
     name="New Year's Day",
-    schedule = structs.SchoolBlocksOnDayWithTimes()[6],
+    schedule = structs.SchoolBlocksOnDayWithTimes()[0],
     note = "Happy New Year!",
     )
 

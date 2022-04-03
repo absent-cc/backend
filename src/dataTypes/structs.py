@@ -1,5 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
+from tokenize import Special
 from typing import List, Tuple, Dict, Union, Optional
 from pydantic import BaseModel
 
@@ -285,6 +286,11 @@ class ScheduleWithTimes(BaseModel):
     def __str__(self) -> str:
         return self.__repr__()
     
+    def __len__(self) -> int:
+        if self.schedule is None:
+            return 0
+        return len(self.schedule)
+    
     class Config:
         orm_mode = True
 
@@ -412,8 +418,17 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
         def __repr__ (self):
             return str(self.__dict__)
 
-class SpecialDay(BaseModel):
+class SchoolDay(BaseModel):
     date: date
-    schedule: ScheduleWithTimes
     name: str
+    schedule: ScheduleWithTimes
     note: str
+    special: bool
+
+class SpecialDay(SchoolDay):
+    special = True
+
+class NormalDay(SchoolDay):
+    name = "Normal Day"
+    note = "No special schedule"
+    special = False

@@ -44,6 +44,18 @@ def verifyCredentials(
     logger.info(f"Credential check failed: {sub}")
     utils.raiseError(401, "Invalid credentials", structs.ErrorType.AUTH)
 
+def verifyAdmin(
+    creds: schemas.SessionReturn = Depends(verifyCredentials),
+) -> schemas.SessionReturn:
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    admin_uids = config['ADMIN']['uids']
+
+    if creds.uid in admin_uids:
+        return creds
+    
+    utils.raiseError(401, "Unauthorized admin credentials.", structs.ErrorType.AUTH)
+
 def verifyRefreshToken(creds: str = Security(credsHeader)) -> str:
     cid = validateRefreshToken(creds)
     return cid
