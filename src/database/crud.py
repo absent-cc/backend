@@ -85,7 +85,8 @@ def getClassesByTeacher(db, teacher: schemas.TeacherReturn, block: structs.Schoo
 def getClassesByTeacherForDay(db, teacher: schemas.TeacherReturn, day: int) -> List[models.Class]:
     if teacher.tid != None:
         returnClasses = []
-        for block in structs.SchoolBlocksOnDay()[day]:
+        # for block in structs.SchoolBlocksOnDay()[day]:
+        for block in structs.SchoolBlocksOnDayWithTimes()[day].blocks():
             classes = getClassesByTeacher(db, teacher, block)
             if classes != None:
                 returnClasses.append(classes) 
