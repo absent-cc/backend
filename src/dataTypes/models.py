@@ -84,4 +84,4 @@ class Aliases(Base):
     last = Column(String(255), primary_key=True)
     tid = Column(String(36), ForeignKey(Teacher.tid, ondelete='CASCADE'))
 
-    teacher = relationship("Teacher", back_populates="aliases")
+    # teacher = relationship("Teacher", back_populates="aliases")
