@@ -34,10 +34,11 @@ class SchoolBlock(str, Enum):
     F: str = "F"
     G: str = "G"
     EXTRA: str = "EXTRA" # Lion/Tiger block
-    WIN: str = "WIN"
-
-    LUNCH: str = "LUNCH" # Will only need during short day since lunch is seperate from a block, unlike in the normal situation. This should not be in use yet!
-
+    
+    # WIN: str = "WIN"
+    
+    # LUNCH: str = "LUNCH" # Will only need during short day since lunch is seperate from a block, unlike in the normal situation. This should not be in use yet!
+    
 class LunchBlock(str, Enum):
     L1 = "1st Lunch"
     L2 = "2nd Lunch"
@@ -408,4 +409,5 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
 class SpecialDay(BaseModel):
     date: date
     schedule: List[SchoolBlock]
+    name: str
     note: str

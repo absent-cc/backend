@@ -153,7 +153,7 @@ def getSpecialDay(db, date: date) -> models.SpecialDays:
 def addSpecialDay(db, specialDay: structs.SpecialDay) -> bool:
     logger.info(f"ADD special day requested: {specialDay.date}")
     try:
-        db.add(models.SpecialDays(specialDay.date, specialDay.schedule, specialDay.note))
+        db.add(models.SpecialDays(date = specialDay.date, schedule = specialDay.schedule, name = specialDay.name, note = specialDay.note))
     except Exception as e:
         logger.error(f"ADD special day failed: {e}")
         return False
