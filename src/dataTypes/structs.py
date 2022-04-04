@@ -3,8 +3,8 @@ from dataclasses import dataclass
 import re
 from tokenize import Special
 from typing import List, Tuple, Dict, Union, Optional
-from pydantic import BaseModel
-# from pydantic.fields import ModelField
+from pydantic import BaseModel, schema_of
+from pydantic.fields import ModelField
 
 from datetime import date, datetime, time
 
@@ -50,9 +50,9 @@ class SchoolBlock(str, Enum):
     LUNCH: str = "LUNCH" # Will only need during short day since lunch is seperate from a block, unlike in the normal situation. This should not be in use yet!
     
 class LunchBlock(str, Enum):
-    L1 = "1st Lunch"
-    L2 = "2nd Lunch"
-    L3 = "3rd Lunch"
+    L1 = "L1"
+    L2 = "L2"
+    L3 = "L3"
 
 class SchoolBlocksOnDay(Dict[int, SchoolBlock]):
     def __init__(self):
@@ -269,7 +269,7 @@ class Lunch(BaseModel):
     startTime: time = None
     endTime: time = None
 
-class Lunches(List):
+class Lunches(list[Lunch]):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -283,7 +283,7 @@ class BlockWithTimes(BaseModel):
         from_orm = True
         arbitrary_types_allowed = True
 
-class ScheduleWithTimes(List[BlockWithTimes]):
+class ScheduleWithTimes(list[BlockWithTimes]):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -307,11 +307,12 @@ class ScheduleWithTimes(List[BlockWithTimes]):
             return []
         return [block.block for block in self]
     
-    # @classmethod
-    # def __modify_schema__(cls, field_schema, field: Optional[ModelField]):
-    #     if field:
-    #         field_schema['items'] = {'$ref': '#/definitions/BlockWithTimes'}
-    #         field_schema['examples'] = [BlockWithTimes]
+    @classmethod
+    def __modify_schema__(cls, field_schema, field: Optional[ModelField]): # type: ignore
+        if field:
+            field_schema['items'] = schema_of(BlockWithTimes)
+            # field_schema['examples'] = [BlockWithTimes.schema_json()['properties']['examples']]
+            # field_schema['examples'] = schema_of(BlockWithTimes)['examples']
 
     # @classmethod
     # def __get_validators__(cls):

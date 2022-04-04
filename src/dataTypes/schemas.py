@@ -1,5 +1,5 @@
 from abc import abstractstaticmethod
-from typing import List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Type, Union
 from uuid import UUID
 from pydantic import BaseModel, validator
 from ..dataTypes import structs
@@ -278,12 +278,38 @@ class SchoolDay(BaseModel):
     schedule: structs.ScheduleWithTimes
     note: str
     special: bool
-    # schedules: structs.BlockWithTimes
 
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
-    
+
+        # @staticmethod
+        # def schema_extra(schema: Dict[str, Any], model: Type['SchoolDay']) -> None:
+        #     for prop in schema.get('properties', {}).values():
+        #         prop.pop('title', None)
+
+        schema_extra = {    
+            'example': {
+                    'date': '2020-01-01',
+                    'name': 'New Years Day',
+                    'schedule': [
+                        {
+                            'block': 'A',
+                            'startTime': '09:00:00',
+                            'endTime': '10:00:00',
+                            'lunches': [
+                                {
+                                    'lunch': 'L1',
+                                    'startTime': '10:00:00',
+                                    'endTime': '11:00:00'
+                                },
+                            ]
+                        },
+                    ],
+                    'note': 'Happy New Years!',
+                    'special': True
+                }
+        }
 
 class SpecialDay(SchoolDay):
     special = True

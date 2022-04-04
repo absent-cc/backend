@@ -25,3 +25,5 @@ db = SessionLocal()
 import pprint as pp
 
 pp.pprint(schemas.SchoolDay.schema())
+
+# pp.pprint(structs.BlockWithTimes.schema())
