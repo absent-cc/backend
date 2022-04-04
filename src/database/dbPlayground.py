@@ -1,7 +1,7 @@
 from . import crud
 
 from .database import SessionLocal
-from ..dataTypes import structs
+from ..dataTypes import structs, schemas
 from datetime import date, time
 db = SessionLocal()
 
@@ -17,8 +17,11 @@ db = SessionLocal()
 # print(returnVal.schedule)
 # print(returnVal.schedule.blocks())
 
-for day in structs.SchoolBlocksOnDayWithTimes().values():
-    print(day)
+# for day in structs.SchoolBlocksOnDayWithTimes().values():
+    
 
 # if __name__ == "__main__":
 #     print(structs.SchoolBlocksOnDayWithTimes())
+import pprint as pp
+
+pp.pprint(schemas.SchoolDay.schema())

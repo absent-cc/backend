@@ -165,14 +165,14 @@ def getSpecialDay(db, date: date) -> models.SpecialDays:
     logger.info(f"GET special day requested: {date}")
     return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
 
-def getSchoolDaySchedule(db, date: date) -> structs.SchoolBlocksOnDayWithTimes:
+def getSchoolDaySchedule(db, date: date) -> structs.ScheduleWithTimes:
     logger.info("GET school day schedule requested: " + str(date))
     specialDayCheck: models.SpecialDays = getSpecialDay(db, date)
     if specialDayCheck != None:
         return specialDayCheck.schedule
     return structs.SchoolBlocksOnDayWithTimes()[date.weekday()]
 
-def addSpecialDay(db, specialDay: structs.SpecialDay) -> bool:
+def addSpecialDay(db, specialDay: schemas.SpecialDay) -> bool:
     logger.info(f"ADD special day requested: {specialDay.date}")
     try:
         db.add(models.SpecialDays(date = specialDay.date, name=specialDay.name, schedule=specialDay.schedule, note=specialDay.note))

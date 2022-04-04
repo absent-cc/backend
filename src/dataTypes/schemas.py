@@ -1,3 +1,4 @@
+from abc import abstractstaticmethod
 from typing import List, Literal, Optional, Tuple, Union
 from uuid import UUID
 from pydantic import BaseModel, validator
@@ -277,6 +278,12 @@ class SchoolDay(BaseModel):
     schedule: structs.ScheduleWithTimes
     note: str
     special: bool
+    # schedules: structs.BlockWithTimes
+
+    class Config:
+        orm_mode = True
+        arbitrary_types_allowed = True
+    
 
 class SpecialDay(SchoolDay):
     special = True

@@ -1,12 +1,16 @@
 from enum import Enum
 from dataclasses import dataclass
+import re
 from tokenize import Special
 from typing import List, Tuple, Dict, Union, Optional
 from pydantic import BaseModel
+# from pydantic.fields import ModelField
 
 from datetime import date, datetime, time
 
 import configparser
+
+import pydantic
 
 #
 # SCHOOL ENUMS (BLOCK AND NAME) 
@@ -265,8 +269,9 @@ class Lunch(BaseModel):
     startTime: time = None
     endTime: time = None
 
-class Lunches(BaseModel):
-    lunches: List[Lunch] = None
+class Lunches(List):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class BlockWithTimes(BaseModel):
     block: SchoolBlock
@@ -274,35 +279,63 @@ class BlockWithTimes(BaseModel):
     endTime: time
     lunches: Lunches = None
 
-class ScheduleWithTimes(BaseModel):
-    schedule: Optional[List[BlockWithTimes]]
+    class Config:
+        from_orm = True
+        arbitrary_types_allowed = True
 
+class ScheduleWithTimes(List[BlockWithTimes]):
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
     def __repr__ (self) -> str:
-        if self.schedule is None:
-            return "Schedule=None"
+        if len(self) == 0:
+            return "No schedule"
         printOut = "\n"
-        for block in self.schedule:
+        for block in self:
             printOut += f"\t{block.block}: {block.startTime.strftime('%I:%M')}-{block.endTime.strftime('%H:%M')}\n"
-            if block.lunches:
-                for lunch in block.lunches.lunches:
+            if block.lunches is not None:
+                for lunch in block.lunches:
                     printOut += f"\t\t{lunch.lunch}: {lunch.startTime.strftime('%I:%M')}-{lunch.endTime.strftime('%H:%M')}\n"
         return f"Schedule: {printOut}"
      
     def __str__(self) -> str:
         return self.__repr__()
     
-    def __len__(self) -> int:
-        if self.schedule is None:
-            return 0
-        return len(self.schedule)
-    
     def blocks(self) -> List[SchoolBlock]:
-        if self.schedule is None:
+        if self is None:
             return []
-        return [block.block for block in self.schedule]
+        return [block.block for block in self]
     
-    class Config:
-        orm_mode = True
+    # @classmethod
+    # def __modify_schema__(cls, field_schema, field: Optional[ModelField]):
+    #     if field:
+    #         field_schema['items'] = {'$ref': '#/definitions/BlockWithTimes'}
+    #         field_schema['examples'] = [BlockWithTimes]
+
+    # @classmethod
+    # def __get_validators__(cls):
+    #     # one or more validators may be yielded which will be called in the
+    #     # order to validate the input, each validator will receive as an input
+    #     # the value returned from the previous validator
+    #     yield cls.validate
+
+    # @classmethod
+    # def __modify_schema__(cls, field_schema):
+    #     # __modify_schema__ should mutate the dict it receives in place,
+    #     # the returned value will be ignored
+    #     field_schema.update(
+    #         # simplified regex here for brevity, see the wikipedia link above
+    #         pattern='^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$',
+    #         # some example postcodes
+    #         examples=['SP11 9DG', 'w1j7bu'],
+    #     )
+    
+    # @classmethod
+    # def validate(cls, v):
+    #     if not isinstance(v, ScheduleWithTimes):
+    #         raise TypeError('ScheduleWithTimes required')
+    #     return v
 
 class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
     def __init__(self):
@@ -310,7 +343,6 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
         self.update({
             # 0 : [SchoolBlock.A, SchoolBlock.ADV, SchoolBlock.B, SchoolBlock.C, SchoolBlock.D, SchoolBlock.E],
             0: ScheduleWithTimes(
-                schedule=
                 [
                     BlockWithTimes(
                         block=SchoolBlock.A, 
@@ -332,7 +364,7 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                         startTime=time(hour=11, minute=45), 
                         endTime=time(hour=13, minute=25), 
                         lunches=Lunches(
-                            lunches=[
+                            [
                                 Lunch(
                                     lunch=LunchBlock.L1,
                                     startTime=time(hour=11, minute=45),
@@ -364,7 +396,6 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                 ]
             ),
             1: ScheduleWithTimes(
-                schedule=
                 [
                     BlockWithTimes(
                         block=SchoolBlock.A,
@@ -381,7 +412,7 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                         startTime=time(hour=11, minute=40),
                         endTime=time(hour=13, minute=20),
                         lunches=Lunches(
-                            lunches=[
+                            [
                                 Lunch(
                                     lunch=LunchBlock.L1,
                                     startTime=time(hour=11, minute=40),
@@ -413,7 +444,6 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                 ]
             ),
             2: ScheduleWithTimes(
-                schedule=
                 [
                     BlockWithTimes(
                         block=SchoolBlock.C,
@@ -430,7 +460,7 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                         startTime=time(hour=11, minute=15),
                         endTime=time(hour=1, minute=5),
                         lunches=Lunches(
-                            lunches=[
+                            [
                                 Lunch(
                                     lunch=LunchBlock.L1,
                                     startTime=time(hour=11, minute=15),
@@ -462,7 +492,6 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                 ]
             ),
             3: ScheduleWithTimes(
-                schedule=
                 [
                     BlockWithTimes(
                         block=SchoolBlock.A,
@@ -479,7 +508,7 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                         startTime=time(hour=11, minute=40),
                         endTime=time(hour=13, minute=30),
                         lunches=Lunches(
-                            lunches=[
+                            [
                                 Lunch(
                                     lunch=LunchBlock.L1,
                                     startTime=time(hour=11, minute=40),
@@ -511,7 +540,6 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                 ]
             ),
             4: ScheduleWithTimes(
-                schedule=
                 [
                     BlockWithTimes(
                         block=SchoolBlock.C,
@@ -528,7 +556,7 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                         startTime=time(hour=11, minute=15),
                         endTime=time(hour=13, minute=5),
                         lunches=Lunches(
-                            lunches=[
+                            [
                                 Lunch(
                                     lunch=LunchBlock.L1,
                                     startTime=time(hour=11, minute=15),
@@ -559,32 +587,10 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                     ),
                 ]
             ),
-            5: ScheduleWithTimes(schedule=None),
-            6: ScheduleWithTimes(schedule=None),
-        
-            # # 1 : [SchoolBlock.A, SchoolBlock.B, SchoolBlock.F, SchoolBlock.G],
-            # 2 : [SchoolBlock.C, SchoolBlock.D, SchoolBlock.E, SchoolBlock.F],
-            # 3 : [SchoolBlock.A, SchoolBlock.B, SchoolBlock.G, SchoolBlock.E],
-            # 4 : [SchoolBlock.C, SchoolBlock.D, SchoolBlock.F, SchoolBlock.G],
-            # 5: [],
-            # 6: []
+            5: ScheduleWithTimes(),
+            6: ScheduleWithTimes(),
         }
         )
 
         def __repr__ (self):
             return str(self.__dict__)
-
-class SchoolDay(BaseModel):
-    date: date
-    name: str
-    schedule: ScheduleWithTimes
-    note: str
-    special: bool
-
-class SpecialDay(SchoolDay):
-    special = True
-
-class NormalDay(SchoolDay):
-    name = "Normal Day"
-    note = "No special schedule"
-    special = False
