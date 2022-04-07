@@ -1,11 +1,12 @@
-from src.database.database import SessionLocal
-from ..dataTypes import structs, models, schemas
 import datetime
-from ..database import crud
+from typing import Optional, List
 
-from firebase_admin import messaging, credentials
-from typing import Optional, List, Tuple
+from firebase_admin import messaging
 from loguru import logger
+
+from src.database.database import SessionLocal
+from ..dataTypes import structs, models
+from ..database import crud
 
 logger.add(
     "logs/{time:YYYY-MM-DD}/notify.log",
@@ -60,7 +61,7 @@ class Notify:
                                     f"RUNNING INSIDE SESSION CALL: {session.fcm_token}"
                                 )
                                 if (
-                                    session.fcm_token != None
+                                    session.fcm_token is not None
                                     and len(session.fcm_token.strip()) != 0
                                     and (
                                         bool(session.fcm_token)
@@ -88,7 +89,7 @@ class Notify:
             for session in user.sessions:
                 print(session.fcm_token)
                 if (
-                    session.fcm_token != None
+                    session.fcm_token is not None
                     and len(session.fcm_token.strip()) != 0
                     and (bool(session.fcm_token) and bool(session.fcm_token.strip()))
                     != False

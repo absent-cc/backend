@@ -1,19 +1,16 @@
-from idna import valid_contextj
 from sqlalchemy import (
     Column,
     ForeignKey,
-    Integer,
-    String,
     UniqueConstraint,
     TIMESTAMP,
     Date,
     String,
-    collate,
     Boolean,
     Enum,
     PickleType,
 )
 from sqlalchemy.orm import relationship, validates
+
 from . import structs
 
 if "alembic.env" in __name__:

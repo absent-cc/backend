@@ -1,11 +1,10 @@
-from abc import abstractstaticmethod
-from typing import Any, Dict, List, Literal, Optional, Tuple, Type, Union
-from uuid import UUID
-from pydantic import BaseModel, validator
-from ..dataTypes import structs
 from datetime import datetime, date
+from typing import List, Optional, Union
+from uuid import UUID
 
-from ..database.database import Base
+from pydantic import BaseModel, validator
+
+from ..dataTypes import structs
 
 
 class UserSettings(BaseModel):
@@ -97,7 +96,7 @@ class ScheduleReturn(BaseModel):
         schedule = ScheduleReturn()
         for cls in classes:
             current = getattr(schedule, cls.block)
-            if current != None:
+            if current is not None:
                 current.append(TeacherReturn.from_orm(cls.teacher))
                 setattr(schedule, cls.block, current)
             else:
@@ -158,7 +157,7 @@ class SessionCreate(BaseModel):
     uid: Optional[str] = None
 
     @validator("uid")
-    def checkUIDLength(cls, v):
+    def checkUIDLength(self, v):
         try:
             UUID(v)
             return v
@@ -171,7 +170,7 @@ class SessionReturn(SessionCreate):
     last_accessed: Optional[datetime] = None
 
     @validator("sid")
-    def checkSIDLength(cls, v):
+    def checkSIDLength(self, v):
         if len(v) != 16:
             raise ValueError("SID Must be 17 characters long.")
         return v
@@ -232,7 +231,7 @@ class PartialName(BaseModel):
     school: structs.SchoolName
 
     @validator("name")
-    def checkPartialName(cls, v):
+    def checkPartialName(self, v):
         if (len(v)) < 3:
             raise ValueError("Phrase too short.")
         return v

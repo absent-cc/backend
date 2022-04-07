@@ -1,10 +1,10 @@
 from fastapi import Depends, APIRouter
-from ....dataTypes import structs, schemas
-from loguru import logger
 from sqlalchemy.orm import Session
-from ....database import crud
-from ....api import utils
+
 from ....api import accounts
+from ....api import utils
+from ....dataTypes import structs, schemas
+from ....database import crud
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -78,7 +78,7 @@ def updateUserInfo(
     settings = crud.updateUserSettings(db, user.settings, creds.uid)
     token = crud.updateFCMToken(db, user.fcm, creds.uid, creds.sid)
 
-    if (profile, token, settings) != None and schedule:
+    if (profile, token, settings) is not None and schedule:
         user.schedule = schemas.ScheduleReturn().scheduleFromList(
             crud.getClassesByUser(db, schemas.UserReturn(uid=creds.uid))
         )
@@ -99,7 +99,7 @@ def updateUserInfo(
 
     result = crud.updateProfile(db, profile, creds.uid)  # Updates the profile info.
 
-    if result != None:
+    if result is not None:
         return utils.returnStatus("Success")
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
@@ -134,7 +134,7 @@ def updateFirebaseToken(
 ):
     result = crud.updateFCMToken(db, token, creds.uid, creds.sid)
 
-    if result != None:
+    if result is not None:
         return utils.returnStatus("Information updated")  # Returns success.
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
@@ -148,7 +148,7 @@ def updateUserSettings(
 ):
     result = crud.updateUserSettings(db, settings, creds.uid)
 
-    if result != None:
+    if result is not None:
         return utils.returnStatus("Information updated")
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)

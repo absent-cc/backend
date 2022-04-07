@@ -1,13 +1,10 @@
-import configparser
-import threading, time, yaml
-from loguru import logger
-from .dataTypes import structs, tools
-from .schoology.schoologyListener import *
-from .database.database import *
-from datetime import timedelta, datetime, timezone
+import time
+
 import firebase_admin
 from firebase_admin import credentials
-from .database.database import SessionLocal
+
+from .dataTypes import tools
+from .schoology.schoologyListener import *
 
 # Get secrets info from config.ini
 config_path = "config.ini"
@@ -72,7 +69,7 @@ def listener():
             holidayCheck = crud.getSpecialDay(db, date=currentTime.date())
             print(holidayCheck)
 
-            if holidayCheck != None:
+            if holidayCheck is not None:
                 print("There is a special day today.")
                 if (
                     len(holidayCheck.schedule) == 0
@@ -85,7 +82,7 @@ def listener():
             if (
                 dayOfTheWeek == saturday or dayOfTheWeek == sunday or holiday
             ) and not debugMode:
-                if dayoffLatch == False:
+                if not dayoffLatch:
                     logger.info(
                         f"abSENT DAY OFF. LATCHING TO SLEEP! Day Number: {dayOfTheWeek}"
                     )

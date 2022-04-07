@@ -1,16 +1,18 @@
-import jwt
+import configparser
 import time
-from ..api import utils
-from ..database import crud
-from ..dataTypes import schemas, structs
+
+import jwt
+from cryptography.hazmat.primitives import serialization
+from fastapi import Depends, Security
+from fastapi.security.api_key import APIKeyHeader
 from google.auth.transport import requests
 from google.oauth2 import id_token
-from cryptography.hazmat.primitives import serialization
-from fastapi import Depends, Security, FastAPI
 from loguru import logger
+
+from ..api import utils
+from ..dataTypes import schemas, structs
+from ..database import crud
 from ..database.database import SessionLocal
-from fastapi.security.api_key import APIKeyHeader, APIKey
-import configparser
 
 API_KEY_NAME = "absent-auth"
 credsHeader = APIKeyHeader(name=API_KEY_NAME, auto_error=True)
@@ -36,12 +38,12 @@ def verifyCredentials(
 ) -> schemas.SessionReturn:
 
     creds = decodeToken(creds)
-    if creds == None:
+    if creds is None:
         return None
     sub = creds["sub"].split(".")
     session = schemas.SessionReturn(uid=sub[1], sid=sub[0])
     session = crud.getSession(db, session)
-    if session != None:
+    if session is not None:
         return session
     logger.info(f"Credential check failed: {sub}")
     utils.raiseError(401, "Invalid credentials", structs.ErrorType.AUTH)
@@ -116,7 +118,7 @@ def validateGoogleToken(token) -> dict:
 def validateRefreshToken(jwt: str) -> str:
     creds = decodeRefreshToken(jwt)
     try:
-        if creds["ref"] == True:
+        if creds["ref"]:
             return creds["sub"]
         else:
             return None

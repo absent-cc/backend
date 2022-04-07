@@ -1,14 +1,9 @@
-from asyncio import CancelledError
-from email import message
 from fastapi import APIRouter, Depends
-from sqlalchemy import true
 from sqlalchemy.orm import Session
 
 from ....api import accounts
-from ....database import crud
 from ....dataTypes import schemas
-
-from typing import List
+from ....database import crud
 
 router = APIRouter(prefix="/badges", tags=["Shields.io Badges"])
 

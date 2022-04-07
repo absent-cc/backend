@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import List
 
 import schoolopy
+
+from ..dataTypes.structs import RawUpdate
 from ..database.database import SessionLocal
 from ..database import crud
 
@@ -42,7 +44,7 @@ class AbsencePuller:
         return feed
 
     # Gets the absence table for the date requested as defined by 'date'. Returns just this update for furthing processing. The date argument ultimately comes from the call of this function in main.py.
-    def getCurrentTable(self, school: structs.SchoolName, date: datetime) -> list:
+    def getCurrentTable(self, school: structs.SchoolName, date: datetime) -> RawUpdate:
         feed = self.getFeed(school)
         for poster, body, feedDate in feed:
             postDate = datetime.utcfromtimestamp(int(feedDate))
@@ -117,7 +119,7 @@ class ContentParser:
         objList = []
         for row in update.content:
             try:
-                if map["CS_MAP"] == None:
+                if map["CS_MAP"] is None:
                     teacher = schemas.TeacherCreate(
                         first=row[map[structs.TableColumn.FIRST_NAME][0]],
                         last=row[map[structs.TableColumn.LAST_NAME][0]],
@@ -152,7 +154,7 @@ class ContentParser:
             objList.append(object)
         return objList
 
-    def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
+    def deriveTable(update: structs.RawUpdate) -> structs.RawUpdate:
         while (
             not (
                 ("position" in update.content[0].lower())

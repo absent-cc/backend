@@ -1,12 +1,11 @@
 from fastapi import Depends, APIRouter
-from .routers import teachers, users, analytics, badges, admin, info
-from ...dataTypes import structs, models, schemas
 from sqlalchemy.orm import Session
-from fuzzywuzzy import fuzz
-from ...database import crud
-from ...api import utils
-from ...api import accounts
 
+from .routers import teachers, users, analytics, badges, admin, info
+from ...api import accounts
+from ...api import utils
+from ...dataTypes import structs, schemas
+from ...database import crud
 
 router = APIRouter(prefix="/v1")
 router.include_router(users.router)
@@ -31,11 +30,11 @@ def authenticate(
     creds = accounts.validateGoogleToken(
         gToken
     )  # Accounts code is used to validate the Google JWT, returns all the data from it.
-    if creds != None:
+    if creds is not None:
         onboardStatus = crud.checkOnboarded(
             db, gid=creds["sub"]
         )  # Check if the user has been onboarded.
-        if onboardStatus[0] == True:
+        if onboardStatus[0]:
             # User is in our table
             # Return  return the session credentials and if they have been completly onboarded.
             res = crud.getUser(db, schemas.UserReturn(gid=creds["sub"]))
@@ -81,7 +80,7 @@ def authenticate(
 def refresh(
     cid=Depends(accounts.verifyRefreshToken),
 ):  # Here, the refresh token is decoded and verified using our accounts code.
-    if cid != None:  # This is the actual validity check here.
+    if cid is not None:  # This is the actual validity check here.
         token = accounts.generateToken(
             cid
         )  # Issue a new token, using accounts code. Since these tokens are stateless no DB interaction is needed.

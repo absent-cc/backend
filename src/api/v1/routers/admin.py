@@ -1,15 +1,12 @@
-import configparser
 import datetime
 from typing import List
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from src.api import accounts
-from src.dataTypes import models, schemas, structs
 
-from ....api import utils
+from src.api import accounts
+from src.dataTypes import models, schemas
 from ....database import crud
-from ....database.database import SessionLocal
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -25,15 +22,15 @@ def getUserInfo(
     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
 ):
-    if first == None and last == None:
+    if first is None and last is None:
         users: List[models.User] = crud.getAllUsers(db)
-    if first != None and last != None:
+    if first is not None and last is not None:
         users: List[models.User] = crud.getUsersByName(db, first, last)
 
     returnList = []  # List that contains everything
 
     for user in users:
-        schedule: models.Class = crud.getClassesByUser(
+        schedule: List[models.Class] = crud.getClassesByUser(
             db, schemas.UserReturn(uid=user.uid)
         )  # Grab schedule
         settings: models.UserSettings = crud.getUserSettings(
@@ -58,7 +55,7 @@ def deleteAbsencesOnDay(
     db: Session = Depends(accounts.getDBSession),
     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
-    if date == None:
+    if date is None:
         date = datetime.date.today()
     result = crud.removeAbsencesByDate(db, datetime(date.year, date.month, date.day))
     return schemas.Bool(success=result)

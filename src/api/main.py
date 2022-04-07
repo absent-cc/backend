@@ -1,8 +1,9 @@
 import time
+
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.staticfiles import StaticFiles
+
 from .v1 import main as v1
 
 # All this fucking shit for the docs because I am legitimately this vain.

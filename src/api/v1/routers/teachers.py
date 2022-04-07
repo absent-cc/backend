@@ -2,16 +2,15 @@ import csv as c
 import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Depends
 from fuzzywuzzy import fuzz
 from sqlalchemy.orm import Session
 
 from src.dataTypes import models
-from ....utils.prettifyTeacherName import prettify
-
 from ....api import accounts, utils
-from ....database import crud
 from ....dataTypes import schemas, structs
+from ....database import crud
+from ....utils.prettifyTeacherName import prettify
 
 NNHS_FIRSTS = []
 NNHS_LASTS = []
@@ -78,7 +77,7 @@ def getAbsenceList(
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
     school: Optional[structs.SchoolName] = None,  # Initializes a school.
 ):
-    if date == None:
+    if date is None:
         date = datetime.date.today()
     list: List[models.Absence] = crud.getAbsenceList(db, date, school)
     returnAbsences: List[schemas.AbsenceReturn] = [
@@ -121,7 +120,7 @@ def getAbsenceList(
 
 @router.get("/classes/", response_model=schemas.ClassList, status_code=200)
 async def getClassList(date: Optional[datetime.date] = None):
-    if date == None:
+    if date is None:
         date = datetime.date.today()
     try:
         return schemas.ClassList(classes=classDict[date.weekday()])

@@ -1,7 +1,7 @@
-from src.dataTypes.schemas import TeacherBase, TeacherCreate, TeacherReturn
 import re
 from typing import List
 
+from src.dataTypes.schemas import TeacherReturn
 from src.database.database import SessionLocal
 
 splitTable = "\s|-|_|\."

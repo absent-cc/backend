@@ -1,16 +1,11 @@
 from enum import Enum
 from dataclasses import dataclass
-import re
-from tokenize import Special
 from typing import List, Tuple, Dict, Union, Optional
 from pydantic import BaseModel, schema_of
 from pydantic.fields import ModelField
 
-from datetime import date, datetime, time
-
+from datetime import date, time
 import configparser
-
-import pydantic
 
 #
 # SCHOOL ENUMS (BLOCK AND NAME)
@@ -188,17 +183,6 @@ class ErrorType(Enum):
 
 
 @dataclass
-class AbsentTeacher:
-    teacher: None
-    length: str
-    date: str
-    note: str
-
-    def __str__(self):
-        return f"{self.first} {self.last} {self.length} {self.date} {self.note}"
-
-
-@dataclass
 class SchoologyCreds:
     keys: dict
     secrets: dict
@@ -263,7 +247,8 @@ class ListenerStatus:
         ) as config_file:  # Write new states to file
             config.write(config_file)
 
-    def resetState(school: SchoolName):
+    @staticmethod
+    def resetState():
         config = configparser.ConfigParser()
         config.read(ListenerStatus.state_path)
 
@@ -278,9 +263,10 @@ class ListenerStatus:
         with open(ListenerStatus.state_path, "w") as config_file:
             config.write(config_file)
 
+    @staticmethod
     def resetAll():
         for school in SchoolName:
-            ListenerStatus.resetState(school)
+            ListenerStatus.resetState()
 
 
 class ColumnMap(Dict[TableColumn, Tuple[int, int]]):

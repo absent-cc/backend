@@ -1,15 +1,13 @@
-from datetime import datetime, date
-from logging import raiseExceptions
-from sqlite3 import Date
-import time
 import secrets
+from datetime import datetime, date
 from typing import List, Optional, Tuple
-from xxlimited import new
-from loguru import logger
 from uuid import uuid4
+
+from loguru import logger
 from sqlalchemy import update
 
 from ..dataTypes import schemas, models, structs
+from ..dataTypes.models import Class
 from ..utils.prettifyTeacherName import prettify
 
 logger.add(
@@ -21,12 +19,12 @@ logger.add(
 
 
 def getUser(db, user: schemas.UserReturn) -> models.User:
-    if user.uid != None:
+    if user.uid is not None:
         logger.info("GET User looked up by UID: " + user.uid)  # Logs lookup.
         return (
             db.query(models.User).filter(models.User.uid == user.uid).first()
         )  # Grabs the first entry of the model User that matches UID.
-    if user.gid != None:
+    if user.gid is not None:
         logger.info("GET User looked up by GID: " + user.gid)  # Logs lookup.
         return (
             db.query(models.User).filter(models.User.gid == user.gid).first()
@@ -36,13 +34,15 @@ def getUser(db, user: schemas.UserReturn) -> models.User:
 
 
 def getTeacher(db, teacher: schemas.TeacherReturn) -> models.Teacher:
-    if teacher.tid != None:
+    if teacher.tid is not None:
         logger.info("GET Teacher looked up by TID: " + teacher.tid)  # Logs lookup.
         return (
             db.query(models.Teacher).filter(models.Teacher.tid == teacher.tid).first()
         )  # Looks up teacher by TID if available, grabs the first match.
     if (
-        teacher.first != None and teacher.last != None and teacher.school != None
+        teacher.first is not None
+        and teacher.last is not None
+        and teacher.school is not None
     ):  # Does so below by name and school, these entries are treated as a primary key by our DB.
         logger.info(
             "GET Teacher looked up by Name: "
@@ -74,7 +74,7 @@ def getTeacher(db, teacher: schemas.TeacherReturn) -> models.Teacher:
 
 
 def getAllTeachersBySchool(db, school: structs.SchoolName) -> List[models.Teacher]:
-    if school != None:
+    if school is not None:
         logger.info("GET teachers by school requested: " + school)
         return db.query(models.Teacher).filter(models.Teacher.school == school).all()
     return []
@@ -82,7 +82,7 @@ def getAllTeachersBySchool(db, school: structs.SchoolName) -> List[models.Teache
 
 def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
     if (
-        session.sid != None and session.uid != None
+        session.sid is not None and session.uid is not None
     ):  # These two values are used to look up sessions, much exist.
         q = (
             update(models.UserSession)
@@ -136,7 +136,7 @@ def getUserCount(db) -> int:
 
 
 def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
-    if user.uid != None:
+    if user.uid is not None:
         sessions = (
             db.query(models.UserSession)
             .filter(models.UserSession.uid == user.uid)
@@ -151,7 +151,7 @@ def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
 def getClassesByTeacher(
     db, teacher: schemas.TeacherReturn, block: structs.SchoolBlock
 ) -> List[models.Class]:
-    if teacher.tid != None:
+    if teacher.tid is not None:
         logger.info("GET classes by teacher requested: " + teacher.tid + " " + block)
         return (
             db.query(models.Class)
@@ -164,13 +164,13 @@ def getClassesByTeacher(
 
 def getClassesByTeacherForDay(
     db, teacher: schemas.TeacherReturn, day: int
-) -> List[models.Class]:
-    if teacher.tid != None:
+) -> list[list[Class]]:
+    if teacher.tid is not None:
         returnClasses = []
         # for block in structs.SchoolBlocksOnDay()[day]:
         for block in structs.SchoolBlocksOnDayWithTimes()[day].blocks():
             classes = getClassesByTeacher(db, teacher, block)
-            if classes != None:
+            if classes is not None:
                 returnClasses.append(classes)
         logger.info("GET classes by teacher requested: " + teacher.tid + " " + str(day))
         return returnClasses
@@ -180,13 +180,13 @@ def getClassesByTeacherForDay(
 
 def getClassesByTeacherForDate(
     db, teacher: schemas.TeacherReturn, date: date
-) -> List[models.Class]:
-    if teacher.tid != None:
+) -> list[list[Class]]:
+    if teacher.tid is not None:
         returnClasses = []
         blocks: structs.ScheduleWithTimes = getSchoolDaySchedule(db, date)
         for block in blocks.blocks():
             classes = getClassesByTeacher(db, teacher, block)
-            if classes != None:
+            if classes is not None:
                 returnClasses.append(classes)
         logger.info(
             "GET classes by teacher requested: " + teacher.tid + " " + str(date)
@@ -201,7 +201,7 @@ def getAbsenceList(
     searchDate: date = datetime.today().date(),
     school: Optional[structs.SchoolName] = None,
 ) -> List[models.Absence]:
-    if school != None:
+    if school is not None:
         absences = (
             db.query(models.Absence)
             .join(models.Teacher)
@@ -223,7 +223,7 @@ def getAbsenceCount(db) -> int:
 
 
 def getClassesByUser(db, user: schemas.UserReturn) -> List[models.Class]:
-    if user.uid != None:
+    if user.uid is not None:
         logger.info("GET classes by user requested: " + user.uid)
         return (
             db.query(models.Class).filter(models.Class.uid == user.uid).all()
@@ -238,7 +238,7 @@ def getClassesCount(db) -> int:
 
 
 def getUserSettings(db, user: schemas.UserReturn) -> models.UserSettings:
-    if user.uid != None:
+    if user.uid is not None:
         logger.info("GET user settings requested: " + user.uid)
         return (
             db.query(models.UserSettings)
@@ -282,10 +282,6 @@ def getAbsencesCount(db) -> int:
     return len(getAllAbsences(db))
 
 
-def getClassesCancelledCount(db) -> int:
-    return db.query(models.CancelledClass).count()
-
-
 def getSpecialDay(db, date: date) -> models.SpecialDays:
     logger.info(f"GET special day requested: {date}")
     return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
@@ -294,7 +290,7 @@ def getSpecialDay(db, date: date) -> models.SpecialDays:
 def getSchoolDaySchedule(db, date: date) -> structs.ScheduleWithTimes:
     logger.info("GET school day schedule requested: " + str(date))
     specialDayCheck: models.SpecialDays = getSpecialDay(db, date)
-    if specialDayCheck != None:
+    if specialDayCheck is not None:
         return specialDayCheck.schedule
     return structs.SchoolBlocksOnDayWithTimes()[date.weekday()]
 
@@ -318,7 +314,7 @@ def addSpecialDay(db, specialDay: schemas.SpecialDay) -> bool:
 
 
 def addUser(db, user: schemas.UserCreate) -> models.User:
-    if user.gid != None:  # Checks for GID as this is the only mandatory field.
+    if user.gid is not None:  # Checks for GID as this is the only mandatory field.
         uid = str(uuid4())  # Generates UUID.
         userModel = models.User(
             uid=uid, **user.dict()
@@ -335,7 +331,9 @@ def addUser(db, user: schemas.UserCreate) -> models.User:
 
 def addClass(db, newClass: schemas.Class) -> models.Class:
     if (
-        newClass.tid != None and newClass.uid != None and newClass.block != None
+        newClass.tid is not None
+        and newClass.uid is not None
+        and newClass.block is not None
     ):  # Checks for the required fields.
         cid = secrets.token_hex(4)
         classModel = models.Class(**newClass.dict(), cid=cid)  # Creates a model.
@@ -353,9 +351,9 @@ def addClass(db, newClass: schemas.Class) -> models.Class:
 
 def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
     if (
-        newTeacher.first != None
-        and newTeacher.last != None
-        and newTeacher.school != None
+        newTeacher.first is not None
+        and newTeacher.last is not None
+        and newTeacher.school is not None
     ):  # Checks for required fields.
         tid = secrets.token_hex(4)  # Generates hexadecimal TID.
         newTeacher = prettify(schemas.TeacherReturn(**newTeacher.dict(), tid=tid))
@@ -375,12 +373,12 @@ def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
 # def addAbsence(db, absence: schemas.AbsenceCreate, date: datetime = datetime.today().date()) -> models.Absence:
 def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     if (
-        absence.teacher.first != None
-        and absence.teacher.last != None
-        and absence.teacher.school != None
+        absence.teacher.first is not None
+        and absence.teacher.last is not None
+        and absence.teacher.school is not None
     ):
         teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
-    if teacher == None:
+    if teacher is None:
         teacher = addTeacher(db, absence.teacher)
     absenceModel = models.Absence(
         date=absence.date, tid=teacher.tid, note=absence.note, length=absence.length
@@ -392,7 +390,7 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
 
 
 def addSession(db, newSession: schemas.SessionCreate) -> models.UserSession:
-    if newSession.uid != None:  # Checks for required fields
+    if newSession.uid is not None:  # Checks for required fields
         sessions = getSessionList(db, schemas.UserReturn(uid=newSession.uid))
         if len(sessions) >= 6:
             oldestSession = min(sessions, key=lambda t: t.last_accessed)
@@ -410,7 +408,7 @@ def addSession(db, newSession: schemas.SessionCreate) -> models.UserSession:
 
 
 def removeSession(db, session: schemas.SessionReturn) -> bool:
-    if session.sid != None and session.uid != None:
+    if session.sid is not None and session.uid is not None:
         db.query(models.UserSession).filter(
             models.UserSession.uid == session.uid, models.UserSession.sid == session.sid
         ).delete()
@@ -422,7 +420,7 @@ def removeSession(db, session: schemas.SessionReturn) -> bool:
 
 
 def removeUser(db, user: schemas.UserReturn) -> bool:
-    if user.uid != None:  # Checks for required fields.
+    if user.uid is not None:  # Checks for required fields.
         # self.removeClassesByUser(user) # Removes all of a user's classes.
         db.query(models.User).filter(
             models.User.uid == user.uid
@@ -436,7 +434,7 @@ def removeUser(db, user: schemas.UserReturn) -> bool:
 
 def removeClass(db, cls: schemas.Class) -> bool:
     if (
-        cls.tid != None and cls.uid != None and cls.block != None
+        cls.tid is not None and cls.uid is not None and cls.block is not None
     ):  # Checks for required fields.
         modelClass = models.Class(**cls.dict())  # Builds model.
         db.delete(modelClass)  # Removes it.
@@ -466,7 +464,7 @@ def removeClass(db, cls: schemas.Class) -> bool:
 def removeSpecialDay(db, date: date) -> bool:
     logger.info(f"REMOVE special day requested: {date}")
     try:
-        db.query(models.SpecialDay).filter(models.SpecialDay.date == date).delete()
+        db.query(models.SpecialDays).filter(models.SpecialDays.date == date).delete()
     except Exception as e:
         logger.error(f"REMOVE special day failed: {e}")
         return False
@@ -505,13 +503,13 @@ def removeAbsencesByDate(db, date: datetime) -> bool:
 
 
 def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> bool:
-    if user.school == None:
+    if user.school is None:
         user = getUser(db, user)
-        if user.school == None:
+        if user.school is None:
             logger.info("UPDATE Schedule FAILED: " + user.uid + " has no school.")
             return False
 
-    if user.uid != None:
+    if user.uid is not None:
         removeClassesByUser(db, user)  # Removes all old classes.
         logger.info(
             "REMOVED all classes for UID: "
@@ -519,7 +517,7 @@ def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> 
             + " | Operation for updateSchedule."
         )
         for cls in schedule:
-            if cls[1] != None:
+            if cls[1] is not None:
                 for teacher in cls[
                     1
                 ]:  # This loops through all the teachers for a given block.
@@ -529,7 +527,7 @@ def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> 
                             first=teacher.first, last=teacher.last, school=user.school
                         ),
                     )
-                    if resTeacher == None:
+                    if resTeacher is None:
                         tid = addTeacher(
                             db,
                             schemas.TeacherCreate(
@@ -566,9 +564,7 @@ def updateProfile(db, profile: schemas.UserBase, uid: str) -> models.User:
     return result  # Returns new profile.
 
 
-def updateUserSettings(
-    db, settings: schemas.UserSettings, uid: str
-) -> models.UserSettings:
+def updateUserSettings(db, settings: schemas.UserSettings, uid: str) -> bool:
     db.query(models.UserSettings).where(models.UserSettings.uid == uid).delete()
     settingsModel = models.UserSettings(**settings.dict())
     settingsModel.uid = uid
@@ -607,24 +603,24 @@ def reset(db):
 # Otherwise, they have not onboarded.
 # Returns: Tuple[bool, bool] = (exists in users, exists in classes)
 def checkOnboarded(db, gid: str = None, uid: str = None) -> Tuple[bool, bool]:
-    if gid != None:
+    if gid is not None:
         resUser = getUser(db, schemas.UserReturn(gid=gid))
-    elif uid != None:
+    elif uid is not None:
         resUser = getUser(db, schemas.UserReturn(uid=uid))
     else:
         raise Exception("No gid or uid provided!")
 
     # If user is not in the table, they could not have possibly been onboarded.
-    if resUser == None:
+    if resUser is None:
         logger.info("CHECK User not onboarded: User does not exist in users table.")
-        return (False, False)
+        return False, False
 
     # If user is in the table, check if they have any classes.
     resClasses = getClassesByUser(db, resUser)
 
     if len(resClasses) == 0:  # Lack of classes means they have not been onboarded fully
         logger.info("CHECK User " + resUser.uid + " has not been onboarded.")
-        return (True, False)
+        return True, False
     else:
         logger.info("CHECK User " + resUser.uid + " has been onboarded.")
-        return (True, True)  # If they have classes, they have been onboarded!
+        return True, True  # If they have classes, they have been onboarded!

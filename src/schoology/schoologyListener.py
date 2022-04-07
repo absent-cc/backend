@@ -1,17 +1,12 @@
 from datetime import datetime, timedelta, timezone
 
-from src.dataTypes import models
-from src.dataTypes.schemas import TeacherReturn
-
-from ..dataTypes import structs
-from ..notifications.notify import Notify
-from .absences import AbsencePuller
-from configparser import ConfigParser
-from ..database.database import SessionLocal
-from ..database import crud
-
 from loguru import logger
 
+from .absences import AbsencePuller
+from ..dataTypes import structs
+from ..database import crud
+from ..database.database import SessionLocal
+from ..notifications.notify import Notify
 
 logger.add(
     "logs/{time:YYYY-MM-DD}/schoologyListener.log",
@@ -52,7 +47,7 @@ class SchoologyListener:
             # Get the absences
             absences = self.sc.filterAbsencesSouth(date)
 
-            if absences == None:
+            if absences is None:
                 return False
 
             # Add the absences to the database.
@@ -88,7 +83,7 @@ class SchoologyListener:
             # Get the absences
             absences = self.sc.filterAbsencesNorth(date)
 
-            if absences == None:
+            if absences is None:
                 return False
 
             # Add the absences to the database.
@@ -123,7 +118,7 @@ class SchoologyListener:
         southRes = southRun()
         northRes = northRun()
 
-        if southRes == None or northRes == None:
+        if southRes is None or northRes is None:
             print("South res or North Res is None. That is WRONG!")
 
         print(f"South Res: {southRes}, North Res: {northRes}")

@@ -4,6 +4,7 @@ from typing import Dict, Tuple
 from fuzzywuzzy import fuzz
 
 from ..dataTypes import structs
+from ..dataTypes.structs import Confidence
 
 FUZZY_MATCH_THRESHOLD = 90
 
@@ -93,7 +94,7 @@ class ColumnDetection:
         return False
 
     # Gets the confidences of each column.
-    def columnConfidence(self, column: list) -> Dict[structs.TableColumn, int]:
+    def columnConfidence(self, column: list) -> Confidence:
         confidence = {
             structs.TableColumn.FIRST_NAME: 0,
             structs.TableColumn.LAST_NAME: 0,
