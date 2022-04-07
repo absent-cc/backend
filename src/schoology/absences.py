@@ -154,7 +154,7 @@ class ContentParser:
             objList.append(object)
         return objList
 
-    def deriveTable(update: structs.RawUpdate) -> structs.RawUpdate:
+    def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
         while (
             not (
                 ("position" in update.content[0].lower())
