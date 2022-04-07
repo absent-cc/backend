@@ -269,7 +269,7 @@ class Lunch(BaseModel):
     startTime: time = None
     endTime: time = None
 
-class Lunches(list[Lunch]):
+class Lunches(List[Lunch]):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -283,7 +283,7 @@ class BlockWithTimes(BaseModel):
         from_orm = True
         arbitrary_types_allowed = True
 
-class ScheduleWithTimes(list[BlockWithTimes]):
+class ScheduleWithTimes(List[BlockWithTimes]):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
