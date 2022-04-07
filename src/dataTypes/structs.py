@@ -252,11 +252,11 @@ class ListenerStatus:
         config = configparser.ConfigParser()
         config.read(ListenerStatus.state_path)
 
-        config[school.value]["absences"] = str(
+        config[self.school.value]["absences"] = str(
             date(year=2022, month=3, day=23)
         )  # Set to abSENT launch date (Default date)
 
-        config[school.value]["notifications"] = str(
+        config[self.school.value]["notifications"] = str(
             date(year=2022, month=3, day=23)
         )  # Set to abSENT launch date (Default date)
 

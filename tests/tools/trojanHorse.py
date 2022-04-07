@@ -3,7 +3,7 @@ from src.dataTypes import schemas
 from src.dataTypes.structs import SchoolName
 from src.database import crud
 from src.database.database import SessionLocal
-
+from src.api import accounts
 
 # Static variables that bypass abSENT OAuth system.
 # Meant for testing
