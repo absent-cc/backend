@@ -46,7 +46,7 @@ def init_app():
     absent = FastAPI(
         title="abSENT",
         description=description,
-        version="1.0.0",
+        version="1.1.0",
         terms_of_service="https://absent.cc/terms",
         docs_url=None,
         redoc_url=None,
