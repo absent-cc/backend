@@ -30,12 +30,8 @@ def getUserInfo(
     returnList = []  # List that contains everything
 
     for user in users:
-        schedule: List[models.Class] = crud.getClassesByUser(
-            db, schemas.UserReturn(uid=user.uid)
-        )  # Grab schedule
-        settings: models.UserSettings = crud.getUserSettings(
-            db, schemas.UserReturn(uid=user.uid)
-        )  # Grab settings
+        schedule: List[models.Class] = user.schedule  # Grab schedule
+        settings: models.UserSettings = user.settings[0]  # Grab settings
         onboardedStatus = crud.checkOnboarded(db, uid=user.uid)
 
         user = schemas.UserInfoReturn(  # Map info to userInto object

@@ -10,32 +10,25 @@ from ..dataTypes import schemas, models, structs
 from ..dataTypes.models import Class
 from ..utils.prettifyTeacherName import prettify
 
-logger.add(
-    "logs/{time:YYYY-MM-DD}/crud.log",
-    format="{time} {level} {message}",
-    filter="xxlimited",
-    level="INFO",
-)
-
 
 def getUser(db, user: schemas.UserReturn) -> models.User:
     if user.uid is not None:
-        logger.info("GET User looked up by UID: " + user.uid)  # Logs lookup.
+        logger.info(f"GET: User looked up by UID: {user.uid}")  # Logs lookup.
         return (
             db.query(models.User).filter(models.User.uid == user.uid).first()
         )  # Grabs the first entry of the model User that matches UID.
     if user.gid is not None:
-        logger.info("GET User looked up by GID: " + user.gid)  # Logs lookup.
+        logger.info(f"GET: User looked up by GID: {user.gid}")  # Logs lookup.
         return (
             db.query(models.User).filter(models.User.gid == user.gid).first()
         )  # Grabs the first entry of the model User that matches GID.
-    logger.info("GET User FAILED: " + user.uid + " " + user.gid)
+    logger.error(f"GET: User lookup failed: {user.uid} {user.gid}")
     return None
 
 
 def getTeacher(db, teacher: schemas.TeacherReturn) -> models.Teacher:
     if teacher.tid is not None:
-        logger.info("GET Teacher looked up by TID: " + teacher.tid)  # Logs lookup.
+        logger.info(f"GET: Teacher looked up by TID: {teacher.tid}")  # Logs lookup.
         return (
             db.query(models.Teacher).filter(models.Teacher.tid == teacher.tid).first()
         )  # Looks up teacher by TID if available, grabs the first match.
@@ -45,12 +38,7 @@ def getTeacher(db, teacher: schemas.TeacherReturn) -> models.Teacher:
         and teacher.school is not None
     ):  # Does so below by name and school, these entries are treated as a primary key by our DB.
         logger.info(
-            "GET Teacher looked up by Name: "
-            + teacher.first
-            + " "
-            + teacher.last
-            + " "
-            + teacher.school
+            f"GET: Teacher looked up by name: {teacher.first} {teacher.last} {teacher.school}"
         )  # Logs lookup.
         return (
             db.query(models.Teacher)
@@ -60,24 +48,10 @@ def getTeacher(db, teacher: schemas.TeacherReturn) -> models.Teacher:
             )
             .first()
         )
-    logger.info(
-        "GET Teacher FAILED: "
-        + teacher.tid
-        + " "
-        + teacher.first
-        + " "
-        + teacher.last
-        + " "
-        + teacher.school
+    logger.error(
+        f"GET: Teacher lookup failed: {teacher.first} {teacher.last} {teacher.school}"
     )
     return None
-
-
-def getAllTeachersBySchool(db, school: structs.SchoolName) -> List[models.Teacher]:
-    if school is not None:
-        logger.info("GET teachers by school requested: " + school)
-        return db.query(models.Teacher).filter(models.Teacher.school == school).all()
-    return []
 
 
 def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
@@ -97,7 +71,7 @@ def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
         db.commit()
 
         logger.info(
-            "GET Session looked up: " + session.sid + "." + session.uid
+            f"GET: Session looked up: {session.sid}.{session.uid}"
         )  # Logs the lookup. This essentially behaves as an access log as the accounts code calls this to verify sessions.
         return (
             db.query(models.UserSession)
@@ -107,22 +81,17 @@ def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
             )
             .first()
         )  # Returns session information.
-    logger.info("GET Session FAILED: " + session.sid + "." + session.uid)
+    logger.error(f"GET: Session lookup failed: + {session.sid}.{session.uid}")
     return None
 
 
 def getAllUsers(db) -> List[models.User]:
-    logger.info("GET all users requested")
+    logger.info("GET: Looked up all users")
     return db.query(models.User).all()
 
 
-def getUsersBySchool(db, school: structs.SchoolName):
-    logger.info("GET users by school requested: " + school)
-    return db.query(models.User).filter(models.User.school == school).all()
-
-
 def getUsersByName(db, first, last) -> List[models.User]:
-    logger.info("GET users by name requested: " + first + " " + last)
+    logger.info(f"GET: Looked up user by name: {first} {last}")
     return (
         db.query(models.User)
         .filter(models.User.first == first.lower(), models.User.last == last.lower())
@@ -131,7 +100,7 @@ def getUsersByName(db, first, last) -> List[models.User]:
 
 
 def getUserCount(db) -> int:
-    logger.info("GET user count requested")
+    logger.info(f"GET: Looked up user count")
     return db.query(models.User).count()
 
 
@@ -142,57 +111,9 @@ def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
             .filter(models.UserSession.uid == user.uid)
             .all()
         )
-        logger.info("GET session list requested for user: " + user.uid)
+        logger.info(f"GET: Session list requested for user: {user.uid}")
         return sessions
-    logger.info("GET session list FAILED for user: " + user.uid)
-    return None
-
-
-def getClassesByTeacher(
-    db, teacher: schemas.TeacherReturn, block: structs.SchoolBlock
-) -> List[models.Class]:
-    if teacher.tid is not None:
-        logger.info("GET classes by teacher requested: " + teacher.tid + " " + block)
-        return (
-            db.query(models.Class)
-            .filter(models.Class.tid == teacher.tid, models.Class.block == block)
-            .all()
-        )
-    logger.info("GET classes by teacher FAILED: " + teacher.tid + " " + block)
-    return None
-
-
-def getClassesByTeacherForDay(
-    db, teacher: schemas.TeacherReturn, day: int
-) -> List[List[Class]]:
-    if teacher.tid is not None:
-        returnClasses = []
-        # for block in structs.SchoolBlocksOnDay()[day]:
-        for block in structs.SchoolBlocksOnDayWithTimes()[day].blocks():
-            classes = getClassesByTeacher(db, teacher, block)
-            if classes is not None:
-                returnClasses.append(classes)
-        logger.info("GET classes by teacher requested: " + teacher.tid + " " + str(day))
-        return returnClasses
-    logger.info("GET classes by teacher FAILED: " + teacher.tid + " " + str(day))
-    return None
-
-
-def getClassesByTeacherForDate(
-    db, teacher: schemas.TeacherReturn, date: date
-) -> List[List[Class]]:
-    if teacher.tid is not None:
-        returnClasses = []
-        blocks: structs.ScheduleWithTimes = getSchoolDaySchedule(db, date)
-        for block in blocks.blocks():
-            classes = getClassesByTeacher(db, teacher, block)
-            if classes is not None:
-                returnClasses.append(classes)
-        logger.info(
-            "GET classes by teacher requested: " + teacher.tid + " " + str(date)
-        )
-        return returnClasses
-    logger.info("GET classes by teacher FAILED: " + teacher.tid + " " + str(date))
+    logger.error(f"GET: Session list lookup failed for user: {user.uid}")
     return None
 
 
@@ -209,48 +130,48 @@ def getAbsenceList(
             .all()
         )
         logger.info(
-            "GET absence list requested by school: " + school + " " + str(searchDate)
+            f"GET: Absence list requested for school: {school} on: {str(searchDate)}"
         )
         return absences
     absences = db.query(models.Absence).filter(models.Absence.date == searchDate).all()
-    logger.info("GET absence list requested in general: " + str(searchDate))
+    logger.info(f"GET: Absence list requested for + {str(searchDate)}")
     return absences
 
 
 def getAbsenceCount(db) -> int:
-    logger.info("GET absence count requested")
+    logger.info("GET: Absence count requested")
     return db.query(models.Absence).count()
 
 
 def getClassesByUser(db, user: schemas.UserReturn) -> List[models.Class]:
     if user.uid is not None:
-        logger.info("GET classes by user requested: " + user.uid)
+        logger.info(f"GET: User class list requested: {user.uid}")
         return (
             db.query(models.Class).filter(models.Class.uid == user.uid).all()
         )  # Returns all entries in classes table for a given user.
-    logger.info("GET classes by user FAILED: " + user.uid)
+    logger.error(f"GET: User class list lookup failed: {user.uid}")
     return None
 
 
 def getClassesCount(db) -> int:
-    logger.info("GET classes count requested")
+    logger.info("GET: Class count requested.")
     return db.query(models.Class).count()
 
 
 def getUserSettings(db, user: schemas.UserReturn) -> models.UserSettings:
     if user.uid is not None:
-        logger.info("GET user settings requested: " + user.uid)
+        logger.info(f"GET: User settings requested: {user.uid}")
         return (
             db.query(models.UserSettings)
             .filter(models.UserSettings.uid == user.uid)
             .first()
         )
-    logger.info("GET user settings FAILED: " + user.uid)
+    logger.error(f"GET: User settings lookup failed: {user.uid}")
     return None
 
 
 def getAlwaysNotify(db, school: structs.SchoolName) -> models.User:
-    logger.info("GET always notify people")
+    logger.info("GET: Looked up users to always notify")
     return (
         db.query(models.UserSettings)
         .join(models.User)
@@ -268,27 +189,22 @@ def peekAbsence(db, date: datetime) -> tuple:
         .filter(models.Absence.date == datetime.today().date())
         .first()
     )
-    logger.info(f"PEEK Absence requested: {query.date}")
+    logger.info(f"PEEK: First absence requested: {query.date}")
     return query
 
 
-def getAllAbsences(db) -> List[models.Absence]:
-    logger.info("GET all absences requested")
-    return db.query(models.Absence).all()
-
-
 def getAbsencesCount(db) -> int:
-    logger.info("GET absences count requested")
-    return len(getAllAbsences(db))
+    logger.info("GET: Absence count requested")
+    return db.query(models.Absence).count()
 
 
 def getSpecialDay(db, date: date) -> models.SpecialDays:
-    logger.info(f"GET special day requested: {date}")
+    logger.info(f"GET: Special day lookup requested: {date}")
     return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
 
 
 def getSchoolDaySchedule(db, date: date) -> structs.ScheduleWithTimes:
-    logger.info("GET school day schedule requested: " + str(date))
+    logger.info(f"GET: School day schedule requested: {str(date)}")
     specialDayCheck: models.SpecialDays = getSpecialDay(db, date)
     if specialDayCheck is not None:
         return specialDayCheck.schedule
@@ -296,7 +212,7 @@ def getSchoolDaySchedule(db, date: date) -> structs.ScheduleWithTimes:
 
 
 def addSpecialDay(db, specialDay: schemas.SpecialDay) -> bool:
-    logger.info(f"ADD special day requested: {specialDay.date}")
+    logger.info(f"ADD: Added special day: {specialDay.date}")
     try:
         db.add(
             models.SpecialDays(
@@ -307,7 +223,7 @@ def addSpecialDay(db, specialDay: schemas.SpecialDay) -> bool:
             )
         )
     except Exception as e:
-        logger.error(f"ADD special day failed: {e}")
+        logger.error(f"ADD: Special day addition failed: {e}")
         return False
     db.commit()
     return True
@@ -322,10 +238,10 @@ def addUser(db, user: schemas.UserCreate) -> models.User:
         db.add(userModel)
         db.commit()
         logger.info(
-            "ADD User added by GID: " + user.gid + "Created UID:" + uid
+            f"ADD: User added by GID: {user.gid} Created UID: {uid}"
         )  # Logs the addition.
         return userModel  # Returns user details, import as many details are generated here.
-    logger.info("ADD User add FAILED: " + user.gid)
+    logger.error(f"ADD: User addition failed: {user.gid}")
     return None
 
 
@@ -340,11 +256,11 @@ def addClass(db, newClass: schemas.Class) -> models.Class:
         db.add(classModel)  # Adds it.
         db.commit()
         logger.info(
-            f"ADD Class: {cid} | TID: {newClass.tid} UID: {newClass.uid} block: {newClass.block}"
+            f"ADD: Class added: {cid} | TID: {newClass.tid} UID: {newClass.uid} Block: {newClass.block}"
         )  # Logs the addition.
         return classModel  # Returns class details.
-    logger.info(
-        f"ADD Class FAILED | TID: {newClass.tid} UID: {newClass.uid} block: {newClass.block}"
+    logger.error(
+        f"ADD: Class addition failed | TID: {newClass.tid} UID: {newClass.uid} Block: {newClass.block}"
     )
     return None
 
@@ -361,16 +277,15 @@ def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
         db.add(teacherModel)  # Adds teacher.
         db.commit()
         logger.info(
-            f"ADD Teacher: {tid} | First: {newTeacher.first} Last: {newTeacher.last} School: {newTeacher.school}"
+            f"ADD: Teacher added: {tid} | First: {newTeacher.first} Last: {newTeacher.last} School: {newTeacher.school}"
         )  # Logs the addition.
         return teacherModel
-    logger.info(
-        f"ADD Teacher FAILED | First: {newTeacher.first} Last: {newTeacher.last} School: {newTeacher.school}"
+    logger.error(
+        f"ADD: Teacher addition failed | First: {newTeacher.first} Last: {newTeacher.last} School: {newTeacher.school}"
     )
     return None
 
 
-# def addAbsence(db, absence: schemas.AbsenceCreate, date: datetime = datetime.today().date()) -> models.Absence:
 def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     if (
         absence.teacher.first is not None
@@ -385,7 +300,7 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     )
     db.add(absenceModel)
     db.commit()
-    logger.info(f"ADD Absence: {absence.date} | TID: {teacher.tid}")
+    logger.info(f"ADD: Absence added: {absence.date} | TID: {teacher.tid}")
     return absenceModel
 
 
@@ -401,9 +316,9 @@ def addSession(db, newSession: schemas.SessionCreate) -> models.UserSession:
         )  # Creates object including timestamp, makes model.
         db.add(sessionModel)  # Adds model.
         db.commit()
-        logger.info("ADD Session: " + sid + "." + newSession.uid)  # Logs actions.
+        logger.info(f"ADD: Session added {sid}.{newSession.uid}")  # Logs actions.
         return sessionModel
-    logger.info("ADD Session FAILED: " + newSession.uid)
+    logger.error(f"ADD: Session addition failed: {newSession.uid}")
     return None
 
 
@@ -413,9 +328,9 @@ def removeSession(db, session: schemas.SessionReturn) -> bool:
             models.UserSession.uid == session.uid, models.UserSession.sid == session.sid
         ).delete()
         db.commit()
-        logger.info("REMOVE Session: " + session.sid + "." + session.uid)
+        logger.info(f"REMOVE: Removed session: {session.sid}.{session.uid}")
         return True
-    logger.info("REMOVE Session FAILED: " + session.sid)
+    logger.error(f"REMOVE: Session removal failed: {session.sid}")
     return False
 
 
@@ -426,9 +341,9 @@ def removeUser(db, user: schemas.UserReturn) -> bool:
             models.User.uid == user.uid
         ).delete()  # Removes the user.
         db.commit()
-        logger.info("REMOVE Student: " + user.uid)  # Logs the action.
+        logger.info(f"REMOVE: Student removed: {user.uid}")  # Logs the action.
         return True
-    logger.info("REMOVE Student: " + user.uid)
+    logger.error(f"REMOVE: Student removal failed: {user.uid}")
     return False
 
 
@@ -440,33 +355,21 @@ def removeClass(db, cls: schemas.Class) -> bool:
         db.delete(modelClass)  # Removes it.
         db.commit()
         logger.info(
-            "REMOVE Class: "
-            + "TID:"
-            + cls.tid
-            + " UID:"
-            + cls.uid
-            + " block:"
-            + cls.block
+            f"REMOVE: Class removed: TID: {cls.tid} UID: {cls.uid} Block: {cls.block}"
         )  # Logs the action.
         return True
-    logger.info(
-        "REMOVE Class FAILED: "
-        + "TID:"
-        + cls.tid
-        + " UID:"
-        + cls.uid
-        + " block:"
-        + cls.block
+    logger.error(
+        f"REMOVE: Class removal failed: TID: {cls.tid} UID: {cls.uid} Block: {cls.block}"
     )
     return False
 
 
 def removeSpecialDay(db, date: date) -> bool:
-    logger.info(f"REMOVE special day requested: {date}")
+    logger.info(f"REMOVE: Special day removed: {date}")
     try:
         db.query(models.SpecialDays).filter(models.SpecialDays.date == date).delete()
     except Exception as e:
-        logger.error(f"REMOVE special day failed: {e}")
+        logger.error(f"REMOVE: Special day removal failed: {e}")
         return False
     return True
 
@@ -480,17 +383,11 @@ def removeClassesByUser(
     for cls in classes:
         db.delete(cls)  # Deletes them all.
         logger.info(
-            "REMOVING Class: "
-            + "TID:"
-            + cls.tid
-            + " UID:"
-            + cls.uid
-            + " block:"
-            + cls.block
+            f"REMOVE: Class removed: TID: {cls.tid} UID: {cls.uid} Block: {cls.block}"
         )
     db.commit()
     logger.info(
-        "REMOVE End of removing all classes for UID:" + user.uid
+        f"REMOVE: Finished removing all classes for UID: {user.uid}"
     )  # Logs the action.
     return True
 
@@ -498,7 +395,7 @@ def removeClassesByUser(
 def removeAbsencesByDate(db, date: datetime) -> bool:
     db.query(models.Absence).filter(models.Absence.date == date).delete()
     db.commit()
-    logger.info("REMOVE Absences for date: " + str(date))
+    logger.info(f"REMOVE: Removed absences for date: {str(date)}")
     return True
 
 
@@ -506,16 +403,11 @@ def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> 
     if user.school is None:
         user = getUser(db, user)
         if user.school is None:
-            logger.info("UPDATE Schedule FAILED: " + user.uid + " has no school.")
+            logger.error(f"UPDATE: Updating schedule failed: {user.uid} has no school.")
             return False
 
     if user.uid is not None:
         removeClassesByUser(db, user)  # Removes all old classes.
-        logger.info(
-            "REMOVED all classes for UID: "
-            + user.uid
-            + " | Operation for updateSchedule."
-        )
         for cls in schedule:
             if cls[1] is not None:
                 for teacher in cls[
@@ -546,9 +438,9 @@ def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> 
                             uid=user.uid,
                         ),
                     )  # Creates class entry.
-        logger.info("UPDATE Schedule succesful for UID: " + user.uid)
+        logger.info(f"UPDATE: Schedule update successful for UID: {user.uid}")
         return True
-    logger.info("UPDATE Schedule returned FALSE. No UID provided.")
+    logger.error("UPDATE: Schedule update failed. No UID provided.")
     return False
 
 
@@ -560,7 +452,7 @@ def updateProfile(db, profile: schemas.UserBase, uid: str) -> models.User:
         .execution_options(synchronize_session="fetch")
     )
     db.commit()
-    logger.info("UPDATE Profile: " + uid)
+    logger.info(f"UPDATE: Profile updated: {uid}")
     return result  # Returns new profile.
 
 
@@ -570,7 +462,7 @@ def updateUserSettings(db, settings: schemas.UserSettings, uid: str) -> bool:
     settingsModel.uid = uid
     db.add(settingsModel)
     db.commit()
-    logger.info("UPDATE UserSettings: " + uid)
+    logger.info(f"UPDATE: User settings updated: {uid}")
     return True
 
 
@@ -582,7 +474,7 @@ def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserS
         .execution_options(synchronize_session="fetch")
     )
     db.commit()
-    logger.info("UPDATE FCM Token: " + uid + "." + sid)
+    logger.info(f"UPDATE: FCM Token: {sid}.{uid}")
     return result
 
 
@@ -612,15 +504,21 @@ def checkOnboarded(db, gid: str = None, uid: str = None) -> Tuple[bool, bool]:
 
     # If user is not in the table, they could not have possibly been onboarded.
     if resUser is None:
-        logger.info("CHECK User not onboarded: User does not exist in users table.")
+        logger.info(
+            f"CHECK: Checked onboarding for: {uid} {gid}. User does not exist in users table."
+        )
         return False, False
 
     # If user is in the table, check if they have any classes.
     resClasses = getClassesByUser(db, resUser)
 
     if len(resClasses) == 0:  # Lack of classes means they have not been onboarded fully
-        logger.info("CHECK User " + resUser.uid + " has not been onboarded.")
+        logger.info(
+            f"CHECK: Checked onboarding for: {resUser.uid}. User has not been onboarded."
+        )
         return True, False
     else:
-        logger.info("CHECK User " + resUser.uid + " has been onboarded.")
+        logger.info(
+            f"CHECK: Checked onboarding for: {resUser.uid}. User has been onboarded."
+        )
         return True, True  # If they have classes, they have been onboarded!
