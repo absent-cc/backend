@@ -248,7 +248,7 @@ class ListenerStatus:
             config.write(config_file)
 
     @staticmethod
-    def resetState():
+    def resetState(school: SchoolName):
         config = configparser.ConfigParser()
         config.read(ListenerStatus.state_path)
 
