@@ -157,7 +157,7 @@ class SessionCreate(BaseModel):
     uid: Optional[str] = None
 
     @validator("uid")
-    def checkUIDLength(self, v):
+    def checkUIDLength(cls, v):
         try:
             UUID(v)
             return v
@@ -170,7 +170,7 @@ class SessionReturn(SessionCreate):
     last_accessed: Optional[datetime] = None
 
     @validator("sid")
-    def checkSIDLength(self, v):
+    def checkSIDLength(cls, v):
         if len(v) != 16:
             raise ValueError("SID Must be 17 characters long.")
         return v
@@ -231,7 +231,7 @@ class PartialName(BaseModel):
     school: structs.SchoolName
 
     @validator("name")
-    def checkPartialName(self, v):
+    def checkPartialName(cls, v):
         if (len(v)) < 3:
             raise ValueError("Phrase too short.")
         return v
