@@ -164,7 +164,7 @@ def getClassesByTeacher(
 
 def getClassesByTeacherForDay(
     db, teacher: schemas.TeacherReturn, day: int
-) -> list[list[Class]]:
+) -> List[List[Class]]:
     if teacher.tid is not None:
         returnClasses = []
         # for block in structs.SchoolBlocksOnDay()[day]:
@@ -180,7 +180,7 @@ def getClassesByTeacherForDay(
 
 def getClassesByTeacherForDate(
     db, teacher: schemas.TeacherReturn, date: date
-) -> list[list[Class]]:
+) -> List[List[Class]]:
     if teacher.tid is not None:
         returnClasses = []
         blocks: structs.ScheduleWithTimes = getSchoolDaySchedule(db, date)
