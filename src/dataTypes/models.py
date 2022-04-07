@@ -1,12 +1,26 @@
 from idna import valid_contextj
-from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint, TIMESTAMP, Date, String, collate, Boolean, Enum, PickleType
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+    TIMESTAMP,
+    Date,
+    String,
+    collate,
+    Boolean,
+    Enum,
+    PickleType,
+)
 from sqlalchemy.orm import relationship, validates
 from . import structs
 
 if "alembic.env" in __name__:
-    from ..database.database import Base # CHANGE THIS TO ..database for ALEMBIC
+    from ..database.database import Base  # CHANGE THIS TO ..database for ALEMBIC
 else:
-    from ..database.database import Base # CHANGE THIS TO ..database for ALEMBIC
+    from ..database.database import Base  # CHANGE THIS TO ..database for ALEMBIC
+
 
 class User(Base):
     __tablename__ = "users"
@@ -21,55 +35,63 @@ class User(Base):
     sessions = relationship("UserSession", back_populates="user")
     settings = relationship("UserSettings", back_populates="user")
 
+
 class Teacher(Base):
     __tablename__ = "teachers"
     tid = Column(String(8), primary_key=True)
-    first = Column(String(255, collation='nocase'))
-    last = Column(String(255, collation='nocase'))
+    first = Column(String(255, collation="nocase"))
+    last = Column(String(255, collation="nocase"))
     school = Column(Enum(structs.SchoolName))
-    
+
     classes = relationship("Class", back_populates="teacher")
-    __table_args__ = (UniqueConstraint('first', 'last', 'school'),)
+    __table_args__ = (UniqueConstraint("first", "last", "school"),)
+
 
 class UserSession(Base):
     __tablename__ = "sessions"
     sid = Column(String(16), primary_key=True)
-    uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'))
+    uid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"))
     last_accessed = Column(TIMESTAMP)
     fcm_token = Column(String(255))
     fcm_timestamp = Column(TIMESTAMP)
 
     user = relationship("User")
-    __table_args__ = (UniqueConstraint('sid', 'uid'),)
-    
+    __table_args__ = (UniqueConstraint("sid", "uid"),)
+
+
 class Class(Base):
     __tablename__ = "classes"
     cid = Column(String(8), primary_key=True)
-    tid = Column(String(8), ForeignKey(Teacher.tid, ondelete='CASCADE'))
+    tid = Column(String(8), ForeignKey(Teacher.tid, ondelete="CASCADE"))
     block = Column(Enum(structs.SchoolBlock))
-    uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'))
+    uid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"))
 
     teacher = relationship("Teacher")
     user = relationship("User")
-    __table_args__ = (UniqueConstraint('tid', 'block', 'uid'),)
+    __table_args__ = (UniqueConstraint("tid", "block", "uid"),)
+
 
 class Absence(Base):
     __tablename__ = "absences"
-    tid = Column(String(8), ForeignKey(Teacher.tid, ondelete='CASCADE'), primary_key=True)
+    tid = Column(
+        String(8), ForeignKey(Teacher.tid, ondelete="CASCADE"), primary_key=True
+    )
     length = Column(String(255))
     note = Column(String(255))
     date = Column(Date, primary_key=True)
 
     teacher = relationship("Teacher")
 
+
 class UserSettings(Base):
     __tablename__ = "settings"
-    uid = Column(String(36), ForeignKey(User.uid, ondelete='CASCADE'), primary_key=True)
+    uid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"), primary_key=True)
     showFreeAsAbsent = Column(Boolean)
     notify = Column(Boolean)
     notifyWhenNone = Column(Boolean)
-    
+
     user = relationship("User")
+
 
 class SpecialDays(Base):
     __tablename__ = "special_days"
@@ -78,17 +100,18 @@ class SpecialDays(Base):
     schedule = Column(PickleType)
     note = Column(String(255))
 
-    @validates('schedule')
+    @validates("schedule")
     def validate_schedule_type(self, key, value):
         if type(value) != structs.ScheduleWithTimes:
-            raise ValueError('Schedule must be of type ScheduleWithTimes')
+            raise ValueError("Schedule must be of type ScheduleWithTimes")
         return value
-        
+
+
 class Aliases(Base):
     __tablename__ = "aliases"
     aid = Column(String(8), primary_key=True)
     first = Column(String(255), primary_key=True)
     last = Column(String(255), primary_key=True)
-    tid = Column(String(36), ForeignKey(Teacher.tid, ondelete='CASCADE'))
+    tid = Column(String(36), ForeignKey(Teacher.tid, ondelete="CASCADE"))
 
     # teacher = relationship("Teacher", back_populates="aliases")

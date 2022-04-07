@@ -3,6 +3,7 @@ from . import crud
 from .database import SessionLocal
 from ..dataTypes import structs, schemas
 from datetime import date, time
+
 db = SessionLocal()
 
 # specialDay = structs.SpecialDay(
@@ -18,7 +19,7 @@ db = SessionLocal()
 # print(returnVal.schedule.blocks())
 
 # for day in structs.SchoolBlocksOnDayWithTimes().values():
-    
+
 
 # if __name__ == "__main__":
 #     print(structs.SchoolBlocksOnDayWithTimes())

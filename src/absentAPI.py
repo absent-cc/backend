@@ -16,6 +16,7 @@ LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
 WORKERS = int(os.environ.get("GUNICORN_WORKERS", "6"))
 
+
 class InterceptHandler(logging.Handler):
     def emit(self, record):
         # Get corresponding Loguru level if it exists
@@ -30,7 +31,10 @@ class InterceptHandler(logging.Handler):
             frame = frame.f_back
             depth += 1
 
-        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
+
 
 class StubbedGunicornLogger(Logger):
     def setup(self, cfg):
@@ -42,6 +46,7 @@ class StubbedGunicornLogger(Logger):
         self.error_logger.setLevel(LOG_LEVEL)
         self.access_logger.setLevel(LOG_LEVEL)
 
+
 class StandaloneApplication(BaseApplication):
     """Our Gunicorn application."""
 
@@ -52,7 +57,8 @@ class StandaloneApplication(BaseApplication):
 
     def load_config(self):
         config = {
-            key: value for key, value in self.options.items()
+            key: value
+            for key, value in self.options.items()
             if key in self.cfg.settings and value is not None
         }
         for key, value in config.items():
@@ -62,7 +68,7 @@ class StandaloneApplication(BaseApplication):
         return self.application
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     intercept_handler = InterceptHandler()
     logging.root.setLevel(LOG_LEVEL)
 
@@ -82,12 +88,40 @@ if __name__ == '__main__':
 
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": JSON_LOGS}])
     # Add some basic loggers.
-    logger.add("logs/{time:YYYY-MM-DD}/uvicorn.log", enqueue=True, filter="uvicorn", rotation="00:00", retention=12, compression="tar.gz")
-    logger.add("logs/{time:YYYY-MM-DD}/gunicorn.log", enqueue=True, filter="gunicorn", rotation="00:00", retention=12, compression="tar.gz")
-    logger.add("logs/{time:YYYY-MM-DD}/database.log", enqueue=True, filter="database", rotation="00:00", retention=12, compression="tar.gz")
-    logger.add("logs/{time:YYYY-MM-DD}/accounts.log", enqueue=True, filter="api.accounts", rotation="00:00", retention=12, compression="tar.gz")
+    logger.add(
+        "logs/{time:YYYY-MM-DD}/uvicorn.log",
+        enqueue=True,
+        filter="uvicorn",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
+    logger.add(
+        "logs/{time:YYYY-MM-DD}/gunicorn.log",
+        enqueue=True,
+        filter="gunicorn",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
+    logger.add(
+        "logs/{time:YYYY-MM-DD}/database.log",
+        enqueue=True,
+        filter="database",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
+    logger.add(
+        "logs/{time:YYYY-MM-DD}/accounts.log",
+        enqueue=True,
+        filter="api.accounts",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
     # Add a general stdout logger.
-    logger.add("logs/latest.log", rotation="4 hours", retention=1)   
+    logger.add("logs/latest.log", rotation="4 hours", retention=1)
 
     options = {
         "bind": "0.0.0.0:8000",
@@ -95,7 +129,7 @@ if __name__ == '__main__':
         "accesslog": "-",
         "errorlog": "-",
         "worker_class": "uvicorn.workers.UvicornWorker",
-        "logger_class": StubbedGunicornLogger
+        "logger_class": StubbedGunicornLogger,
     }
 
     print("Go to: http://localhost:8000/docs")

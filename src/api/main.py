@@ -36,9 +36,9 @@ tags_metadata = [
     {
         "name": "Admin",
         "description": "Endpoints for administration of the service, such as sending announcements and accessing private information.",
-    }
-
+    },
 ]
+
 
 def init_app():
     # Initalize the API
@@ -47,7 +47,7 @@ def init_app():
         description=description,
         version="1.0.0",
         terms_of_service="https://absent.cc/terms",
-        docs_url=None, 
+        docs_url=None,
         redoc_url=None,
         contact={
             "name": "abSENT",
@@ -58,7 +58,7 @@ def init_app():
             "name": "GNU Affero General Public License v3.0",
             "url": "https://www.gnu.org/licenses/agpl-3.0.html",
         },
-        openapi_tags=tags_metadata
+        openapi_tags=tags_metadata,
     )
 
     @absent.middleware("http")
@@ -86,10 +86,10 @@ def init_app():
             swagger_css_url="/static/swagger-ui.css",
         )
 
-    absent.include_router(v1.router) # Include routers for V1 API
+    absent.include_router(v1.router)  # Include routers for V1 API
 
     return absent
 
+
 if __name__ == "__main__":
     absentApp = init_app()
-

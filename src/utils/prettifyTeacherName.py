@@ -5,8 +5,10 @@ from typing import List
 from src.database.database import SessionLocal
 
 splitTable = "\s|-|_|\."
+
+
 def prettify(teacher: TeacherReturn) -> TeacherReturn:
-    
+
     first_split = re.split(splitTable, teacher.first.lower())
     last_split = re.split(splitTable, teacher.last.lower())
 
@@ -27,11 +29,9 @@ def prettify(teacher: TeacherReturn) -> TeacherReturn:
     prettyLast = prettyCompile(last_split, last_delim)
 
     return TeacherReturn(
-        tid=teacher.tid,
-        first=prettyFirst,
-        last=prettyLast,
-        school=teacher.school
+        tid=teacher.tid, first=prettyFirst, last=prettyLast, school=teacher.school
     )
+
 
 if __name__ == "__main__":
     # print(prettify(TeacherBase(first="jimmy-john", last="smith-jr")))
@@ -42,11 +42,16 @@ if __name__ == "__main__":
     import datetime
 
     db = SessionLocal()
-    
+
     school = structs.SchoolName.NEWTON_SOUTH
     date = datetime.date.today()
 
     list: List[models.Absence] = crud.getAbsenceList(db, date, school)
-    returnAbsences: List[schemas.AbsenceReturn] = [ schemas.AbsenceReturn(length=absence.length, teacher=prettify(absence.teacher), note=absence.note) for absence in list ]
+    returnAbsences: List[schemas.AbsenceReturn] = [
+        schemas.AbsenceReturn(
+            length=absence.length, teacher=prettify(absence.teacher), note=absence.note
+        )
+        for absence in list
+    ]
 
-    print(returnAbsences) 
+    print(returnAbsences)
