@@ -89,7 +89,7 @@ if __name__ == "__main__":
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": JSON_LOGS}])
     # Add some basic loggers.
     logger.add(
-        "logs/{time:YYYY-MM-DD}/uvicorn.log",
+        "logs/api/{time:YYYY-MM-DD}/uvicorn.log",
         enqueue=True,
         filter="uvicorn",
         rotation="00:00",
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         compression="tar.gz",
     )
     logger.add(
-        "logs/{time:YYYY-MM-DD}/gunicorn.log",
+        "logs/api/{time:YYYY-MM-DD}/gunicorn.log",
         enqueue=True,
         filter="gunicorn",
         rotation="00:00",
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         compression="tar.gz",
     )
     logger.add(
-        "logs/{time:YYYY-MM-DD}/database.log",
+        "logs/api/{time:YYYY-MM-DD}/database.log",
         enqueue=True,
         filter="database",
         rotation="00:00",
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         compression="tar.gz",
     )
     logger.add(
-        "logs/{time:YYYY-MM-DD}/accounts.log",
+        "logs/api/{time:YYYY-MM-DD}/accounts.log",
         enqueue=True,
         filter="api.accounts",
         rotation="00:00",
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         compression="tar.gz",
     )
     # Add a general stdout logger.
-    logger.add("logs/latest.log", rotation="4 hours", retention=0)
+    logger.add("logs/api/latest.log", rotation="4 hours", retention=0)
 
     options = {
         "bind": "0.0.0.0:8000",
@@ -132,5 +132,4 @@ if __name__ == "__main__":
         "logger_class": StubbedGunicornLogger,
     }
 
-    print("Go to: http://localhost:8000/docs")
     StandaloneApplication(app, options).run()

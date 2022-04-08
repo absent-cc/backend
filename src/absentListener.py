@@ -25,15 +25,6 @@ SCHOOLOGYCREDS = structs.SchoologyCreds(
     },
 )
 
-logger.add(
-    "logs/{time:YYYY-MM-DD}/absentListener.log",
-    rotation="1 day",
-    retention="7 days",
-    format="{time} {level} {message}",
-    filter="xxlimited",
-    level="INFO",
-)
-
 # Listen for Schoology updates.
 def listener():
     saturday = 5
@@ -60,33 +51,29 @@ def listener():
         dayOfTheWeek = currentTime.weekday()
 
         if not dayoffLatch:
-            print("LISTENING", currentTime)
-
-            print(f"Schoology Success: {schoologySuccessCheck}")
+            logger.info(f"Listening: {currentTime}")
+            logger.info(f"Schoology success: {schoologySuccessCheck}")
 
             db = SessionLocal()
 
             holidayCheck = crud.getSpecialDay(db, date=currentTime.date())
-            print(holidayCheck)
 
             if holidayCheck is not None:
-                print("There is a special day today.")
                 if (
                     len(holidayCheck.schedule) == 0
                 ):  # If there is no schedule, it's a holiday. Remember that length property is defined in ScheduleWithTimes class.
                     holiday = True
-                    print(f"Holiday: {holidayCheck.name}")
+                    logger.info(f"Today is a holiday: {holidayCheck.name}")
                 else:
-                    print("There is a schedule for today, no holiday :(")
+                    logger.info(f"Unique schedule for today, not a holiday")
 
             if (
                 dayOfTheWeek == saturday or dayOfTheWeek == sunday or holiday
             ) and not debugMode:
                 if not dayoffLatch:
                     logger.info(
-                        f"abSENT DAY OFF. LATCHING TO SLEEP! Day Number: {dayOfTheWeek}"
+                        f"Day off. Latching to sleep! Day Number: {dayOfTheWeek}"
                     )
-                    print(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
                     dayoffLatch = True
             else:
                 aboveStartTime: bool = currentTime.hour >= dailyCheckTimeStart
@@ -94,32 +81,60 @@ def listener():
                 if (
                     aboveStartTime and belowEndTime and not schoologySuccessCheck
                 ) or debugMode:  # IF its during the check time and schoology hasn't already been checked.
-                    print("CHECKING SCHOOLOGY...")
+                    logger.info("Polling schoology...")
                     sc = SchoologyListener(SCHOOLOGYCREDS)
                     schoologySuccessCheck: bool = sc.run()
-                    print(f"Schoology Success: {schoologySuccessCheck}")
-                    print("CHECK COMPLETE!")
+                    logger.info(f"Schoology success: {schoologySuccessCheck}")
+                    logger.info("Schoology poll complete")
                 else:
                     if schoologySuccessCheck:
-                        print(
-                            "Not checking because schoology has already been checked."
+                        logger.info(
+                            "Skipping check, already have absence list for today"
                         )
                     if not (aboveStartTime and belowEndTime):
-                        print("Not checking because its not during the check time.")
+                        print("Skipping check, outside of bounds")
 
         if currentTime.hour == resetTimeOne[0] or currentTime.hour == resetTimeTwo[0]:
             # Reset schoologySuccessCheck to false @ midnight
             # Only change value when it is latched (true)
-            logger.info("RESETTING all states to false")
-            print("RESETTING STATE!", currentTime)
+            logger.info("Resetting state for the new day")
             dayoffLatch = False
             schoologySuccessCheck = False
 
-        print("NOTIFY CALL TIMES: ", Notify.NUMBER_OF_CALLS)
+        logger.info(f"Notify call times: {Notify.NUMBER_OF_CALLS}")
         time.sleep(15)  # Sleep for 15 seconds.
 
 
 if __name__ == "__main__":
     cred = credentials.Certificate("creds/firebase.json")
     firebase = firebase_admin.initialize_app(cred)
+
+    # Add logging
+    logger.add("logs/listener/latest.log", rotation="4 hours", retention=0)
+
+    logger.add(
+        "logs/listener/{time:YYYY-MM-DD}/schoology.log",
+        enqueue=True,
+        filter="schoology",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
+    logger.add(
+        "logs/listener/{time:YYYY-MM-DD}/database.log",
+        enqueue=True,
+        filter="database",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
+    logger.add(
+        "logs/listener/{time:YYYY-MM-DD}/notifications.log",
+        enqueue=True,
+        filter="notifications",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
+
     listener()

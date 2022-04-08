@@ -36,13 +36,15 @@ class TrojanHorse:
     # For instances of Trojan Horse:
     def increment():
         TrojanHorse.counter += 1
-        husk = {}
 
-        husk["gid"] = str(TrojanHorse.counter)
-        husk["first"] = TrojanHorse.pseudo_info["first"] + str(TrojanHorse.counter)
-        husk["last"] = TrojanHorse.pseudo_info["last"] + str(TrojanHorse.counter)
-        husk["school"] = TrojanHorse.pseudo_info["school"]
-        husk["grade"] = TrojanHorse.pseudo_info["grade"]
+        husk = {
+            "gid": str(TrojanHorse.counter),
+            "first": TrojanHorse.pseudo_info["first"] + str(TrojanHorse.counter),
+            "last": TrojanHorse.pseudo_info["last"] + str(TrojanHorse.counter),
+            "school": TrojanHorse.pseudo_info["school"],
+            "grade": TrojanHorse.pseudo_info["grade"],
+        }
+
         return husk
 
     def __init__(self):

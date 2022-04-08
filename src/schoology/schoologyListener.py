@@ -8,15 +8,6 @@ from ..database import crud
 from ..database.database import SessionLocal
 from ..notifications.notify import Notify
 
-logger.add(
-    "logs/{time:YYYY-MM-DD}/schoologyListener.log",
-    rotation="1 day",
-    retention="7 days",
-    format="{time} {level} {message}",
-    filter="xxlimited",
-    level="INFO",
-)
-
 
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
@@ -24,7 +15,6 @@ class SchoologyListener:
         self.south = structs.SchoolName.NEWTON_SOUTH
         self.restTime = timedelta(seconds=30)
         self.sc = AbsencePuller(SCHOOLOGYCREDS)
-        self.db = SessionLocal()
 
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
@@ -47,32 +37,33 @@ class SchoologyListener:
             # Get the absences
             absences = self.sc.filterAbsencesSouth(date)
 
+            # Setup DB Session
+            listenerDB = SessionLocal()
+
             if absences is None:
                 return False
 
             # Add the absences to the database.
             for absence in absences:
                 # Check if the absence is already in the database.
-                self.sc.addAbsence(absence)
-                # if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
-                # print("SOUTH: Absence already in database.")
-                # statuses[self.south].absences = True # Update status that action was committed previously.
-                # statuses[self.south].notifications = True # Update status was probably action was committed previously.
-                # break
-            # statuses[self.south].absences = True # Update status that action was committed previously.
+                try:
+                    crud.addAbsence(listenerDB, absence)
+                except Exception as e:
+                    listenerDB.rollback()
 
             southAbsences = crud.getAbsenceList(
-                self.db, school=structs.SchoolName.NEWTON_SOUTH
+                listenerDB, school=structs.SchoolName.NEWTON_SOUTH
             )
             southAbsencesExist = len(southAbsences) != 0
 
+            listenerDB.close()
+
             if southAbsencesExist:
-                print("HERE")
+                logger.info("NSHS: Absences exist in the database")
                 statuses[self.south].updateState(True, None)
 
             if (not statuses[self.south].notifications) and southAbsencesExist:
-                logger.info("SHOULD BE SENDING NOTIFICATIONS: SOUTH")
-                print("SHOULD BE SENDING NOTIFS SOUTH")
+                logger.info("NSHS: Notifications sent")
                 Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
                 statuses[self.south].updateState(True, True)
                 return True
@@ -86,28 +77,29 @@ class SchoologyListener:
             if absences is None:
                 return False
 
+            listenerDB = SessionLocal()
+
             # Add the absences to the database.
             for absence in absences:
                 # Check if the absence is already in the database.
-                self.sc.addAbsence(
-                    absence
-                )  # If action was unsuccessful, then the absence is already in the database.
-                # if not self.sc.addAbsence(absence): # If action was unsuccessful, then the absence is already in the database.
-                # statuses[self.south].absences = True # Update status that action was committed previously.
-                # statuses[self.south].notifications = True # Update status was probably action was committed previously.
-                # break
+                try:
+                    crud.addAbsence(listenerDB, absence)
+                except Exception as e:
+                    listenerDB.rollback()
 
             northAbsences = crud.getAbsenceList(
-                self.db, school=structs.SchoolName.NEWTON_NORTH
+                listenerDB, school=structs.SchoolName.NEWTON_NORTH
             )
             northAbsencesExist = len(northAbsences) != 0
 
+            listenerDB.close()
+
             if northAbsencesExist:
+                logger.info("NNHS: Absences exist in the database")
                 statuses[self.north].updateState(True, None)
 
             if (not statuses[self.north].notifications) and northAbsencesExist:
-                logger.info("SHOULD BE SENDING NOTIFICATIONS: NORTH")
-                print("SHOULD BE SENDING NOTIFICATIONS NORTH")
+                logger.info("NNHS: Notifications sent")
                 Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()
                 statuses[self.north].notifications = True
                 statuses[self.north].updateState(True, True)
@@ -119,9 +111,9 @@ class SchoologyListener:
         northRes = northRun()
 
         if southRes is None or northRes is None:
-            print("South res or North Res is None. That is WRONG!")
+            logger.error("southRes or northRes is None")
 
-        print(f"South Res: {southRes}, North Res: {northRes}")
+        logger.info(f"southRes: {southRes}, northRes: {northRes}")
         return southRes and northRes
 
 

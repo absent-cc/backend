@@ -9,22 +9,24 @@ from ..database import crud
 
 from ..dataTypes import schemas, structs
 from .columnDetection import ColumnDetection
+from loguru import logger
 
 
 class AbsencePuller:
     # Sets up the two API objects as entries within a list 'api' .
     def __init__(self, scCreds: structs.SchoologyCreds):
-        northkey = scCreds.keys[structs.SchoolName.NEWTON_NORTH]
-        northsecret = scCreds.secrets[structs.SchoolName.NEWTON_NORTH]
-        southkey = scCreds.keys[structs.SchoolName.NEWTON_SOUTH]
-        southsecret = scCreds.secrets[structs.SchoolName.NEWTON_SOUTH]
-
         self.api = {
             structs.SchoolName.NEWTON_NORTH: schoolopy.Schoology(
-                schoolopy.Auth(northkey, northsecret)
+                schoolopy.Auth(
+                    scCreds.keys[structs.SchoolName.NEWTON_NORTH],
+                    scCreds.secrets[structs.SchoolName.NEWTON_NORTH],
+                )
             ),
             structs.SchoolName.NEWTON_SOUTH: schoolopy.Schoology(
-                schoolopy.Auth(southkey, southsecret)
+                schoolopy.Auth(
+                    scCreds.keys[structs.SchoolName.NEWTON_SOUTH],
+                    scCreds.secrets[structs.SchoolName.NEWTON_SOUTH],
+                )
             ),
         }
 
@@ -34,8 +36,12 @@ class AbsencePuller:
 
     # Gets the feed, accepting an argument 'school' which is either 0 or 1, 0 corresponding to North and 1 corresponding to South (this value being the same as the school's index within the API array). Grabs all updates posted by individuals of interest and saves them to an array 'feed', and returns that array.
     def getFeed(self, school: structs.SchoolName) -> list:
-        # teachers = ["Tracy Connolly", "Casey Friend", "Suzanne Spirito", "Jason Williams"]
-        teachers = ["Tracy Connolly", "Casey Friend", "Suzanne Spirito"]
+        teachers = [
+            "Tracy Connolly",
+            "Casey Friend",
+            "Suzanne Spirito",
+            "Jason Williams",
+        ]
         feed = []
         for update in reversed(self.api[school].get_feed()):
             user = self.api[school].get_user(update.uid)
@@ -94,6 +100,8 @@ class ContentParser:
             detection = ColumnDetection(structs.SchoolName.NEWTON_NORTH)
             update = self.deriveTable(update)
             update.columns = detection.countColumns(update.content)[0]
+            if update.columns is None:
+                return None
             update.content = [
                 update.content[i : i + update.columns]
                 for i in range(0, len(update.content), update.columns)
@@ -105,6 +113,8 @@ class ContentParser:
         elif school == structs.SchoolName.NEWTON_SOUTH:
             detection = ColumnDetection(structs.SchoolName.NEWTON_SOUTH)
             update.columns = detection.countColumns(update.content)[0]
+            if update.columns is None:
+                return None
             update.content = [
                 update.content[i : i + update.columns]
                 for i in range(0, len(update.content), update.columns)
@@ -133,7 +143,7 @@ class ContentParser:
                         school=school,
                     )
             except IndexError:
-                print("INDEX ERROR TRY STATEMENT")
+                logger.error(f"Index error in {row}")
                 continue
             try:
                 length = row[map[structs.TableColumn.LENGTH][0]]
@@ -150,7 +160,6 @@ class ContentParser:
             object = schemas.AbsenceCreate(
                 teacher=teacher, length=length, date=self.date.date(), note=note
             )
-            # print("THE OBJECT CREATED IS:", object)
             objList.append(object)
         return objList
 
@@ -164,13 +173,3 @@ class ContentParser:
         ):
             update.content.pop(0)
         return update
-
-
-# class AbsenceCalculator():
-#     def __init__(self):
-#         self.db = SessionLocal()
-
-#     def calculate(self):
-#         absences = crud.getAbsenceList(self.db)
-
-#         return absences

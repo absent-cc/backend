@@ -5,6 +5,7 @@ from fuzzywuzzy import fuzz
 
 from ..dataTypes import structs
 from ..dataTypes.structs import Confidence
+from loguru import logger
 
 FUZZY_MATCH_THRESHOLD = 90
 
@@ -51,12 +52,19 @@ class ColumnDetection:
                     index += 1  # Tracks # of rows counted.
             except IndexError:
                 break
-        mode = statistics.mode(
-            possibleColumns
-        )  # Gets most common value of column count.
+
+        try:
+            mode = statistics.mode(
+                possibleColumns
+            )  # Gets most common value of column count.
+        except statistics.StatisticsError:
+            logger.info("Invalid update sent for column detection")
+            return None, None
+
         confidence = possibleColumns.count(mode) / len(
             possibleColumns
         )  # Gets confidence.
+
         return mode, confidence
 
     # Checks if a string is a date.

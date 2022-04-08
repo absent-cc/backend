@@ -8,15 +8,6 @@ from src.database.database import SessionLocal
 from ..dataTypes import structs, models
 from ..database import crud
 
-logger.add(
-    "logs/{time:YYYY-MM-DD}/notify.log",
-    rotation="1 day",
-    retention="7 days",
-    format="{time} {level} {message}",
-    filter="xxlimited",
-    level="INFO",
-)
-
 
 class Notify:
 
@@ -57,9 +48,6 @@ class Notify:
                             0
                         ].notify:  # Add the people with absent teachers.
                             for session in cls.user.sessions:
-                                print(
-                                    f"RUNNING INSIDE SESSION CALL: {session.fcm_token}"
-                                )
                                 if (
                                     session.fcm_token is not None
                                     and len(session.fcm_token.strip()) != 0
@@ -71,15 +59,12 @@ class Notify:
                                 ):
                                     # Check if not None, not empty str, and if it does not contain a leading whitespace (which breaks stuff)
                                     hasAbsentTeacher.add(session.fcm_token)
-                                    print(
-                                        f"TOKEN THAT HAS BEEN ADDED: {session.fcm_token} THAT HAS BEEN ADDED FROM absences"
-                                    )
                                 else:
                                     logger.info(
-                                        f"{cls.user} has invalid FCM token formats!"
+                                        f"{cls.user} has invalid FCM token formats"
                                     )
                     except Exception as e:
-                        logger.error(f"{cls.user} has invalid FCM token formats!")
+                        logger.error(f"{cls.user} has invalid FCM token formats")
                         logger.error(e)
 
         alwaysNotifyUsers = crud.getAlwaysNotify(self.db, self.school)
@@ -96,9 +81,6 @@ class Notify:
                 ):
                     # Check if not None, not empty str, and if it does not contain a leading whitespace (which breaks stuff)
                     alwaysNotify.add(session.fcm_token)
-                    print(
-                        f"TOKEN THAT HAS BEEN ADDED: {session.fcm_token} FROM ALWAYS NOTIFY"
-                    )
         return hasAbsentTeacher, alwaysNotify
 
     def sendMessages(self):
@@ -149,14 +131,11 @@ class Notify:
             multicastMessages.append(msg)
 
         for message in multicastMessages:
-            print(message)
             response = messaging.send_multicast(message)
-            print(f"NOTIFICATIONS SENT for {self.school}.")
             logger.info(
-                f"Notifications for {self.school} sent. # of failures: {response.failure_count}"
+                f"Notifications for {self.school} sent. Number of failures: {response.failure_count}"
             )
 
-        print(f"SENDING NOTIFICATIONS: {self.school}")
         Notify.NUMBER_OF_CALLS += 1
         return True
 

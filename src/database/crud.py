@@ -7,7 +7,6 @@ from loguru import logger
 from sqlalchemy import update
 
 from ..dataTypes import schemas, models, structs
-from ..dataTypes.models import Class
 from ..utils.prettifyTeacherName import prettify
 
 
