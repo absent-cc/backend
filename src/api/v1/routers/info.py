@@ -54,3 +54,22 @@ def weekPeek(
     weekdays: List[datetime.date] = weekDayGenerator(year, week)
     
     return [getSchedule(day, db) for day in weekdays]
+
+@router.get("/announcements/latest", response_model=List[schemas.AnnouncementReturn], status_code=200)
+def getAnnouncements(
+    db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
+    school: Optional[structs.SchoolName] = None,
+    amount: int = 5,
+):
+    return crud.getAnnouncements(db, school, amount)
+
+@router.get("/announcements/date", response_model=List[schemas.AnnouncementReturn], status_code=200)
+def getAnnouncements(
+    db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
+    school: Optional[structs.SchoolName] = None,
+    date: Optional[datetime.date] = None,
+):
+    if date == None:
+        date = datetime.date.today()
+    
+    return crud.getAnnouncementByDateAndSchool(db, date, school)

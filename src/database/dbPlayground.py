@@ -28,5 +28,5 @@ crud.updateAnnouncement(db, update)
 entry = crud.getAnnouncementByID(db, "1")
 print(entry)
 
-crud.removeAnnouncement(db, entry)
-entry = crud.getAnnouncementByID(db, "1")
+# crud.removeAnnouncement(db, entry)
+# entry = crud.getAnnouncementByID(db, "1")

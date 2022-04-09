@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -47,7 +47,7 @@ def getUserInfo(
 
 @router.delete("/absences/delete/", response_model=schemas.Bool, status_code=200)
 def deleteAbsencesOnDay(
-    date: datetime.date = None,
+    date: Optional[datetime.date] = None,
     db: Session = Depends(accounts.getDBSession),
     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
@@ -56,6 +56,32 @@ def deleteAbsencesOnDay(
     result = crud.removeAbsencesByDate(db, datetime(date.year, date.month, date.day))
     return schemas.Bool(success=result)
 
+@router.delete("/announcements/delete/", response_model=schemas.Bool, status_code=200)
+def deleteAnnouncementsByID(
+    id: str,
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    result = crud.removeAnnouncement(db, schemas.AbsenceReturn(anid=id))
+    return schemas.Bool(success=result)
+
+@router.post("/announcements/add/", response_model=schemas.Bool, status_code=200)
+def addAnnouncement(
+    announcement: schemas.AnnouncementBase,
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    result = crud.addAnnouncement(db, announcement)
+    return schemas.Bool(success=result)
+
+@router.post("/announcements/update/", response_model=schemas.Bool, status_code=200)
+def updateAnnouncement(
+    update: schemas.AnnouncementCreate,
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    result = crud.updateAnnouncement(db, schemas.AnnouncementUpdate(updateTime=datetime.now(), **update))
+    return schemas.Bool(success=result)
 
 # @router.get("/lookup/teachers/", response_model=schemas.TeachersInfoReturn, status_code=200):
 # def getTeachersInfo(

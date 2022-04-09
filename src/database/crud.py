@@ -230,6 +230,13 @@ def getAnnouncementByDateAndSchool(db: Session, date: date, school: Optional[str
             .all()
         )
 
+def getAnnouncements(db: Session, school: Optional[structs.SchoolName], amount: int = 10) -> List[models.Announcements]:
+    if school is None:
+        logger.info(f"GET: Announcement lookup requested for all schools")
+        return db.query(models.Announcements).order_by(models.Announcements.date.desc()).limit(amount).all()
+    logger.info(f"GET: Announcement list requested by school {school}")
+    return db.query(models.Announcements).order_by(models.Announcements.date.desc()).filter(models.Announcements.school == school).limit(amount).all()
+
 def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
     logger.info(f"ADD: Added special day: {specialDay.date}")
     try:
@@ -339,22 +346,29 @@ def addSession(db: Session, newSession: schemas.SessionCreate) -> models.UserSes
     logger.error(f"ADD: Session addition failed: {newSession.uid}")
     return None
 
-def addAnnouncement(db: Session, announcement: schemas.AnnouncementCreate) -> schemas.Bool:
-    if announcement.anid is not None:
-        db.add(
-            models.Announcements(
-                anid=announcement.anid,
-                title=announcement.title,
-                content=announcement.content,
-                date=announcement.date,
-                school=announcement.school,
-            )
+def addAnnouncement(db: Session, announcement: schemas.AnnouncementBase) -> schemas.Bool:
+    anid = secrets.token_hex(4)  # Generates hexadecimal TID.
+    query = getAnnouncementByID(db, anid)
+
+    while query is not None:
+        anid = secrets.token_hex(4)
+        query = getAnnouncementByID(db, anid)
+        logger.info("ADD: Announcement ID already exists, generating new ID")
+    
+    db.add(
+        models.Announcements(
+            anid=anid,
+            title=announcement.title,
+            content=announcement.content,
+            date=announcement.date,
+            school=announcement.school,
         )
-        db.commit()
-        logger.info(f"ADD: Announcement added: {announcement.anid}")
-        return schemas.Bool(success=True)
-    logger.error(f"ADD: Announcement addition failed: {announcement.anid}")
-    return schemas.Bool(success=False) 
+    )
+
+    db.commit()
+    logger.info(f"ADD: Announcement added: {anid}")
+    return schemas.Bool(success=True)
+    
 
 def removeSession(db: Session, session: schemas.SessionReturn) -> bool:
     if session.sid is not None and session.uid is not None:
