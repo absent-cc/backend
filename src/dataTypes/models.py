@@ -1,3 +1,4 @@
+from email.policy import default
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -8,6 +9,8 @@ from sqlalchemy import (
     Boolean,
     Enum,
     PickleType,
+    Text, 
+    DateTime
 )
 from sqlalchemy.orm import relationship, validates
 
@@ -106,9 +109,23 @@ class SpecialDays(Base):
 
 class Aliases(Base):
     __tablename__ = "aliases"
-    aid = Column(String(8), primary_key=True)
+    alid = Column(String(8), primary_key=True)
     first = Column(String(255), primary_key=True)
     last = Column(String(255), primary_key=True)
     tid = Column(String(36), ForeignKey(Teacher.tid, ondelete="CASCADE"))
 
     # teacher = relationship("Teacher", back_populates="aliases")
+
+class Announcements(Base):
+    __tablename__ = "announcements"
+    anid = Column(String(8), primary_key=True)
+    title = Column(String(255))
+    content = Column(Text) # Markdown variably sized string
+    date = Column(Date)
+    school = Column(Enum(structs.SchoolName), nullable=True)
+    lastUpdate = Column(DateTime, nullable=True)
+
+    def __str__(self) -> str:
+        lines="---------------------\n"
+        header = f"Announcement:\n\tID: {self.anid}\n\tTitle: {self.title}\n\tDate: {self.date}\n\tSchool: {self.school}\n\tLast Update: {self.lastUpdate}\n\tContent:"
+        return lines + header + "\n\t" + self.content + "\n" + lines

@@ -59,7 +59,7 @@ def deleteAbsencesOnDay(
 
 # @router.get("/lookup/teachers/", response_model=schemas.TeachersInfoReturn, status_code=200):
 # def getTeachersInfo(
-#     creds:
+#     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 
 # if __name__ == "__main__":
 #     print("Admin router")

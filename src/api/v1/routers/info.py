@@ -9,6 +9,8 @@ from ....utils.weekGen import weekDayGenerator
 from ....api import accounts
 from ....database import crud
 
+from sqlalchemy.orm import Session
+
 router = APIRouter(prefix="/info", tags=["Info"])
 
 from typing import Optional, List

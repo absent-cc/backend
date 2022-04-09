@@ -61,7 +61,6 @@ def verifyAdmin(
 
     utils.raiseError(401, "Unauthorized admin credentials.", structs.ErrorType.AUTH)
 
-
 def verifyRefreshToken(creds: str = Security(credsHeader)) -> str:
     cid = validateRefreshToken(creds)
     return cid

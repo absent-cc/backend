@@ -1,4 +1,5 @@
 import secrets
+from sqlalchemy.orm import Session
 from datetime import datetime, date
 from typing import List, Optional, Tuple
 from uuid import uuid4
@@ -10,7 +11,7 @@ from ..dataTypes import schemas, models, structs
 from ..utils.prettifyTeacherName import prettify
 
 
-def getUser(db, user: schemas.UserReturn) -> models.User:
+def getUser(db: Session, user: schemas.UserReturn) -> models.User:
     if user.uid is not None:
         logger.info(f"GET: User looked up by UID: {user.uid}")  # Logs lookup.
         return (
@@ -25,7 +26,7 @@ def getUser(db, user: schemas.UserReturn) -> models.User:
     return None
 
 
-def getTeacher(db, teacher: schemas.TeacherReturn) -> models.Teacher:
+def getTeacher(db: Session, teacher: schemas.TeacherReturn) -> models.Teacher:
     if teacher.tid is not None:
         logger.info(f"GET: Teacher looked up by TID: {teacher.tid}")  # Logs lookup.
         return (
@@ -53,7 +54,7 @@ def getTeacher(db, teacher: schemas.TeacherReturn) -> models.Teacher:
     return None
 
 
-def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
+def getSession(db: Session, session: schemas.SessionReturn) -> models.UserSession:
     if (
         session.sid is not None and session.uid is not None
     ):  # These two values are used to look up sessions, much exist.
@@ -84,12 +85,12 @@ def getSession(db, session: schemas.SessionReturn) -> models.UserSession:
     return None
 
 
-def getAllUsers(db) -> List[models.User]:
+def getAllUsers(db: Session) -> List[models.User]:
     logger.info("GET: Looked up all users")
     return db.query(models.User).all()
 
 
-def getUsersByName(db, first, last) -> List[models.User]:
+def getUsersByName(db: Session, first: str, last: str) -> List[models.User]:
     logger.info(f"GET: Looked up user by name: {first} {last}")
     return (
         db.query(models.User)
@@ -98,12 +99,12 @@ def getUsersByName(db, first, last) -> List[models.User]:
     )
 
 
-def getUserCount(db) -> int:
+def getUserCount(db: Session) -> int:
     logger.info(f"GET: Looked up user count")
     return db.query(models.User).count()
 
 
-def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
+def getSessionList(db: Session, user: schemas.UserReturn) -> List[models.UserSession]:
     if user.uid is not None:
         sessions = (
             db.query(models.UserSession)
@@ -117,7 +118,7 @@ def getSessionList(db, user: schemas.UserReturn) -> List[models.UserSession]:
 
 
 def getAbsenceList(
-    db,
+    db: Session,
     searchDate: date = datetime.today().date(),
     school: Optional[structs.SchoolName] = None,
 ) -> List[models.Absence]:
@@ -137,12 +138,12 @@ def getAbsenceList(
     return absences
 
 
-def getAbsenceCount(db) -> int:
+def getAbsenceCount(db: Session) -> int:
     logger.info("GET: Absence count requested")
     return db.query(models.Absence).count()
 
 
-def getClassesByUser(db, user: schemas.UserReturn) -> List[models.Class]:
+def getClassesByUser(db: Session, user: schemas.UserReturn) -> List[models.Class]:
     if user.uid is not None:
         logger.info(f"GET: User class list requested: {user.uid}")
         return (
@@ -152,12 +153,12 @@ def getClassesByUser(db, user: schemas.UserReturn) -> List[models.Class]:
     return None
 
 
-def getClassesCount(db) -> int:
+def getClassesCount(db: Session) -> int:
     logger.info("GET: Class count requested.")
     return db.query(models.Class).count()
 
 
-def getUserSettings(db, user: schemas.UserReturn) -> models.UserSettings:
+def getUserSettings(db: Session, user: schemas.UserReturn) -> models.UserSettings:
     if user.uid is not None:
         logger.info(f"GET: User settings requested: {user.uid}")
         return (
@@ -169,7 +170,7 @@ def getUserSettings(db, user: schemas.UserReturn) -> models.UserSettings:
     return None
 
 
-def getAlwaysNotify(db, school: structs.SchoolName) -> models.User:
+def getAlwaysNotify(db: Session, school: structs.SchoolName) -> models.User:
     logger.info("GET: Looked up users to always notify")
     return (
         db.query(models.UserSettings)
@@ -182,35 +183,54 @@ def getAlwaysNotify(db, school: structs.SchoolName) -> models.User:
 
 
 # Peek the top entry in the absences table by date.
-def peekAbsence(db, date: datetime) -> tuple:
+def peekAbsence(db: Session, date: datetime = datetime.today().date()) -> tuple:
     query = (
         db.query(models.Absence)
-        .filter(models.Absence.date == datetime.today().date())
+        .filter(models.Absence.date == date)
         .first()
     )
     logger.info(f"PEEK: First absence requested: {query.date}")
     return query
 
 
-def getAbsencesCount(db) -> int:
+def getAbsencesCount(db: Session) -> int:
     logger.info("GET: Absence count requested")
     return db.query(models.Absence).count()
 
 
-def getSpecialDay(db, date: date) -> models.SpecialDays:
+def getSpecialDay(db: Session, date: date) -> models.SpecialDays:
     logger.info(f"GET: Special day lookup requested: {date}")
     return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
 
 
-def getSchoolDaySchedule(db, date: date) -> structs.ScheduleWithTimes:
+def getSchoolDaySchedule(db: Session, date: date) -> structs.ScheduleWithTimes:
     logger.info(f"GET: School day schedule requested: {str(date)}")
     specialDayCheck: models.SpecialDays = getSpecialDay(db, date)
     if specialDayCheck is not None:
         return specialDayCheck.schedule
     return structs.SchoolBlocksOnDayWithTimes()[date.weekday()]
 
+def getAnnouncementByID(db: Session, id: int) -> models.Announcements:
+    logger.info(f"GET: Announcement lookup requested: {id}")
+    return db.query(models.Announcements).filter(models.Announcements.anid == id).first()
 
-def addSpecialDay(db, specialDay: schemas.SpecialDay) -> bool:
+def getAnnouncementByDateAndSchool(db: Session, date: date, school: Optional[structs.SchoolName] = None) -> models.Announcements:
+    if school is not None:
+        logger.info(f"GET: Announcement lookup requested by date and school: {date} {school}")
+        return (
+            db.query(models.Announcements)
+            .filter(models.Announcements.date == date, models.Announcements.school == school)
+            .all()
+        )
+    else:
+        logger.info(f"GET: Announcement lookup requested by only date: {date}")
+        return (
+            db.query(models.Announcement)
+            .filter(models.Announcement.date == date)
+            .all()
+        )
+
+def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
     logger.info(f"ADD: Added special day: {specialDay.date}")
     try:
         db.add(
@@ -228,7 +248,7 @@ def addSpecialDay(db, specialDay: schemas.SpecialDay) -> bool:
     return True
 
 
-def addUser(db, user: schemas.UserCreate) -> models.User:
+def addUser(db: Session, user: schemas.UserCreate) -> models.User:
     if user.gid is not None:  # Checks for GID as this is the only mandatory field.
         uid = str(uuid4())  # Generates UUID.
         userModel = models.User(
@@ -244,7 +264,7 @@ def addUser(db, user: schemas.UserCreate) -> models.User:
     return None
 
 
-def addClass(db, newClass: schemas.Class) -> models.Class:
+def addClass(db: Session, newClass: schemas.Class) -> models.Class:
     if (
         newClass.tid is not None
         and newClass.uid is not None
@@ -264,7 +284,7 @@ def addClass(db, newClass: schemas.Class) -> models.Class:
     return None
 
 
-def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
+def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> models.Teacher:
     if (
         newTeacher.first is not None
         and newTeacher.last is not None
@@ -284,8 +304,7 @@ def addTeacher(db, newTeacher: schemas.TeacherCreate) -> models.Teacher:
     )
     return None
 
-
-def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
+def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> models.Absence:
     if (
         absence.teacher.first is not None
         and absence.teacher.last is not None
@@ -303,7 +322,7 @@ def addAbsence(db, absence: schemas.AbsenceCreate) -> models.Absence:
     return absenceModel
 
 
-def addSession(db, newSession: schemas.SessionCreate) -> models.UserSession:
+def addSession(db: Session, newSession: schemas.SessionCreate) -> models.UserSession:
     if newSession.uid is not None:  # Checks for required fields
         sessions = getSessionList(db, schemas.UserReturn(uid=newSession.uid))
         if len(sessions) >= 6:
@@ -320,8 +339,24 @@ def addSession(db, newSession: schemas.SessionCreate) -> models.UserSession:
     logger.error(f"ADD: Session addition failed: {newSession.uid}")
     return None
 
+def addAnnouncement(db: Session, announcement: schemas.AnnouncementCreate) -> schemas.Bool:
+    if announcement.anid is not None:
+        db.add(
+            models.Announcements(
+                anid=announcement.anid,
+                title=announcement.title,
+                content=announcement.content,
+                date=announcement.date,
+                school=announcement.school,
+            )
+        )
+        db.commit()
+        logger.info(f"ADD: Announcement added: {announcement.anid}")
+        return schemas.Bool(success=True)
+    logger.error(f"ADD: Announcement addition failed: {announcement.anid}")
+    return schemas.Bool(success=False) 
 
-def removeSession(db, session: schemas.SessionReturn) -> bool:
+def removeSession(db: Session, session: schemas.SessionReturn) -> bool:
     if session.sid is not None and session.uid is not None:
         db.query(models.UserSession).filter(
             models.UserSession.uid == session.uid, models.UserSession.sid == session.sid
@@ -476,6 +511,25 @@ def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserS
     logger.info(f"UPDATE: FCM Token: {sid}.{uid}")
     return result
 
+
+def updateAnnouncement(db, updateAnnouncement: schemas.AnnouncementUpdate) -> bool:
+    if updateAnnouncement.anid is None:
+        logger.error(f"UPDATE: Announcement update failed: {updateAnnouncement.anid}")
+        return False
+    
+    result = db.execute(
+        update(models.Announcements)
+        .where(models.Announcements.anid == updateAnnouncement.anid)
+        .values(
+            title = updateAnnouncement.title,
+            content = updateAnnouncement.content,
+            school = updateAnnouncement.school,
+        )
+    )
+    db.commit()
+    logger.info(f"UPDATE: Announcement updated: {updateAnnouncement.anid}")
+    return True
+    
 
 def reset(db):
     print("INTERNAL FLAG: RESETTING DB!")
