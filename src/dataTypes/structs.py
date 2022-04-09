@@ -154,7 +154,7 @@ class AbsentTeacher:
     date: str
     note: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.first} {self.last} {self.length} {self.date} {self.note}"
 
 @dataclass
