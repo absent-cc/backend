@@ -432,6 +432,16 @@ def removeAbsencesByDate(db, date: datetime) -> bool:
     logger.info(f"REMOVE: Removed absences for date: {str(date)}")
     return True
 
+def removeAnnouncement(db, announcement: schemas.AnnouncementReturn) -> bool:
+    if announcement is None:
+        return False
+    if announcement.anid is None:
+        logger.error(f"REMOVE: Announcement removal failed: {announcement.anid}")
+        return False
+    db.query(models.Announcements).filter(models.Announcements.anid == announcement.anid).delete()
+    db.commit()
+    logger.info(f"REMOVE: Removed announcement: {announcement.anid}")
+    return True
 
 def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> bool:
     if user.school is None:

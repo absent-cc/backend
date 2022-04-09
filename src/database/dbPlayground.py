@@ -14,7 +14,7 @@ test = schemas.AnnouncementCreate(
     school=structs.SchoolName.NEWTON_SOUTH
 )
 
-# crud.addAnnouncement(db, test)
+crud.addAnnouncement(db, test)
 entry = crud.getAnnouncementByID(db, "1")
 print(entry)
 update = schemas.AnnouncementUpdate(
@@ -27,3 +27,6 @@ update = schemas.AnnouncementUpdate(
 crud.updateAnnouncement(db, update)
 entry = crud.getAnnouncementByID(db, "1")
 print(entry)
+
+crud.removeAnnouncement(db, entry)
+entry = crud.getAnnouncementByID(db, "1")
