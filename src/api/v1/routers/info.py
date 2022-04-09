@@ -45,7 +45,7 @@ def weekPeek(
     
     year, week, weekday = date.isocalendar()
 
-    if weekday is 5 or weekday is 6:
+    if weekday == 5 or weekday == 6:
         week += 1
     
     # Generate weekdays to iterate over:
