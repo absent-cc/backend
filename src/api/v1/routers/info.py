@@ -44,8 +44,9 @@ def weekPeek(
         date = datetime.date.today()
     
     year, week, weekday = date.isocalendar()
-
-    if weekday == 5 or weekday == 6:
+    
+    if weekday == 6 or weekday == 7: 
+        # Remember these are ISO Cal days, so sunday is 7, saturday is 6.
         week += 1
     
     # Generate weekdays to iterate over:
