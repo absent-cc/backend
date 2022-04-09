@@ -1,11 +1,11 @@
-from abc import abstractstaticmethod
-from typing import Any, Dict, List, Literal, Optional, Tuple, Type, Union
-from uuid import UUID
-from pydantic import BaseModel, validator
-from ..dataTypes import structs
 from datetime import datetime, date
+from typing import List, Optional, Union
+from uuid import UUID
 
-from ..database.database import Base
+from pydantic import BaseModel, validator
+
+from ..dataTypes import structs
+
 
 class UserSettings(BaseModel):
     showFreeAsAbsent: bool = False
@@ -15,8 +15,10 @@ class UserSettings(BaseModel):
     class Config:
         orm_mode = True
 
+
 class UserSettingsCreate(UserSettings):
     uid: UUID
+
 
 class UserBase(BaseModel):
     first: str = None
@@ -26,12 +28,14 @@ class UserBase(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.first} {self.last}"
-    
+
     def __hash__(self):
         return hash(str(self.number))
 
+
 class UserCreate(UserBase):
     gid: str = None
+
 
 class TeacherBase(BaseModel):
     first: str = None
@@ -40,20 +44,23 @@ class TeacherBase(BaseModel):
     def __repr__(self) -> str:
         return f"{self.first} {self.last}"
 
+
 class TeacherCreate(TeacherBase):
     school: structs.SchoolName = None
 
     def __repr__(self) -> str:
         return f"{self.first} {self.last}"
 
+
 class TeacherReturn(TeacherCreate):
     tid: str = None
-    
+
     def __repr__(self) -> str:
         return f"{self.first} {self.last} {self.tid} {self.school}"
 
     class Config:
         orm_mode = True
+
 
 class Schedule(BaseModel):
     A: List[TeacherBase] = None
@@ -68,7 +75,8 @@ class Schedule(BaseModel):
 
     class Config:
         orm_mode = True
-    
+
+
 class ScheduleReturn(BaseModel):
     A: List[TeacherReturn] = None
     ADVISORY: List[TeacherReturn] = None
@@ -88,12 +96,13 @@ class ScheduleReturn(BaseModel):
         schedule = ScheduleReturn()
         for cls in classes:
             current = getattr(schedule, cls.block)
-            if current != None:
+            if current is not None:
                 current.append(TeacherReturn.from_orm(cls.teacher))
                 setattr(schedule, cls.block, current)
             else:
                 setattr(schedule, cls.block, [TeacherReturn.from_orm(cls.teacher)])
         return schedule
+
 
 class Class(BaseModel):
     tid: str = None
@@ -105,7 +114,7 @@ class Class(BaseModel):
 
     def __repr__(self) -> str:
         return f"tid: {self.tid} Block: {self.block} uid: {self.uid}"
-    
+
     # @staticmethod
     # def listFromSchedule(schedule: Schedule, uid: str):
     #     clsList = []
@@ -114,11 +123,13 @@ class Class(BaseModel):
     #             clsList.append(Class(block=ReverseBlockMapper()[block[0]], uid=uid))
     #     return clsList
 
+
 class TeacherFull(TeacherReturn):
     schedule: List[Class] = []
-    
+
     class Config:
         orm_mode = True
+
 
 class UserReturn(UserCreate):
     uid: str = None
@@ -127,11 +138,13 @@ class UserReturn(UserCreate):
     class Config:
         orm_mode = True
 
+
 class UserProfile(UserCreate):
     uid: str = None
 
     class Config:
         orm_mode = True
+
 
 class UserSchedule(UserCreate):
     uid: str = None
@@ -139,55 +152,67 @@ class UserSchedule(UserCreate):
     class Config:
         orm_mode = True
 
+
 class SessionCreate(BaseModel):
     uid: Optional[str] = None
-    @validator('uid')
+
+    @validator("uid")
     def checkUIDLength(cls, v):
         try:
             UUID(v)
             return v
         except:
-            raise ValueError('Invalid UID.')
+            raise ValueError("Invalid UID.")
+
 
 class SessionReturn(SessionCreate):
     sid: Optional[str] = None
     last_accessed: Optional[datetime] = None
 
-    @validator('sid')
+    @validator("sid")
     def checkSIDLength(cls, v):
         if len(v) != 16:
-            raise ValueError('SID Must be 17 characters long.')
+            raise ValueError("SID Must be 17 characters long.")
         return v
+
     class Config:
         orm_mode = True
+
 
 class Token(BaseModel):
     token: str
 
+
 class UserInfoBase(BaseModel):
     settings: UserSettings = None
-    
+
+
 class UserInfoUpdate(UserInfoBase):
     schedule: Schedule = None
     profile: UserBase = None
     fcm: Token = None
+
 
 class UserInfoReturn(UserInfoBase):
     schedule: ScheduleReturn = None
     profile: UserProfile = None
     onboarded: bool = None
 
+
 class UsersInfoReturn(BaseModel):
     users: List[UserInfoReturn] = []
+
 
 class SessionCredentials(BaseModel):
     token: Optional[str] = None
     refresh: Optional[str] = None
     onboarded: Optional[bool] = None
 
+
 class AbsenceBase(BaseModel):
     length: Optional[str] = None
     note: Optional[str] = None
+
 
 class AbsenceCreate(AbsenceBase):
     teacher: TeacherCreate
@@ -196,47 +221,58 @@ class AbsenceCreate(AbsenceBase):
     def __repr__(self) -> str:
         return super().__repr__()
 
+
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
 
+
 class PartialName(BaseModel):
-    name: str 
+    name: str
     school: structs.SchoolName
 
-    @validator('name')
+    @validator("name")
     def checkPartialName(cls, v):
         if (len(v)) < 3:
-            raise ValueError('Phrase too short.')
+            raise ValueError("Phrase too short.")
         return v
+
 
 class SessionList(BaseModel):
     sessions: List[SessionReturn]
+
 
 class AbsenceList(BaseModel):
     absences: List[AbsenceReturn]
     date: date
 
+
 class ManualAbsencesReturn(BaseModel):
     absences: List[AbsenceList]
     success: bool
 
+
 class AutoComplete(BaseModel):
     suggestions: list
+
 
 class TeacherValid(BaseModel):
     value: bool
     formatted: str = None
     suggestions: List[str] = None
 
+
 class ClassList(BaseModel):
     classes: List[structs.SchoolBlock] = None
+
 
 class Analytics(BaseModel):
     userCount: int
     totalAbsences: int
 
+
 class Bool(BaseModel):
     success: bool
+
 
 class Badges(BaseModel):
     schemaVersion: int = 1
@@ -253,24 +289,30 @@ class Badges(BaseModel):
     # style: str = "flat"
     # cacheSeconds: int = 300
 
+
 class UserCountBadge(Badges):
     label = "Active Users"
     message: str
+
 
 class AbsencesBadge(Badges):
     label = "Absences Reported"
     message: str
 
+
 class ClassCountBadge(Badges):
     label = "Classes Serving"
     message: str
 
+
 class ClassCanceledBadge(Badges):
     label = "Free Blocks Recorded"
     message: str
-    
+
+
 class Date(BaseModel):
     date: date
+
 
 class SchoolDay(BaseModel):
     date: date
@@ -288,31 +330,33 @@ class SchoolDay(BaseModel):
         #     for prop in schema.get('properties', {}).values():
         #         prop.pop('title', None)
 
-        schema_extra = {    
-            'example': {
-                    'date': '2020-01-01',
-                    'name': 'New Years Day',
-                    'schedule': [
-                        {
-                            'block': 'A',
-                            'startTime': '09:00:00',
-                            'endTime': '10:00:00',
-                            'lunches': [
-                                {
-                                    'lunch': 'L1',
-                                    'startTime': '10:00:00',
-                                    'endTime': '11:00:00'
-                                },
-                            ]
-                        },
-                    ],
-                    'note': 'Happy New Years!',
-                    'special': True
-                }
+        schema_extra = {
+            "example": {
+                "date": "2020-01-01",
+                "name": "New Years Day",
+                "schedule": [
+                    {
+                        "block": "A",
+                        "startTime": "09:00:00",
+                        "endTime": "10:00:00",
+                        "lunches": [
+                            {
+                                "lunch": "L1",
+                                "startTime": "10:00:00",
+                                "endTime": "11:00:00",
+                            },
+                        ],
+                    },
+                ],
+                "note": "Happy New Years!",
+                "special": True,
+            }
         }
+
 
 class SpecialDay(SchoolDay):
     special = True
+
 
 class NormalDay(SchoolDay):
     name = "Normal Day"

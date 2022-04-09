@@ -1,8 +1,9 @@
 import time
+
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.staticfiles import StaticFiles
+
 from .v1 import main as v1
 
 # All this fucking shit for the docs because I am legitimately this vain.
@@ -36,18 +37,18 @@ tags_metadata = [
     {
         "name": "Admin",
         "description": "Endpoints for administration of the service, such as sending announcements and accessing private information.",
-    }
-
+    },
 ]
+
 
 def init_app():
     # Initalize the API
     absent = FastAPI(
         title="abSENT",
         description=description,
-        version="1.0.0",
+        version="1.1.0",
         terms_of_service="https://absent.cc/terms",
-        docs_url=None, 
+        docs_url=None,
         redoc_url=None,
         contact={
             "name": "abSENT",
@@ -58,7 +59,7 @@ def init_app():
             "name": "GNU Affero General Public License v3.0",
             "url": "https://www.gnu.org/licenses/agpl-3.0.html",
         },
-        openapi_tags=tags_metadata
+        openapi_tags=tags_metadata,
     )
 
     @absent.middleware("http")
@@ -86,10 +87,10 @@ def init_app():
             swagger_css_url="/static/swagger-ui.css",
         )
 
-    absent.include_router(v1.router) # Include routers for V1 API
+    absent.include_router(v1.router)  # Include routers for V1 API
 
     return absent
 
+
 if __name__ == "__main__":
     absentApp = init_app()
-

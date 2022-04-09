@@ -1,37 +1,29 @@
-import configparser
-import threading, time, yaml
-from loguru import logger
-from .dataTypes import structs, tools
-from .schoology.schoologyListener import *
-from .database.database import *
-from datetime import timedelta, datetime, timezone
+import time
+
 import firebase_admin
 from firebase_admin import credentials
-from .database.database import SessionLocal
+
+from .dataTypes import tools
+from .schoology.schoologyListener import *
 
 # Get secrets info from config.ini
-config_path = 'config.ini'
-south_key = tools.read_config(config_path, 'NSHS', 'key')
-south_secret = tools.read_config(config_path, 'NSHS', 'secret')
-north_key = tools.read_config(config_path, 'NNHS', 'key')
-north_secret = tools.read_config(config_path, 'NNHS', 'secret')
+config_path = "config.ini"
+south_key = tools.read_config(config_path, "NSHS", "key")
+south_secret = tools.read_config(config_path, "NSHS", "secret")
+north_key = tools.read_config(config_path, "NNHS", "key")
+north_secret = tools.read_config(config_path, "NNHS", "secret")
 
 # Define API variables.
 SCHOOLOGYCREDS = structs.SchoologyCreds(
-    
     {
-    structs.SchoolName.NEWTON_NORTH: north_key,
-    structs.SchoolName.NEWTON_SOUTH: south_key, 
-    }, 
-    
+        structs.SchoolName.NEWTON_NORTH: north_key,
+        structs.SchoolName.NEWTON_SOUTH: south_key,
+    },
     {
-    structs.SchoolName.NEWTON_NORTH: north_secret,
-    structs.SchoolName.NEWTON_SOUTH: south_secret
-    }
-    
-    )
-
-logger.add("logs/{time:YYYY-MM-DD}/absentListener.log", rotation="1 day", retention="7 days", format="{time} {level} {message}", filter="xxlimited", level="INFO")
+        structs.SchoolName.NEWTON_NORTH: north_secret,
+        structs.SchoolName.NEWTON_SOUTH: south_secret,
+    },
+)
 
 # Listen for Schoology updates.
 def listener():
@@ -40,72 +32,109 @@ def listener():
     # debug mode
     debugMode = False
 
-    dailyCheckTimeStart = 7 # hour. Default: 7
-    dailyCheckTimeEnd = 24 # hour. Default: 11
-    
-    resetTimeOne = (0, 0) # Midnight
-    resetTimeTwo = (4, 20) # Light It Up
+    dailyCheckTimeStart = 7  # hour. Default: 7
+    dailyCheckTimeEnd = 24  # hour. Default: 11
+
+    resetTimeOne = (0, 0)  # Midnight
+    resetTimeTwo = (4, 20)  # Light It Up
 
     schoologySuccessCheck = False
     dayoffLatch = False
 
     while True:
-        currentTime = datetime.now(timezone.utc) - timedelta(hours=5) # Shift by 5 hours to get into EST.
+        currentTime = datetime.now(timezone.utc) - timedelta(
+            hours=5
+        )  # Shift by 5 hours to get into EST.
 
         holiday: bool = False
 
-        dayOfTheWeek = currentTime.weekday() 
+        dayOfTheWeek = currentTime.weekday()
 
         if not dayoffLatch:
-            print("LISTENING", currentTime)
+            logger.info(f"Listening: {currentTime}")
+            logger.info(f"Schoology success: {schoologySuccessCheck}")
 
-            print(f"Schoology Success: {schoologySuccessCheck}")
-            
             db = SessionLocal()
 
             holidayCheck = crud.getSpecialDay(db, date=currentTime.date())
-            print(holidayCheck)
 
-            if holidayCheck != None:
-                print("There is a special day today.")
-                if len(holidayCheck.schedule) == 0: # If there is no schedule, it's a holiday. Remember that length property is defined in ScheduleWithTimes class.
+            if holidayCheck is not None:
+                if (
+                    len(holidayCheck.schedule) == 0
+                ):  # If there is no schedule, it's a holiday. Remember that length property is defined in ScheduleWithTimes class.
                     holiday = True
-                    print(f"Holiday: {holidayCheck.name}")
+                    logger.info(f"Today is a holiday: {holidayCheck.name}")
                 else:
-                    print("There is a schedule for today, no holiday :(")
+                    logger.info(f"Unique schedule for today, not a holiday")
 
-            if (dayOfTheWeek == saturday or dayOfTheWeek == sunday or holiday) and not debugMode:
-                if dayoffLatch == False:
-                    logger.info(f"abSENT DAY OFF. LATCHING TO SLEEP! Day Number: {dayOfTheWeek}")
-                    print(f"abSENT DAY OFF. LATCHING TO SLEEP! Day: {dayOfTheWeek}")
+            if (
+                dayOfTheWeek == saturday or dayOfTheWeek == sunday or holiday
+            ) and not debugMode:
+                if not dayoffLatch:
+                    logger.info(
+                        f"Day off. Latching to sleep! Day Number: {dayOfTheWeek}"
+                    )
                     dayoffLatch = True
             else:
                 aboveStartTime: bool = currentTime.hour >= dailyCheckTimeStart
                 belowEndTime: bool = currentTime.hour <= dailyCheckTimeEnd
-                if (aboveStartTime and belowEndTime and not schoologySuccessCheck) or debugMode: # IF its during the check time and schoology hasn't already been checked.
-                    print("CHECKING SCHOOLOGY...")
+                if (
+                    aboveStartTime and belowEndTime and not schoologySuccessCheck
+                ) or debugMode:  # IF its during the check time and schoology hasn't already been checked.
+                    logger.info("Polling schoology...")
                     sc = SchoologyListener(SCHOOLOGYCREDS)
                     schoologySuccessCheck: bool = sc.run()
-                    print(f"Schoology Success: {schoologySuccessCheck}")
-                    print("CHECK COMPLETE!")
+                    logger.info(f"Schoology success: {schoologySuccessCheck}")
+                    logger.info("Schoology poll complete")
                 else:
                     if schoologySuccessCheck:
-                        print("Not checking because schoology has already been checked.")
+                        logger.info(
+                            "Skipping check, already have absence list for today"
+                        )
                     if not (aboveStartTime and belowEndTime):
-                        print("Not checking because its not during the check time.")
-            
-        if (currentTime.hour == resetTimeOne[0] or currentTime.hour == resetTimeTwo[0]):
+                        print("Skipping check, outside of bounds")
+
+        if currentTime.hour == resetTimeOne[0] or currentTime.hour == resetTimeTwo[0]:
             # Reset schoologySuccessCheck to false @ midnight
             # Only change value when it is latched (true)
-            logger.info("RESETTING all states to false")
-            print("RESETTING STATE!", currentTime)
+            logger.info("Resetting state for the new day")
             dayoffLatch = False
             schoologySuccessCheck = False
 
-        print("NOTIFY CALL TIMES: ", Notify.NUMBER_OF_CALLS)
-        time.sleep(15) # Sleep for 15 seconds.
+        logger.info(f"Notify call times: {Notify.NUMBER_OF_CALLS}")
+        time.sleep(15)  # Sleep for 15 seconds.
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     cred = credentials.Certificate("creds/firebase.json")
     firebase = firebase_admin.initialize_app(cred)
+
+    # Add logging
+    logger.add("logs/listener/latest.log", rotation="4 hours", retention=0)
+
+    logger.add(
+        "logs/listener/{time:YYYY-MM-DD}/schoology.log",
+        enqueue=True,
+        filter="schoology",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
+    logger.add(
+        "logs/listener/{time:YYYY-MM-DD}/database.log",
+        enqueue=True,
+        filter="database",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
+    logger.add(
+        "logs/listener/{time:YYYY-MM-DD}/notifications.log",
+        enqueue=True,
+        filter="notifications",
+        rotation="00:00",
+        retention=12,
+        compression="tar.gz",
+    )
+
     listener()

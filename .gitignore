@@ -138,11 +138,11 @@ logs/
 creds/*
 data/*
 src/tools/googleTokenGen.py
+src/state.ini
 abSENT/
 secrets.ini
 testing_config.ini
 .idea/
-oauth/
 alembic/versions/*
 src/api/debug_scripts/*
 

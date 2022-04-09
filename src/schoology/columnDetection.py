@@ -4,57 +4,89 @@ from typing import Dict, Tuple
 from fuzzywuzzy import fuzz
 
 from ..dataTypes import structs
+from ..dataTypes.structs import Confidence
+from loguru import logger
+
 FUZZY_MATCH_THRESHOLD = 90
+
 
 class ColumnDetection:
     def __init__(self, school: structs.SchoolName):
-    
-        self.FIRSTS = [] # List that stores all FIRST names of teachers @ school
-        self.LASTS = [] # List that stores all LAST names of teachers @ school
+
+        self.FIRSTS = []  # List that stores all FIRST names of teachers @ school
+        self.LASTS = []  # List that stores all LAST names of teachers @ school
 
         # Get list of all teachers @ South or North
-        with open(f'data/{school}_teachers.csv') as f:
+        with open(f"data/{school}_teachers.csv") as f:
             csv = c.DictReader(f)
             for col in csv:
-                self.FIRSTS.append(col['First'])
-                self.LASTS.append(col['Last'])
+                self.FIRSTS.append(col["First"])
+                self.LASTS.append(col["Last"])
 
     # Function that dynamically counts the number of columns in a schoology absence table
     def countColumns(self, table: list) -> Tuple[int, float]:
-        lineBreaks = [i for i, x in enumerate(table) if x in ["", "\r", "\n",]] # Generates list of linebreaks and their indexes.
+        lineBreaks = [
+            i
+            for i, x in enumerate(table)
+            if x
+            in [
+                "",
+                "\r",
+                "\n",
+            ]
+        ]  # Generates list of linebreaks and their indexes.
         possibleColumns = []
-        index = 1 # Counter for rows counted.
-        for i, lineBreak in enumerate(lineBreaks): # Iterates through a list of linebreaks and their indexes.
+        index = 1  # Counter for rows counted.
+        for i, lineBreak in enumerate(
+            lineBreaks
+        ):  # Iterates through a list of linebreaks and their indexes.
             try:
-                if lineBreak + 1 == lineBreaks[i+1]: # Checks for double space.
-                    if lineBreaks[i+1] + 1 == lineBreaks[i+2]: # Checks if this is a triple set of spaces. 
-                        continue # If it is, ignore it.
-                    possibleColumns.append(int((lineBreak + 2) / index)) # Appends this rows column calculation.
-                    index += 1 # Tracks # of rows counted.
+                if lineBreak + 1 == lineBreaks[i + 1]:  # Checks for double space.
+                    if (
+                        lineBreaks[i + 1] + 1 == lineBreaks[i + 2]
+                    ):  # Checks if this is a triple set of spaces.
+                        continue  # If it is, ignore it.
+                    possibleColumns.append(
+                        int((lineBreak + 2) / index)
+                    )  # Appends this rows column calculation.
+                    index += 1  # Tracks # of rows counted.
             except IndexError:
                 break
-        mode = statistics.mode(possibleColumns) # Gets most common value of column count.
-        confidence = possibleColumns.count(mode) / len(possibleColumns) # Gets confidence.
+
+        try:
+            mode = statistics.mode(
+                possibleColumns
+            )  # Gets most common value of column count.
+        except statistics.StatisticsError:
+            logger.info("Invalid update sent for column detection")
+            return None, None
+
+        confidence = possibleColumns.count(mode) / len(
+            possibleColumns
+        )  # Gets confidence.
+
         return mode, confidence
 
     # Checks if a string is a date.
     def isDate(self, dateStr: str) -> bool:
         splitDate = dateStr.split("/")
-        if len(splitDate) != 3: # If there are not 3 parts, it is not a date.
+        if len(splitDate) != 3:  # If there are not 3 parts, it is not a date.
             return False
 
         for segment in splitDate:
-            if not segment.isnumeric(): # Makes sure components are all numbers.
+            if not segment.isnumeric():  # Makes sure components are all numbers.
                 return False
 
         return True
-    
+
     # Checks if two strings are similar.
     def isFuzzyMatch(self, first: str, second: str) -> bool:
-        if fuzz.ratio(first.lower(), second.lower()) > FUZZY_MATCH_THRESHOLD: # Threshold for fuzzy matching is 90%
+        if (
+            fuzz.ratio(first.lower(), second.lower()) > FUZZY_MATCH_THRESHOLD
+        ):  # Threshold for fuzzy matching is 90%
             return True
         return False
-    
+
     # Calculates the confidence of whether or not a column is a bunch of FIRST names
     def isFirst(self, name: str) -> bool:
         for first in self.FIRSTS:
@@ -70,7 +102,7 @@ class ColumnDetection:
         return False
 
     # Gets the confidences of each column.
-    def columnConfidence(self, column: list) -> Dict[structs.TableColumn, int]:
+    def columnConfidence(self, column: list) -> Confidence:
         confidence = {
             structs.TableColumn.FIRST_NAME: 0,
             structs.TableColumn.LAST_NAME: 0,
@@ -81,12 +113,48 @@ class ColumnDetection:
             structs.TableColumn.LENGTH: 0,
             structs.TableColumn.POSITION: 0,
         }
-        
-        NOTE_KEYWORDS = ["cancelled", "canceled", "block", "schoology", "classes", "as usual", "", "\r", "\n", "\xa0"] # Keywords that usually appear in notes
-        POSITION_KEYWORDS = ["Teacher", "Counselor"] # Keywords that usually appear in position
-        LENGTH_KEYWORDS = ["All Day", "Partial Day AM", "Partial Day PM", "Partial Day", "Partial AM", "Partial PM"] # Keywords that usually appear in length of absence
-        WEEKDAY_KEYWORDS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "MON", "TUES", "WEDS", "THURS", "FRI", "SAT", "SUN"] # Keywords that usually appear in weekday
-        CS_NAME_KEYWORDS = [',']
+
+        NOTE_KEYWORDS = [
+            "cancelled",
+            "canceled",
+            "block",
+            "schoology",
+            "classes",
+            "as usual",
+            "",
+            "\r",
+            "\n",
+            "\xa0",
+        ]  # Keywords that usually appear in notes
+        POSITION_KEYWORDS = [
+            "Teacher",
+            "Counselor",
+        ]  # Keywords that usually appear in position
+        LENGTH_KEYWORDS = [
+            "All Day",
+            "Partial Day AM",
+            "Partial Day PM",
+            "Partial Day",
+            "Partial AM",
+            "Partial PM",
+        ]  # Keywords that usually appear in length of absence
+        WEEKDAY_KEYWORDS = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+            "MON",
+            "TUES",
+            "WEDS",
+            "THURS",
+            "FRI",
+            "SAT",
+            "SUN",
+        ]  # Keywords that usually appear in weekday
+        CS_NAME_KEYWORDS = [","]
         contentPoints = 5 / len(column)
 
         firstPosPop = []
@@ -104,17 +172,17 @@ class ColumnDetection:
             if entry == structs.TableColumn.LAST_NAME:
                 confidence[structs.TableColumn.LAST_NAME] += points
             if entry == structs.TableColumn.POSITION:
-                confidence[structs.TableColumn.POSITION] += points 
+                confidence[structs.TableColumn.POSITION] += points
             if entry == structs.TableColumn.CS_NAME:
-                confidence[structs.TableColumn.CS_NAME] += points 
+                confidence[structs.TableColumn.CS_NAME] += points
             if entry == structs.TableColumn.WEEKDAY:
-                confidence[structs.TableColumn.WEEKDAY] += points 
+                confidence[structs.TableColumn.WEEKDAY] += points
             if entry == structs.TableColumn.NOTE:
                 confidence[structs.TableColumn.NOTE] += points
             if entry == structs.TableColumn.DATE:
-                confidence[structs.TableColumn.DATE] += points 
+                confidence[structs.TableColumn.DATE] += points
             if entry == structs.TableColumn.LENGTH:
-                confidence[structs.TableColumn.LENGTH] += points 
+                confidence[structs.TableColumn.LENGTH] += points
 
             # Content Confidence Check
             # Rewards when keyword exists in entry
@@ -141,9 +209,9 @@ class ColumnDetection:
                     confidence[structs.TableColumn.CS_NAME] += contentPoints
 
             if confidence[structs.TableColumn.CS_NAME] > 0:
-                items = entry.split(',')
+                items = entry.split(",")
                 if len(items) == 2:
-                    if self.isFirst(items[0]): # If first item is first, 
+                    if self.isFirst(items[0]):  # If first item is first,
                         firstPosPop.append(0)
                     if self.isFirst(items[1]):
                         firstPosPop.append(1)
@@ -161,7 +229,9 @@ class ColumnDetection:
             print(locTuple)
         return structs.Confidence(confidences=confidence, csMap=locTuple)
 
-    def mapColumns(self, table: structs.RawUpdate) -> Dict[structs.TableColumn, Tuple[int, int]]:
+    def mapColumns(
+        self, table: structs.RawUpdate
+    ) -> Dict[structs.TableColumn, Tuple[int, int]]:
         confidences = []
         map = structs.ColumnMap()
         for col in range(table.columns - 2):
@@ -180,23 +250,13 @@ class ColumnDetection:
             for i, col in enumerate(confidences):
                 for _ in range(8):
                     maxKey = max(col.confidences, key=col.confidences.get)
-                    if col.confidences[maxKey] != 0 and col.confidences[maxKey] > map[maxKey][1]:
+                    if (
+                        col.confidences[maxKey] != 0
+                        and col.confidences[maxKey] > map[maxKey][1]
+                    ):
                         map[maxKey] = (i, col.confidences[maxKey])
                         break
                     else:
                         del col.confidences[maxKey]
         map["CS_MAP"] = confidences[map[structs.TableColumn.CS_NAME][0]].csMap
-        return map       
-        
-        
-
-            
-        
-
-
-                
-
-                                
-        
-
-        
+        return map
