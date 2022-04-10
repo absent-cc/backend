@@ -8,7 +8,7 @@ from src.dataTypes import structs, schemas
 from ....utils.weekGen import weekDayGenerator
 from ....api import accounts
 from ....database import crud
-
+from ....api import utils
 
 router = APIRouter(prefix="/info", tags=["Info"])
 
@@ -61,6 +61,9 @@ def getAnnouncements(
     school: Optional[structs.SchoolName] = None,
     amount: int = 5,
 ):
+    if amount < 0:
+        utils.raiseError(406, "Amount is negative", structs.ErrorType.PAYLOAD)
+        
     return crud.getAnnouncements(db, school, amount)
 
 @router.get("/announcements/date", response_model=List[schemas.AnnouncementReturn], status_code=200)

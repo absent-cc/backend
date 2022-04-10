@@ -19,7 +19,7 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 def getUserInfo(
     first: str = None,
     last: str = None,
-    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
 ):
     if first == None and last == None:
