@@ -94,7 +94,7 @@ def getUsersByName(db: Session, first: str, last: str) -> List[models.User]:
     logger.info(f"GET: Looked up user by name: {first} {last}")
     return (
         db.query(models.User)
-        .filter(models.User.first == first.lower(), models.User.last == last.lower())
+        .filter(models.User.first== first, models.User.last == last)
         .all()
     )
 

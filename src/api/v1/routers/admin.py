@@ -19,19 +19,19 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 def getUserInfo(
     first: str = None,
     last: str = None,
-    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
 ):
-    if first is None and last is None:
+    if first == None and last == None:
         users: List[models.User] = crud.getAllUsers(db)
-    if first is not None and last is not None:
+    if first != None and last != None:
         users: List[models.User] = crud.getUsersByName(db, first, last)
 
     returnList = []  # List that contains everything
 
     for user in users:
         schedule: List[models.Class] = user.schedule  # Grab schedule
-        settings: models.UserSettings = user.settings[0]  # Grab settings
+        settings: models.UserSettings = user.settings  # Grab settings
         onboardedStatus = crud.checkOnboarded(db, uid=user.uid)
 
         user = schemas.UserInfoReturn(  # Map info to userInto object
@@ -69,7 +69,7 @@ def deleteAnnouncementsByID(
 def addAnnouncement(
     announcement: schemas.AnnouncementBase,
     db: Session = Depends(accounts.getDBSession),
-    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     result = crud.addAnnouncement(db, announcement)
     return result

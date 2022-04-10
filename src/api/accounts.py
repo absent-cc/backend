@@ -59,7 +59,7 @@ def verifyAdmin(
     if creds.uid in admin_uids:
         return creds
 
-    utils.raiseError(401, "Unauthorized admin credentials.", structs.ErrorType.AUTH)
+    utils.raiseError(401, "Unauthorized admin credentials", structs.ErrorType.AUTH)
 
 def verifyRefreshToken(creds: str = Security(credsHeader)) -> str:
     cid = validateRefreshToken(creds)
