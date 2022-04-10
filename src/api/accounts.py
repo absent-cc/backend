@@ -54,7 +54,7 @@ def verifyAdmin(
 ) -> schemas.SessionReturn:
     config = configparser.ConfigParser()
     config.read("config.ini")
-    admin_uids = config["ADMIN"]["uids"]
+    admin_uids = config["Admin"]["users"]
 
     if creds.uid in admin_uids:
         return creds

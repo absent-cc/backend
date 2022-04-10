@@ -237,6 +237,18 @@ def getAnnouncements(db: Session, school: Optional[structs.SchoolName], amount: 
     logger.info(f"GET: Announcement list requested by school {school}")
     return db.query(models.Announcements).order_by(models.Announcements.date.desc()).filter(models.Announcements.school == school).limit(amount).all()
 
+
+def getSchedule(db: Session, user: schemas.UserReturn) -> Optional[List[models.Class]]:
+    if user.uid is not None:
+        logger.info(f"GET: User schedule requested: {user.uid}")
+        return (
+            db.query(models.Class)
+            .filter(models.Class.uid == user.uid)
+            .all()
+        )
+    logger.error(f"GET: User schedule lookup failed: {user.uid}")
+    return None
+
 def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
     logger.info(f"ADD: Added special day: {specialDay.date}")
     try:
@@ -255,8 +267,8 @@ def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
     return True
 
 
-def addUser(db: Session, user: schemas.UserCreate) -> models.User:
-    if user.gid is not None:  # Checks for GID as this is the only mandatory field.
+def addUser(db: Session, user: schemas.UserCreate) -> Optional[models.User]:
+    if user.gid != None:  # Checks for GID as this is the only mandatory field.
         uid = str(uuid4())  # Generates UUID.
         userModel = models.User(
             uid=uid, **user.dict()

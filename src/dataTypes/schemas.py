@@ -21,32 +21,35 @@ class UserSettingsCreate(UserSettings):
 
 
 class UserBase(BaseModel):
-    first: str = None
-    last: str = None
-    school: structs.SchoolName = None
-    grade: structs.Grade = None
+    first: Optional[str] = None
+    last: Optional[str] = None
+    school: Optional[structs.SchoolName] = None
+    grade: Optional[structs.Grade] = None
 
     def __str__(self) -> str:
-        return f"{self.first} {self.last}"
+        return f"{self.first} {self.last} ({self.school} {self.grade})"
 
     def __hash__(self):
         return hash(str(self.number))
 
 
 class UserCreate(UserBase):
-    gid: str = None
+    gid: Optional[str] = None
 
 
 class TeacherBase(BaseModel):
-    first: str = None
-    last: str = None
+    first: Optional[str] = None
+    last: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"{self.first} {self.last}"
+    
+    def __str__(self) -> str:
+        return self.__repr__()
 
 
 class TeacherCreate(TeacherBase):
-    school: structs.SchoolName = None
+    school: Optional[structs.SchoolName] = None
 
     def __repr__(self) -> str:
         return f"{self.first} {self.last}"
@@ -63,30 +66,32 @@ class TeacherReturn(TeacherCreate):
 
 
 class Schedule(BaseModel):
-    A: List[TeacherBase] = None
-    ADVISORY: List[TeacherBase] = None
-    B: List[TeacherBase] = None
-    C: List[TeacherBase] = None
-    D: List[TeacherBase] = None
-    E: List[TeacherBase] = None
-    F: List[TeacherBase] = None
-    G: List[TeacherBase] = None
-    EXTRA: List[TeacherBase] = None
+    A: Optional[List[TeacherBase]] = None
+    ADVISORY: Optional[List[TeacherBase]] = None
+    B: Optional[List[TeacherBase]] = None
+    C: Optional[List[TeacherBase]] = None
+    D: Optional[List[TeacherBase]] = None
+    E: Optional[List[TeacherBase]] = None
+    F: Optional[List[TeacherBase]] = None
+    G: Optional[List[TeacherBase]] = None
+    EXTRA: Optional[List[TeacherBase]] = None
 
     class Config:
         orm_mode = True
 
+    def __str__(self) -> str:
+        return f"A: {self.A}\nADV: {self.ADVISORY}\nB: {self.B}\nC: {self.C}\nD: {self.D}\nE: {self.E}\nF: {self.F}\nG: {self.G}\nEXTRA: {self.EXTRA}"
 
 class ScheduleReturn(BaseModel):
-    A: List[TeacherReturn] = None
-    ADVISORY: List[TeacherReturn] = None
-    B: List[TeacherReturn] = None
-    C: List[TeacherReturn] = None
-    D: List[TeacherReturn] = None
-    E: List[TeacherReturn] = None
-    F: List[TeacherReturn] = None
-    G: List[TeacherReturn] = None
-    EXTRA: List[TeacherReturn] = None
+    A: Optional[List[TeacherReturn]] = None
+    ADVISORY: Optional[List[TeacherReturn]] = None
+    B: Optional[List[TeacherReturn]] = None
+    C: Optional[List[TeacherReturn]] = None
+    D: Optional[List[TeacherReturn]] = None
+    E: Optional[List[TeacherReturn]] = None
+    F: Optional[List[TeacherReturn]] = None
+    G: Optional[List[TeacherReturn]] = None
+    EXTRA: Optional[List[TeacherReturn]] = None
 
     class Config:
         orm_mode = True
@@ -197,11 +202,7 @@ class UserInfoReturn(UserInfoBase):
     schedule: Optional[ScheduleReturn] = None
     profile: Optional[UserProfile] = None
     onboarded: Optional[bool] = None
-
-
-class UsersInfoReturn(BaseModel):
-    users: List[UserInfoReturn] = []
-
+        
 
 class SessionCredentials(BaseModel):
     token: Optional[str] = None

@@ -79,7 +79,7 @@ class Users(unittest.TestCase):
             
             self.assertEqual(uid, self.TROJANHORSE.user.uid), "Failed to return correct uid" # Check uid
             self.assertEqual(sid, self.TROJANHORSE.session.sid), "Failed to return correct sid" # Check sid
-            self.assertAlmostEqual(last_accessed, self.TROJANHORSE.session.last_accessed, delta=timedelta(100)), "Failed to return correct last_accessed" # Aprox. time check for last_accessed.
+            self.assertAlmostEqual(last_accessed, self.TROJANHORSE.session.last_accessed, delta=timedelta(100)), "Failed to return correct last_accessed" # type: ignore # Aprox. time check for last_accessed.
             
         def runTest(self):
             self.test_get_sessions()

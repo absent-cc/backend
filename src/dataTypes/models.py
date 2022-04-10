@@ -35,6 +35,8 @@ class User(Base):
     sessions = relationship("UserSession", back_populates="user")
     settings = relationship("UserSettings", back_populates="user")
 
+    def __str__(self) -> str:
+        return f"{self.first} {self.last} ({self.school} {self.grade})"
 
 class Teacher(Base):
     __tablename__ = "teachers"
@@ -46,6 +48,8 @@ class Teacher(Base):
     classes = relationship("Class", back_populates="teacher")
     __table_args__ = (UniqueConstraint("first", "last", "school"),)
 
+    def __str__(self) -> str:
+        return f"{self.first} {self.last} ({self.school})"
 
 class UserSession(Base):
     __tablename__ = "sessions"
@@ -70,7 +74,9 @@ class Class(Base):
     user = relationship("User")
     __table_args__ = (UniqueConstraint("tid", "block", "uid"),)
 
-
+    def __str__(self) -> str:
+        return f"{self.block} {self.teacher} {self.user}"
+    
 class Absence(Base):
     __tablename__ = "absences"
     tid = Column(
