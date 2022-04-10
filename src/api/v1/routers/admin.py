@@ -72,7 +72,7 @@ def addAnnouncement(
     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     result = crud.addAnnouncement(db, announcement)
-    return schemas.Bool(success=result)
+    return result
 
 @router.post("/announcements/update/", response_model=schemas.Bool, status_code=200)
 def updateAnnouncement(
@@ -81,7 +81,7 @@ def updateAnnouncement(
     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     result = crud.updateAnnouncement(db, schemas.AnnouncementUpdate(updateTime=datetime.now(), **update))
-    return schemas.Bool(success=result)
+    return result
 
 # @router.get("/lookup/teachers/", response_model=schemas.TeachersInfoReturn, status_code=200):
 # def getTeachersInfo(
