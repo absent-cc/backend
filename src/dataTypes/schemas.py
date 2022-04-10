@@ -147,7 +147,7 @@ class UserProfile(UserCreate):
 
 
 class UserSchedule(UserCreate):
-    uid: str = None
+    uid: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -184,19 +184,19 @@ class Token(BaseModel):
 
 
 class UserInfoBase(BaseModel):
-    settings: UserSettings = None
+    settings: Optional[UserSettings] = None
 
 
 class UserInfoUpdate(UserInfoBase):
-    schedule: Schedule = None
-    profile: UserBase = None
-    fcm: Token = None
+    schedule: Optional[Schedule] = None
+    profile: Optional[UserBase] = None
+    fcm: Optional[Token] = None
 
 
 class UserInfoReturn(UserInfoBase):
-    schedule: ScheduleReturn = None
-    profile: UserProfile = None
-    onboarded: bool = None
+    schedule: Optional[ScheduleReturn] = None
+    profile: Optional[UserProfile] = None
+    onboarded: Optional[bool] = None
 
 
 class UsersInfoReturn(BaseModel):
@@ -272,7 +272,6 @@ class Analytics(BaseModel):
 
 class Bool(BaseModel):
     success: bool
-
 
 class Badges(BaseModel):
     schemaVersion: int = 1
@@ -362,3 +361,28 @@ class NormalDay(SchoolDay):
     name = "Normal Day"
     note = "No special schedule"
     special = False
+
+class AnnouncementBase(BaseModel):
+    title: str
+    content: str
+    school: Optional[structs.SchoolName]
+    date: Optional[date]
+
+    class Config:
+        orm_mode = True
+
+class AnnouncementCreate(AnnouncementBase):
+    anid: str
+    class Config:
+        orm_mode = True
+
+class AnnouncementReturn(AnnouncementCreate):
+
+    class Config:
+        orm_mode = True
+
+class AnnouncementUpdate(AnnouncementCreate):
+    updateTime: datetime
+
+    class Config:
+        orm_mode = True

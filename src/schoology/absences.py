@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 import schoolopy
 
@@ -92,7 +92,7 @@ class ContentParser:
 
     def parse(
         self, update: structs.RawUpdate, school: structs.SchoolName
-    ) -> List[schemas.AbsenceCreate]:
+    ) -> Optional[List[schemas.AbsenceCreate]]:
 
         if update == [] or update == None:
             return None
