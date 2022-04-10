@@ -536,7 +536,7 @@ def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserS
     return result
 
 
-def updateAnnouncement(db, updateAnnouncement: schemas.AnnouncementUpdate) -> bool:
+def updateAnnouncement(db, updateAnnouncement: schemas.AnnouncementUpdate) -> schemas.Bool:
     if updateAnnouncement.anid is None:
         logger.error(f"UPDATE: Announcement update failed: {updateAnnouncement.anid}")
         return False
@@ -552,7 +552,7 @@ def updateAnnouncement(db, updateAnnouncement: schemas.AnnouncementUpdate) -> bo
     )
     db.commit()
     logger.info(f"UPDATE: Announcement updated: {updateAnnouncement.anid}")
-    return True
+    return schemas.Bool(success=True)
     
 
 def reset(db):
