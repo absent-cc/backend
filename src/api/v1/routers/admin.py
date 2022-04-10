@@ -69,7 +69,7 @@ def deleteAnnouncementsByID(
 def addAnnouncement(
     announcement: schemas.AnnouncementBase,
     db: Session = Depends(accounts.getDBSession),
-    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     result = crud.addAnnouncement(db, announcement)
     return result
