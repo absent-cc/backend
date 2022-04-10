@@ -225,8 +225,8 @@ def getAnnouncementByDateAndSchool(db: Session, date: date, school: Optional[str
     else:
         logger.info(f"GET: Announcement lookup requested by only date: {date}")
         return (
-            db.query(models.Announcement)
-            .filter(models.Announcement.date == date)
+            db.query(models.Announcements)
+            .filter(models.Announcements.date == date)
             .all()
         )
 
