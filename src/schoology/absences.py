@@ -57,7 +57,9 @@ class AbsencePuller:
             if date.date() == postDate.date():
                 # print("HERE")
                 # print(poster, body, feedDate)
-                return structs.RawUpdate(content=body.split("\n"), poster=poster)
+                splitBody = body.split("\n")
+                logger.info(f"Raw update: {splitBody}")
+                return structs.RawUpdate(content=splitBody, poster=poster)
         return None
 
     # Takes the raw North attendance table from the prior function and parses it, using the AbsentTeacher dataclass. Returns an array of entries utilizing this class.
@@ -161,6 +163,7 @@ class ContentParser:
                 teacher=teacher, length=length, date=self.date.date(), note=note
             )
             objList.append(object)
+
         return objList
 
     def deriveTable(self, update: structs.RawUpdate) -> structs.RawUpdate:
