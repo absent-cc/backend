@@ -135,7 +135,7 @@ if __name__ == "__main__":
     logger.add(
         "logs/listener/{time:YYYY-MM-DD}/schoology.log",
         enqueue=True,
-        filter="schoology",
+        filter="src.schoology",
         rotation="00:00",
         retention=12,
         compression="tar.gz",
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     logger.add(
         "logs/listener/{time:YYYY-MM-DD}/database.log",
         enqueue=True,
-        filter="database",
+        filter="src.database",
         rotation="00:00",
         retention=12,
         compression="tar.gz",
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     logger.add(
         "logs/listener/{time:YYYY-MM-DD}/notifications.log",
         enqueue=True,
-        filter="notifications",
+        filter="src.notifications",
         rotation="00:00",
         retention=12,
         compression="tar.gz",

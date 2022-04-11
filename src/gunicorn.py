@@ -107,7 +107,7 @@ if __name__ == "__main__":
     logger.add(
         "logs/api/{time:YYYY-MM-DD}/database.log",
         enqueue=True,
-        filter="database",
+        filter="src.database",
         rotation="00:00",
         retention=12,
         compression="tar.gz",
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     logger.add(
         "logs/api/{time:YYYY-MM-DD}/accounts.log",
         enqueue=True,
-        filter="api.accounts",
+        filter="src.api.accounts",
         rotation="00:00",
         retention=12,
         compression="tar.gz",
