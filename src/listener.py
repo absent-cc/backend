@@ -34,7 +34,7 @@ def listener():
     debugMode = False
 
     dailyCheckTimeStart = 7  # hour. Default: 7
-    dailyCheckTimeEnd = 24  # hour. Default: 11
+    dailyCheckTimeEnd = 10  # hour. Default: 11
 
     resetTimeOne = (0, 0)  # Midnight
     resetTimeTwo = (4, 20)  # Light It Up
@@ -93,7 +93,7 @@ def listener():
                             "Skipping check, already have absence list for today"
                         )
                     if not (aboveStartTime and belowEndTime):
-                        print("Skipping check, outside of bounds")
+                        logger.info("Skipping check, outside of bounds")
 
         if currentTime.hour == resetTimeOne[0] or currentTime.hour == resetTimeTwo[0]:
             # Reset schoologySuccessCheck to false @ midnight
