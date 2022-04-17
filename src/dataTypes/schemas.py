@@ -110,9 +110,9 @@ class ScheduleReturn(BaseModel):
 
 
 class Class(BaseModel):
-    tid: str = None
-    block: structs.SchoolBlock = None
-    uid: str = None
+    tid: Optional[str] = None
+    block: Optional[structs.SchoolBlock] = None
+    uid: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -137,7 +137,7 @@ class TeacherFull(TeacherReturn):
 
 
 class UserReturn(UserCreate):
-    uid: str = None
+    uid: Optional[str] = None
     schedule: Union[ScheduleReturn, List[Class]] = []
 
     class Config:
@@ -145,7 +145,7 @@ class UserReturn(UserCreate):
 
 
 class UserProfile(UserCreate):
-    uid: str = None
+    uid: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -258,12 +258,12 @@ class AutoComplete(BaseModel):
 
 class TeacherValid(BaseModel):
     value: bool
-    formatted: str = None
-    suggestions: List[str] = None
+    formatted: Optional[str] = None
+    suggestions: Optional[List[str]] = None
 
 
 class ClassList(BaseModel):
-    classes: List[structs.SchoolBlock] = None
+    classes: Optional[List[structs.SchoolBlock]] = None
 
 
 class Analytics(BaseModel):
@@ -318,7 +318,7 @@ class SchoolDay(BaseModel):
     date: date
     name: str
     schedule: structs.ScheduleWithTimes
-    note: str
+    note: Optional[str] = None
     special: bool
 
     class Config:
@@ -352,7 +352,13 @@ class SchoolDay(BaseModel):
                 "special": True,
             }
         }
-
+    
+    @validator("date")
+    def checkDate(cls, v):
+        if not isinstance(v, date):
+            raise ValueError("Invalid date.")
+        return v
+    
 
 class SpecialDay(SchoolDay):
     special = True

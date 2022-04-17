@@ -5,6 +5,7 @@ from pydantic import BaseModel, schema_of
 from pydantic.fields import ModelField
 
 from datetime import date, time
+
 import configparser
 
 #
@@ -191,7 +192,7 @@ class SchoologyCreds:
 class RawUpdate(BaseModel):
     poster: str
     content: List[str]
-    columns: int = None
+    columns: Optional[int] = None
 
 
 #
@@ -204,7 +205,6 @@ class ListenerStatus:
 
     absences: bool = False
     notifications: bool = False
-    date: date
 
     def __init__(self, school: SchoolName, date: date = date.today()):
         self.school = school
@@ -292,23 +292,23 @@ class Confidence(BaseModel):
 
 
 class NotificationBuild(BaseModel):
-    uid: str = None
-    tid: str = None
-    block: SchoolBlock = None
-    date: date = None
+    uid: Optional[str] = None
+    tid: Optional[str] = None
+    block: Optional[SchoolBlock] = None
+    date: Optional[date] = None
 
 
 class NotificationSend(NotificationBuild):
-    fcm: str = None
-    title: str = None
-    body: str = None
-    data: dict = None
+    fcm: Optional[str] = None
+    title: Optional[str] = None
+    body: Optional[str] = None
+    data: Optional[dict] = None
 
 
 class Lunch(BaseModel):
-    lunch: LunchBlock = None
-    startTime: time = None
-    endTime: time = None
+    lunch: LunchBlock
+    startTime: time
+    endTime: time
 
 
 class Lunches(List[Lunch]):
@@ -320,7 +320,7 @@ class BlockWithTimes(BaseModel):
     block: SchoolBlock
     startTime: time
     endTime: time
-    lunches: Lunches = None
+    lunches: Optional[Lunches] = None
 
     class Config:
         from_orm = True
@@ -356,30 +356,17 @@ class ScheduleWithTimes(List[BlockWithTimes]):
             field_schema["items"] = schema_of(BlockWithTimes)
             # field_schema['examples'] = [BlockWithTimes.schema_json()['properties']['examples']]
             # field_schema['examples'] = schema_of(BlockWithTimes)['examples']
-
-    # @classmethod
-    # def __get_validators__(cls):
-    #     # one or more validators may be yielded which will be called in the
-    #     # order to validate the input, each validator will receive as an input
-    #     # the value returned from the previous validator
-    #     yield cls.validate
-
-    # @classmethod
-    # def __modify_schema__(cls, field_schema):
-    #     # __modify_schema__ should mutate the dict it receives in place,
-    #     # the returned value will be ignored
-    #     field_schema.update(
-    #         # simplified regex here for brevity, see the wikipedia link above
-    #         pattern='^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$',
-    #         # some example postcodes
-    #         examples=['SP11 9DG', 'w1j7bu'],
-    #     )
-
-    # @classmethod
-    # def validate(cls, v):
-    #     if not isinstance(v, ScheduleWithTimes):
-    #         raise TypeError('ScheduleWithTimes required')
-    #     return v
+        
+    # @staticmethod
+    # def parse_json(json_data: ) -> "ScheduleWithTimes":
+    #     if json_data is None:
+    #         return None
+    #     parsed_data: ScheduleWithTimes = ScheduleWithTimes()
+    #     for block in json_data:
+    #         entry = BlockWithTimes.parse_raw(block)
+    #         if entry is not None:
+    #             parsed_data.append(entry)
+    #     return parsed_data
 
 
 class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):

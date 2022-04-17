@@ -1,14 +1,18 @@
 import datetime
+from multiprocessing.context import SpawnContext
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends
+from loguru import logger
 from sqlalchemy.orm import Session
-
+from src import utils
 from src.api import accounts
-from src.dataTypes import models, schemas
+from src.dataTypes import models, schemas, structs
+
 from ....database import crud
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
 
 # Query by name
 # Delete absences
@@ -95,14 +99,38 @@ def updateAnnouncement(
     result = crud.updateAnnouncement(db, schemas.AnnouncementUpdate(updateTime=datetime.datetime.now(), **update.__dict__))
     return result
 
-# @router.get("/lookup/teachers/", response_model=schemas.TeachersInfoReturn, status_code=200):
-# def getTeachersInfo(
+# @router.post("/schedule/add/", response_model=schemas.Bool, status_code=200)
+# def addSpecialDay(
+#     date: datetime.date,
+#     name: str,
+#     schedule: structs.ScheduleWithTimes,
+#     note: str = None,
+
+#     db: Session = Depends(accounts.getDBSession),
 #     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+#     ):
+#     result = crud.addSpecialDay(db, date, name, schedule, note)
+#     return result
 
-# if __name__ == "__main__":
-#     print("Admin router")
-#     _db = SessionLocal()
-#     specialDay: List[structs.SchoolBlock] = [structs.SchoolBlock.A, structs.SchoolBlock.B, structs.SchoolBlock.C]
-
-#     crud.addSpecialDay(_db, datetime.date(2020, 1, 1), specialDay)
-#     print(crud.getSpecialDay(_db, datetime.date(2020, 1, 1)))
+@router.post("/schedule/update/", response_model=schemas.Bool, status_code=200)
+def updateSpecialDay(
+    specialDay: schemas.SpecialDay,
+    db: Session = Depends(accounts.getDBSession),
+    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    # Check if a special day already exists
+    try:
+        schedule = structs.ScheduleWithTimes(specialDay.schedule)
+        specialDay.schedule = schedule
+    except:
+        utils.raiseError(422, "Schedule data is wrong", structs.ErrorType.PAYLOAD)
+        logger.error("Received incorrect format or invalid data for schedule")
+        return schemas.Bool(success=False)
+    result = crud.getSpecialDay(db, specialDay.date)
+    if result is None:
+        logger.info(f"No special day found for date {specialDay.date}. Creating new one")
+        crud.addSpecialDay(db, specialDay)
+    else:
+        logger.info(f"Found special day for date {specialDay.date}. Updating entry with: {specialDay}")
+        crud.updateSpecialDay(db, specialDay)
+    return schemas.Bool(success=True)

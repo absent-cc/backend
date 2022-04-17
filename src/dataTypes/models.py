@@ -111,6 +111,9 @@ class SpecialDays(Base):
         if type(value) != structs.ScheduleWithTimes:
             raise ValueError("Schedule must be of type ScheduleWithTimes")
         return value
+    
+    def __str__(self) -> str:
+        return f"{self.name} ({self.date}):\n\t{self.schedule}\n\tNote: {self.note}"
 
 
 class Aliases(Base):

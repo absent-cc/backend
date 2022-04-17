@@ -1,0 +1,43 @@
+[
+    {
+      "settings": {
+        "showFreeAsAbsent": false,
+        "notify": true,
+        "notifyWhenNone": true
+      },
+      "schedule": {
+        "A": [
+            {
+               "first": "Kevin",
+               "last": "Bacon",
+               "school": "NSHS",
+               "tid": "1"
+            }
+        ],
+        "ADVISORY": [
+            {
+                "first": "Joe",
+                "last": "MAMA",
+                "school": "NSHS",
+                "tid": "2"
+            }
+        ],
+        "B": null,
+        "C": null,
+        "D": null,
+        "E": null,
+        "F": null,
+        "G": null,
+        "EXTRA": null
+      },
+      "profile": {
+        "first": "Roshan",
+        "last": "Karim",
+        "school": "NNHS",
+        "grade": 10,
+        "gid": "asdasfass",
+        "uid": "9be8afdb-7dcc-4836-87bb-270cb4e1d554"
+      },
+      "onboarded": true
+    }
+]

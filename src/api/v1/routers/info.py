@@ -55,19 +55,25 @@ def weekPeek(
     
     return [getSchedule(day, db) for day in weekdays]
 
-@router.get("/announcements/latest", response_model=List[schemas.AnnouncementReturn], status_code=200)
-def getAnnouncements(
+@router.get("/announcements/slice", response_model=List[schemas.AnnouncementReturn], status_code=200)
+def getAnnouncementsWithSlice(
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
     school: Optional[structs.SchoolName] = None,
-    amount: int = 5,
+    top: Optional[int] = None,
+    bottom: Optional[int] = None,
 ):
-    if amount < 0:
+    if top is None:
+        top = 10
+    if bottom is None:
+        bottom = 0
+
+    if top < 0 or bottom < 0:
         utils.raiseError(406, "Amount is negative", structs.ErrorType.PAYLOAD)
         
-    return crud.getAnnouncements(db, school, amount)
+    return crud.getAnnouncements(db, school, top, bottom)
 
 @router.get("/announcements/date", response_model=List[schemas.AnnouncementReturn], status_code=200)
-def getAnnouncements(
+def getAnnouncementsByDate(
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
     school: Optional[structs.SchoolName] = None,
     date: Optional[datetime.date] = None,

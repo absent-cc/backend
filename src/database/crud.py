@@ -210,7 +210,7 @@ def getSchoolDaySchedule(db: Session, date: date) -> structs.ScheduleWithTimes:
         return specialDayCheck.schedule
     return structs.SchoolBlocksOnDayWithTimes()[date.weekday()]
 
-def getAnnouncementByID(db: Session, id: int) -> models.Announcements:
+def getAnnouncementByID(db: Session, id: str) -> models.Announcements:
     logger.info(f"GET: Announcement lookup requested: {id}")
     return db.query(models.Announcements).filter(models.Announcements.anid == id).first()
 
@@ -230,12 +230,12 @@ def getAnnouncementByDateAndSchool(db: Session, date: date, school: Optional[str
             .all()
         )
 
-def getAnnouncements(db: Session, school: Optional[structs.SchoolName], amount: int = 10) -> List[models.Announcements]:
+def getAnnouncements(db: Session, school: Optional[structs.SchoolName] = None, top: int = 0, bottom: int = 10) -> List[models.Announcements]:
     if school is None:
         logger.info(f"GET: Announcement lookup requested for all schools")
-        return db.query(models.Announcements).order_by(models.Announcements.date.desc()).limit(amount).all()
+        return db.query(models.Announcements).order_by(models.Announcements.date.desc()).slice(top, bottom).all()
     logger.info(f"GET: Announcement list requested by school {school}")
-    return db.query(models.Announcements).order_by(models.Announcements.date.desc()).filter(models.Announcements.school == school).limit(amount).all()
+    return db.query(models.Announcements).order_by(models.Announcements.date.desc()).filter((models.Announcements.school == school) | (models.Announcements.school == None)).limit(top, bottom).all()
 
 
 def getSchedule(db: Session, user: schemas.UserReturn) -> Optional[List[models.Class]]:
@@ -566,6 +566,26 @@ def updateAnnouncement(db, updateAnnouncement: schemas.AnnouncementUpdate) -> sc
     logger.info(f"UPDATE: Announcement updated: {updateAnnouncement.anid}")
     return schemas.Bool(success=True)
     
+def updateSpecialDay(db, updateSpecialDay: schemas.SpecialDay) -> schemas.Bool:
+    if updateSpecialDay.date is None:
+        logger.error(f"UPDATE: Special day update failed: {updateSpecialDay.date}")
+        return schemas.Bool(success=False)
+    if getSpecialDay(db, updateSpecialDay.date) is not None:
+        result = db.execute(
+            update(models.SpecialDays)
+            .where(models.SpecialDays.date == updateSpecialDay.date)
+            .values(
+                name = updateSpecialDay.name,
+                schedule = updateSpecialDay.schedule,
+                note = updateSpecialDay.note,
+            )
+        )
+        db.commit()
+        logger.info(f"UPDATE: Special day updated: {updateSpecialDay.date}")
+        return schemas.Bool(success=True)
+    logger.error(f"UPDATE: Special day update failed: {updateSpecialDay.date} Date does not exist")
+    return schemas.Bool(success=False)
+
 
 def reset(db):
     print("INTERNAL FLAG: RESETTING DB!")
