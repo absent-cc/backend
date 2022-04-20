@@ -76,11 +76,11 @@ def weekPeek(
 
 
 @router.get(
-    "/announcements/page",
+    "/announcements/",
     response_model=List[schemas.AnnouncementReturn],
     status_code=200,
 )
-def getAnnouncementsWithSlice(
+def getAnnouncementsByPage(
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
     school: Optional[structs.SchoolName] = None,
     page: Optional[int] = None,
@@ -104,7 +104,7 @@ def getAnnouncementsWithSlice(
 
 
 @router.get(
-    "/announcements/date",
+    "/announcements/bydate/",
     response_model=List[schemas.AnnouncementReturn],
     status_code=200,
 )
@@ -113,6 +113,7 @@ def getAnnouncementsByDate(
     school: Optional[structs.SchoolName] = None,
     date: Optional[datetime.date] = None,
 ):
+
     if date == None:
         date = datetime.date.today()
 

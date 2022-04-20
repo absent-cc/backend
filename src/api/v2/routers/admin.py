@@ -1,5 +1,4 @@
 import datetime
-from multiprocessing.context import SpawnContext
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends
@@ -121,7 +120,7 @@ def updateAnnouncement(
 def addSpecialDay(
     specialDay: schemas.SpecialDay,
     db: Session = Depends(accounts.getDBSession),
-    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     # Check if a special day already exists
     try:
@@ -146,5 +145,11 @@ def addSpecialDay(
 
 
 @router.delete("/schedule/", response_model=schemas.Bool, status_code=201)
-def removeSpecialDay():
-    return schemas.Bool(success=False)
+def removeSpecialDay(
+    anid: str,
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    an = schemas.AnnouncementReturn(anid=anid)
+    crud.removeAnnouncement(db, an)
+    return schemas.Bool(success=True)
