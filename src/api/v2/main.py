@@ -34,13 +34,13 @@ tags_metadata = [
     },
 ]
 
-description = "Point-release 1 of the abSENT API, that powers the application you love."
+description = "Point-release 2 of the abSENT API, that powers the application you love."
 
 app = FastAPI(
     title="abSENT",
     description=description,
     terms_of_service="https://absent.cc/terms",
-    version="1.1.0",
+    version="2.0.0",
     redoc_url=None,
     contact={
         "name": "abSENT",
