@@ -1,5 +1,4 @@
 import datetime
-from webbrowser import get
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -9,10 +8,11 @@ from ....utils.weekGen import weekDayGenerator
 from ....api import accounts
 from ....database import crud
 from ....api import utils
+from typing import Optional, List
+
 
 router = APIRouter(prefix="/info", tags=["Info"])
 
-from typing import Optional, List
 
 @router.get("/schedule/day", response_model=schemas.SchoolDay, status_code=200)
 def getSchedule(
@@ -36,6 +36,7 @@ def getSchedule(
         date=date, schedule=structs.SchoolBlocksOnDayWithTimes()[date.weekday()]
     )
 
+
 @router.get("/schedule/week/", response_model=List[schemas.SchoolDay], status_code=200)
 def weekPeek(
     date: Optional[datetime.date] = None,
@@ -43,36 +44,24 @@ def weekPeek(
 ):
     if date is None:
         date = datetime.date.today()
-    
+
     year, week, weekday = date.isocalendar()
-    
+
     if weekday == 6 or weekday == 7:
         # Remember these are ISO Cal days, so sunday is 7, saturday is 6.
         week += 1
-    
+
     # Generate weekdays to iterate over:
     weekdays: List[datetime.date] = weekDayGenerator(year, week)
-    
+
     return [getSchedule(day, db) for day in weekdays]
 
-# @router.get("/announcements/slice", response_model=List[schemas.AnnouncementReturn], status_code=200)
-# def getAnnouncementsWithSlice(
-#     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
-#     school: Optional[structs.SchoolName] = None,
-#     top: Optional[int] = None,
-#     bottom: Optional[int] = None,
-# ):
-#     if top is None:
-#         top = 10
-#     if bottom is None:
-#         bottom = 0
 
-#     if top < 0 or bottom < 0:
-#         utils.raiseError(406, "Amount is negative", structs.ErrorType.PAYLOAD)
-        
-#     return crud.getAnnouncements(db, school, top, bottom)
-
-@router.get("/announcements/page", response_model=List[schemas.AnnouncementReturn], status_code=200)
+@router.get(
+    "/announcements/page",
+    response_model=List[schemas.AnnouncementReturn],
+    status_code=200,
+)
 def getAnnouncementsWithSlice(
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
     school: Optional[structs.SchoolName] = None,
@@ -82,16 +71,25 @@ def getAnnouncementsWithSlice(
     if page is None:
         page = 0
     if page < 0:
-        utils.raiseError(406, "Invalid value: Page is negative", structs.ErrorType.PAYLOAD)
-    
+        utils.raiseError(
+            406, "Invalid value: Page is negative", structs.ErrorType.PAYLOAD
+        )
+
     if page_size is None:
-        page_size = 5 # Sets default for page size.
+        page_size = 5  # Sets default for page size.
     if page_size < 0:
-        utils.raiseError(406, "Invalid value: Page size is negative", structs.ErrorType.PAYLOAD)
-        
+        utils.raiseError(
+            406, "Invalid value: Page size is negative", structs.ErrorType.PAYLOAD
+        )
+
     return crud.getAnnouncementsByPage(db, page, page_size, school)
 
-@router.get("/announcements/date", response_model=List[schemas.AnnouncementReturn], status_code=200)
+
+@router.get(
+    "/announcements/date",
+    response_model=List[schemas.AnnouncementReturn],
+    status_code=200,
+)
 def getAnnouncementsByDate(
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
     school: Optional[structs.SchoolName] = None,
@@ -99,5 +97,5 @@ def getAnnouncementsByDate(
 ):
     if date == None:
         date = datetime.date.today()
-    
+
     return crud.getAnnouncementByDateAndSchool(db, date, school)

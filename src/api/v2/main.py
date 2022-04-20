@@ -65,7 +65,7 @@ app.include_router(info.router)
 
 @app.get("/", status_code=200, tags=["Main"])
 async def serviceInfo():
-    return "This is the root page of the abSENT API, v1. Please call /login to get started."
+    return "This is the root page of the abSENT API, v2. Please call /login to get started."
 
 
 @app.post(
@@ -145,7 +145,7 @@ def refresh(
         )  # Otherwise, raise an error of type AUTH, signifying an invalid token.
 
 
-@app.put("/logout/", status_code=201, tags=["Main"])
+@app.delete("/logout/", status_code=201, tags=["Main"])
 def logout(
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
     db: Session = Depends(accounts.getDBSession),

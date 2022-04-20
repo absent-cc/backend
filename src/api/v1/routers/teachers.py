@@ -74,6 +74,7 @@ router = APIRouter(prefix="/teachers", tags=["Teachers"])
 @router.get("/absences/", response_model=schemas.AbsenceList, status_code=200)
 def getAbsenceList(
     date: datetime.date = None,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
     school: Optional[structs.SchoolName] = None,  # Initializes a school.
 ):
@@ -119,7 +120,10 @@ def getAbsenceList(
 
 
 @router.get("/classes/", response_model=schemas.ClassList, status_code=200)
-async def getClassList(date: Optional[datetime.date] = None):
+async def getClassList(
+    date: Optional[datetime.date] = None,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
+):
     if date is None:
         date = datetime.date.today()
     try:
@@ -129,7 +133,10 @@ async def getClassList(date: Optional[datetime.date] = None):
 
 
 @router.post("/autocomplete/", status_code=201, response_model=schemas.AutoComplete)
-async def autocomplete(partialName: schemas.PartialName):
+async def autocomplete(
+    partialName: schemas.PartialName,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
+):
     if len(partialName.name) > 2:
         matches = []
         for index in range(len(globals()[f"{partialName.school}_FIRSTS"])):
@@ -146,7 +153,10 @@ async def autocomplete(partialName: schemas.PartialName):
 
 
 @router.post("/validate/", response_model=schemas.TeacherValid, status_code=200)
-async def isRealTeacher(partialName: schemas.PartialName):
+async def isRealTeacher(
+    partialName: schemas.PartialName,
+    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
+):
     for index in range(len(globals()[f"{partialName.school}_FIRSTS"])):
         str = (
             globals()[f"{partialName.school}_FIRSTS"][index]
