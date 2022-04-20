@@ -230,13 +230,15 @@ def getAnnouncementByDateAndSchool(db: Session, date: date, school: Optional[str
             .all()
         )
 
-def getAnnouncements(db: Session, school: Optional[structs.SchoolName] = None, top: int = 0, bottom: int = 10) -> List[models.Announcements]:
+def getAnnouncementsSlice(db: Session, top: int, bottom: int, school: Optional[structs.SchoolName] = None) -> List[models.Announcements]:
     if school is None:
         logger.info(f"GET: Announcement lookup requested for all schools")
         return db.query(models.Announcements).order_by(models.Announcements.date.desc()).slice(top, bottom).all()
     logger.info(f"GET: Announcement list requested by school {school}")
-    return db.query(models.Announcements).order_by(models.Announcements.date.desc()).filter((models.Announcements.school == school) | (models.Announcements.school == None)).limit(top, bottom).all()
+    return db.query(models.Announcements).order_by(models.Announcements.date.desc()).filter((models.Announcements.school == school) | (models.Announcements.school == None)).slice(top, bottom).all()
 
+def getAnnouncementsByPage(db: Session, page: int, page_size: int, school: Optional[structs.SchoolName] = None) -> List[models.Announcements]:
+    return getAnnouncementsSlice(db, page * page_size, (page + 1) * page_size, school)
 
 def getSchedule(db: Session, user: schemas.UserReturn) -> Optional[List[models.Class]]:
     if user.uid is not None:

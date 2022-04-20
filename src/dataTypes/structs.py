@@ -40,6 +40,7 @@ class SchoolBlock(str, Enum):
     F: str = "F"
     G: str = "G"
     EXTRA: str = "EXTRA"  # Lion/Tiger block
+    CAT: str = "CAT"
 
     def __str__(self):
         return self.value
@@ -128,6 +129,10 @@ class BlockMapper(dict):
                 SchoolBlock.E: "E",
                 SchoolBlock.F: "F",
                 SchoolBlock.G: "G",
+                SchoolBlock.EXTRA: "EXTRA",
+                SchoolBlock.CAT: "CAT",
+                SchoolBlock.WIN: "WIN",
+                SchoolBlock.LUNCH: "LUNCH",
             }
         )
 
@@ -147,6 +152,9 @@ class ReverseBlockMapper(dict):
                 "F": SchoolBlock.F,
                 "G": SchoolBlock.G,
                 "EXTRA": SchoolBlock.EXTRA,
+                "CAT": SchoolBlock.CAT,
+                "WIN": SchoolBlock.WIN,
+                "LUNCH": SchoolBlock.LUNCH,
             }
         )
 
@@ -470,7 +478,7 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                             endTime=time(hour=14, minute=30),
                         ),
                         BlockWithTimes(
-                            block=SchoolBlock.EXTRA,
+                            block=SchoolBlock.CAT,
                             startTime=time(hour=14, minute=35),
                             endTime=time(hour=15, minute=25),
                         ),
