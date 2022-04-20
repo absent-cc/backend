@@ -499,7 +499,7 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
                         BlockWithTimes(
                             block=SchoolBlock.D,
                             startTime=time(hour=11, minute=15),
-                            endTime=time(hour=1, minute=5),
+                            endTime=time(hour=13, minute=5),
                             lunches=Lunches(
                                 [
                                     Lunch(
