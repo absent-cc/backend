@@ -5,38 +5,27 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.staticfiles import StaticFiles
 
 from .v1 import main as v1
+from .v2 import main as v2
 
 # All this fucking shit for the docs because I am legitimately this vain.
 
 description = "The abSENT API powers the mobile app you love. Here, you can interact with it and implement it into your own applications if you so desire. All documentation is open; feel free to reach out to us for help if you're unsure about how something works."
 tags_metadata = [
     {
-        "name": "Main",
-        "description": "Main endpoints, for logins and other queries.",
+        "name": "V1",
+        "description": "API version 1, check link on the right",
+        "externalDocs": {
+            "description": "sub-docs",
+            "url": "https://api.absent.cc/v1/docs",
+        },
     },
     {
-        "name": "Users",
-        "description": "Endpoints for logged in users with credentials.",
-    },
-    # {
-    #     "name": "Admin",
-    #     "description": "Endpoints for administration of the service, such as sending announcements and accessing private information. Unfortunately no one but us is cool enough to have access.",
-    # },
-    {
-        "name": "Teachers",
-        "description": "Teacher related endpoints.",
-    },
-    {
-        "name": "Analytics",
-        "description": "Endpoints for analytics.",
-    },
-    {
-        "name": "Shields.io Badges",
-        "description": "Endpoints for shields.io badges",
-    },
-    {
-        "name": "Admin",
-        "description": "Endpoints for administration of the service, such as sending announcements and accessing private information.",
+        "name": "V2",
+        "description": "API version 2, check link on the right",
+        "externalDocs": {
+            "description": "sub-docs",
+            "url": "https://api.absent.cc/v2/docs",
+        },
     },
 ]
 
@@ -46,10 +35,10 @@ def init_app():
     absent = FastAPI(
         title="abSENT",
         description=description,
-        version="1.1.0",
         terms_of_service="https://absent.cc/terms",
         docs_url=None,
         redoc_url=None,
+        version="?",
         contact={
             "name": "abSENT",
             "url": "https://absent.cc",
@@ -87,8 +76,8 @@ def init_app():
             swagger_css_url="/static/swagger-ui.css",
         )
 
-    absent.include_router(v1.router)  # Include routers for V1 API
-
+    absent.mount("/v1", v1.app)  # Include routers for V1 API
+    absent.mount("/v2", v2.app)  # Include routers for V2 API
     return absent
 
 
