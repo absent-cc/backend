@@ -23,14 +23,6 @@ def getAbsences(db: Session = Depends(accounts.getDBSession)) -> schemas.Absence
 
 
 @router.get("/classes/count/", response_model=schemas.ClassCountBadge)
-def getClasses(db: Session = Depends(accounts.getDBSession)) -> schemas.ClassCountBadge:
+def getNumberOfClasses(db: Session = Depends(accounts.getDBSession)) -> schemas.ClassCountBadge:
     classes = crud.getClassesCount(db)
     return schemas.ClassCountBadge(message=str(classes))
-
-
-@router.get("/classes/cancelled/", response_model=schemas.ClassCanceledBadge)
-def getClasses(
-    db: Session = Depends(accounts.getDBSession),
-) -> schemas.ClassCanceledBadge:
-    cancelledCount = crud.getClassesCancelledCount(db)
-    return schemas.ClassCanceledBadge(message=str(cancelledCount))

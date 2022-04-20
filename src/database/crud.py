@@ -11,7 +11,7 @@ from ..dataTypes import schemas, models, structs
 from ..utils.prettifyTeacherName import prettify
 
 
-def getUser(db: Session, user: schemas.UserReturn) -> models.User:
+def getUser(db: Session, user: schemas.UserReturn) -> Optional[models.User]:
     if user.uid is not None:
         logger.info(f"GET: User looked up by UID: {user.uid}")  # Logs lookup.
         return (
@@ -143,7 +143,7 @@ def getAbsenceCount(db: Session) -> int:
     return db.query(models.Absence).count()
 
 
-def getClassesByUser(db: Session, user: schemas.UserReturn) -> List[models.Class]:
+def getClassesByUser(db: Session, user: schemas.UserReturn) -> Optional[List[models.Class]]:
     if user.uid is not None:
         logger.info(f"GET: User class list requested: {user.uid}")
         return (
@@ -155,7 +155,7 @@ def getClassesByUser(db: Session, user: schemas.UserReturn) -> List[models.Class
 
 def getClassesCount(db: Session) -> int:
     logger.info("GET: Class count requested.")
-    return db.query(models.Class).count()
+    return db.query(models.Class).distinct(models.Class.block, models.Class.tid).count()
 
 
 def getUserSettings(db: Session, user: schemas.UserReturn) -> models.UserSettings:
