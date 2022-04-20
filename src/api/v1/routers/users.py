@@ -152,16 +152,3 @@ def updateUserSettings(
         return utils.returnStatus("Information updated")
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
-
-
-@router.put("/me/sessions/revoke/", status_code=201)
-def revokeSession(
-    session: schemas.SessionReturn,
-    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
-    db: Session = Depends(accounts.getDBSession),
-):
-    session.uid = creds.uid
-    if crud.removeSession(db, session):
-        return utils.returnStatus("Session revoked")
-    else:
-        utils.raiseError(500, "Session deletion failed", structs.ErrorType.DB)

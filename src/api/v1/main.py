@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
-from .routers import teachers, users, analytics, badges, admin, info
+from .routers import teachers, users, badges
 from ...api import accounts
 from ...api import utils
 from ...dataTypes import structs, schemas
@@ -57,10 +57,7 @@ app = FastAPI(
 
 app.include_router(users.router)
 app.include_router(teachers.router)
-app.include_router(analytics.router)
 app.include_router(badges.router)
-app.include_router(admin.router)
-app.include_router(info.router)
 
 
 @app.get("/", status_code=200, tags=["Main"])
