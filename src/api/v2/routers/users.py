@@ -10,7 +10,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get(
-    "/me/info/", response_model=schemas.UserInfoReturn, status_code=200
+    "/me/", response_model=schemas.UserInfoReturn, status_code=200
 )  # Info endpoint.
 def returnUserInfo(
     creds: schemas.SessionReturn = Depends(
@@ -36,16 +36,7 @@ def returnUserInfo(
     return userInfo  # Returns user.
 
 
-@router.get("/me/sessions/", response_model=schemas.SessionList, status_code=200)
-def getSessionList(
-    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
-    db: Session = Depends(accounts.getDBSession),
-):
-    sessions = crud.getSessionList(db, schemas.UserReturn(uid=creds.uid))
-    return schemas.SessionList(sessions=sessions)
-
-
-@router.put("/me/delete/", status_code=201)  # Cancellation endpoint.
+@router.delete("/me/", status_code=201)  # Cancellation endpoint.
 def cancel(
     creds: schemas.SessionReturn = Depends(
         accounts.verifyCredentials
@@ -59,7 +50,7 @@ def cancel(
 
 
 @router.put(
-    "/me/update/", status_code=201, response_model=schemas.UserInfoReturn
+    "/me/", status_code=201, response_model=schemas.UserInfoReturn
 )  # Update endpoint, main.
 def updateUserInfo(
     user: schemas.UserInfoUpdate,  # Takes a user object: this is the NEW info, not the current info.
@@ -88,7 +79,7 @@ def updateUserInfo(
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 
-@router.put("/me/update/profile/", status_code=201)  # Update endpoint, profile.
+@router.put("/me/profile/", status_code=201)  # Update endpoint, profile.
 def updateUserInfo(
     profile: schemas.UserBase,  # Takes just profile information.
     creds: schemas.SessionReturn = Depends(
@@ -106,7 +97,7 @@ def updateUserInfo(
 
 
 @router.put(
-    "/me/update/schedule/", status_code=201, response_model=schemas.ScheduleReturn
+    "/me/schedule/", status_code=201, response_model=schemas.ScheduleReturn
 )  # Update endpoint, schedule.
 def updateUserInfo(
     schedule: schemas.Schedule,  # Takes just a schedule.
@@ -126,7 +117,7 @@ def updateUserInfo(
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 
-@router.put("/me/update/fcm/", status_code=201)
+@router.put("/me/fcm/", status_code=201)
 def updateFirebaseToken(
     token: schemas.Token,
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
@@ -140,7 +131,7 @@ def updateFirebaseToken(
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
 
 
-@router.put("/me/update/settings/", status_code=201)
+@router.put("/me/settings/", status_code=201)
 def updateUserSettings(
     settings: schemas.UserSettings,
     creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
@@ -152,16 +143,3 @@ def updateUserSettings(
         return utils.returnStatus("Information updated")
     else:
         utils.raiseError(500, "Operation failed", structs.ErrorType.DB)
-
-
-@router.put("/me/sessions/revoke/", status_code=201)
-def revokeSession(
-    session: schemas.SessionReturn,
-    creds: schemas.SessionReturn = Depends(accounts.verifyCredentials),
-    db: Session = Depends(accounts.getDBSession),
-):
-    session.uid = creds.uid
-    if crud.removeSession(db, session):
-        return utils.returnStatus("Session revoked")
-    else:
-        utils.raiseError(500, "Session deletion failed", structs.ErrorType.DB)
