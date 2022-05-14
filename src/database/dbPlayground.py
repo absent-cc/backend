@@ -76,14 +76,14 @@ db = SessionLocal()
 #     )
 
 returnTeach = crud.addTeacher(db, schemas.TeacherCreate(
-    first = "Kevin",
-    last = "Yang",
+    first = "Tuen Wing",
+    last = "Fan",
     school = structs.SchoolName.NEWTON_SOUTH,
     ))
 
 aliasCreation = crud.addTeacherAlias(db, schemas.TeacherAliasCreate(
-                    first="kEv",
-                    last="Yang",
+                    first="Tuen",
+                    last="Wing Fan",
                     tid = returnTeach.tid
                     )
                 )
@@ -92,8 +92,8 @@ aliasCreation = crud.addTeacherAlias(db, schemas.TeacherAliasCreate(
 
 absence = schemas.AbsenceCreate(
     teacher = schemas.TeacherCreate(
-        first = "kEv",
-        last = "yang",
+        first = "Tuen",
+        last = "Wing Fan",
         school = structs.SchoolName.NEWTON_SOUTH,
     ),
     date = date.today(),
