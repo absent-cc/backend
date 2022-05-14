@@ -1,4 +1,5 @@
 import secrets
+from turtle import TurtleGraphicsError
 from sqlalchemy.orm import Session
 from datetime import datetime, date
 from typing import List, Optional, Tuple
@@ -181,6 +182,30 @@ def getAlwaysNotify(db: Session, school: structs.SchoolName) -> models.User:
         .all()
     )
 
+def getTeacherAliasByTID(db: Session, teacher: schemas.TeacherReturn) -> models.Aliases:
+    if teacher.tid is not None:
+        logger.info(f"GET: Teacher alias requested: {teacher.tid}")
+        return (
+            db.query(models.Aliases)
+            .filter(models.Aliases.tid == teacher.tid)
+            .first()
+        )
+    logger.error(f"GET: Teacher alias lookup failed: {teacher.tid}")
+    return None
+
+def getTeacherAlias(db: Session, teacher: schemas.TeacherAliasBase) -> models.Aliases:
+    if teacher.first is not None and teacher.last is not None:
+        logger.info(f"GET: Teacher alias requested: {teacher.first} {teacher.last}")
+        return (
+            db.query(models.Aliases)
+            .filter(
+                models.Aliases.first == teacher.first,
+                models.Aliases.last == teacher.last,
+            )
+            .first()
+        )
+    logger.error(f"GET: Teacher alias lookup failed: {teacher.first} {teacher.last}")
+    return None
 
 # Peek the top entry in the absences table by date.
 def peekAbsence(db: Session, date: datetime = datetime.today().date()) -> tuple:
@@ -305,7 +330,7 @@ def addClass(db: Session, newClass: schemas.Class) -> models.Class:
     return None
 
 
-def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> models.Teacher:
+def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> Optional[models.Teacher]:
     if (
         newTeacher.first is not None
         and newTeacher.last is not None
@@ -325,18 +350,51 @@ def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> models.Teacher
     )
     return None
 
-def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> models.Absence:
+
+def addTeacherAlias(db: Session, newTeacherAlias: schemas.TeacherAliasCreate) -> Optional[models.Aliases]:
+    if newTeacherAlias.tid is None:
+        logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias.tid}")
+        return None
+    if getTeacher(db, schemas.TeacherReturn(tid=newTeacherAlias.tid)) is None:
+        logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias.tid}")
+        return None
+    
+    alid = secrets.token_hex(4)
+    teacherAlias = schemas.TeacherAliasReturn(**newTeacherAlias.dict(), alid=alid)
+    teacherAliasModel = models.Aliases(**teacherAlias.dict())
+
+    db.add(teacherAliasModel)
+    db.commit()
+    logger.info(f"ADD: Teacher alias added: {alid} | TID: {newTeacherAlias.tid}")
+    return teacherAliasModel
+
+
+def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> Optional[models.Absence]:
     if (
-        absence.teacher.first is not None
-        and absence.teacher.last is not None
-        and absence.teacher.school is not None
+        absence.teacher.first is None
+        or
+        absence.teacher.last is None
+        or
+        absence.teacher.school is None
     ):
-        teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
+        logger.error(f"ADD: Absence addition failed: {absence.teacher}")
+        return None
+    
+    teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
+    
     if teacher is None:
-        teacher = addTeacher(db, absence.teacher)
+        print("Teacher not found. Going through aliases")
+        # Teacher is not found, check if an alias exists.
+        teacherAlias = getTeacherAlias(db, schemas.TeacherAliasBase(**absence.teacher.dict()))
+        if teacherAlias is None:
+            print("Teacher alias not found")
+            teacher = addTeacher(db, absence.teacher)
+        else:
+            print("Teacher alias found")
+            teacher = teacherAlias
     absenceModel = models.Absence(
         date=absence.date, tid=teacher.tid, note=absence.note, length=absence.length
-    )
+    )   
     db.add(absenceModel)
     db.commit()
     logger.info(f"ADD: Absence added: {absence.date} | TID: {teacher.tid}")

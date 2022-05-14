@@ -162,3 +162,11 @@ def getTeacher(
     # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     return crud.getTeacher(db, schemas.TeacherReturn(first=first, last=last, school=school))
+
+@router.post("/teacher/alias", response_model=schemas.Bool, status_code=201)
+def addTeacherAlias(
+    alias: schemas.TeacherAliasCreate,
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    return crud.addTeacherAlias(db, alias)

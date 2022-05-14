@@ -1,3 +1,4 @@
+import pytest
 from . import crud
 
 from .database import SessionLocal
@@ -33,43 +34,69 @@ db = SessionLocal()
 # crud.removeAnnouncement(db, entry)
 # entry = crud.getAnnouncementByID(db, "1")
 
-crud.addSpecialDay(db, schemas.SpecialDay(
-    name="Test Day",
-    date=date.today(),
-    school=structs.SchoolName.NEWTON_SOUTH,
-    schedule = structs.ScheduleWithTimes(),
-    note = "This is a test day."
-))
+# crud.addSpecialDay(db, schemas.SpecialDay(
+#     name="Test Day",
+#     date=date.today(),
+#     school=structs.SchoolName.NEWTON_SOUTH,
+#     schedule = structs.ScheduleWithTimes(),
+#     note = "This is a test day."
+# ))
 
-print(crud.getSpecialDay(db, date.today()))
+# print(crud.getSpecialDay(db, date.today()))
 
-crud.updateSpecialDay(db, schemas.SpecialDay(
-    name="Updating",
-    date=date.today(),
-    school=structs.SchoolName.NEWTON_SOUTH,
-    schedule = structs.ScheduleWithTimes(
-        [
-            structs.BlockWithTimes(
-                block=structs.SchoolBlock.A,
-                startTime=time(9, 0),
-                endTime=time(10, 0),
-            )
-        ]
-        )
-    )
+# crud.updateSpecialDay(db, schemas.SpecialDay(
+#     name="Updating",
+#     date=date.today(),
+#     school=structs.SchoolName.NEWTON_SOUTH,
+#     schedule = structs.ScheduleWithTimes(
+#         [
+#             structs.BlockWithTimes(
+#                 block=structs.SchoolBlock.A,
+#                 startTime=time(9, 0),
+#                 endTime=time(10, 0),
+#             )
+#         ]
+#         )
+#     )
+# )
+
+# joe = schemas.SpecialDay(
+#     name="Updating",
+#     date=date.today(),
+#     school=structs.SchoolName.NEWTON_SOUTH,
+#     schedule = structs.ScheduleWithTimes(
+#         [
+#             structs.BlockWithTimes(
+#                 block=structs.SchoolBlock.A,
+#                 startTime=time(9, 0),
+#                 endTime=time(10, 0),
+#             )
+#         ]
+#         )
+#     )
+
+returnTeach = crud.addTeacher(db, schemas.TeacherCreate(
+    first = "Kevin",
+    last = "Yang",
+    school = structs.SchoolName.NEWTON_SOUTH,
+    ))
+
+aliasCreation = crud.addTeacherAlias(db, schemas.TeacherAliasCreate(
+                    first="kev",
+                    last="yang",
+                    tid = returnTeach.tid
+                    )
+                )
+
+# print(aliasCreation)
+
+absence = schemas.AbsenceCreate(
+    teacher = schemas.TeacherCreate(
+        first = "kev",
+        last = "yang",
+        school = structs.SchoolName.NEWTON_SOUTH,
+    ),
+    date = date.today(),
 )
 
-joe = schemas.SpecialDay(
-    name="Updating",
-    date=date.today(),
-    school=structs.SchoolName.NEWTON_SOUTH,
-    schedule = structs.ScheduleWithTimes(
-        [
-            structs.BlockWithTimes(
-                block=structs.SchoolBlock.A,
-                startTime=time(9, 0),
-                endTime=time(10, 0),
-            )
-        ]
-        )
-    )
+crud.addAbsence(db, absence)
