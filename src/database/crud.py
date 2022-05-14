@@ -9,7 +9,7 @@ from loguru import logger
 from sqlalchemy import update
 
 from ..dataTypes import schemas, models, structs
-from ..utils.prettifyTeacherName import prettifyTeacher
+from ..utils.prettifyTeacherName import prettifyName, prettifyTeacher
 
 
 def getUser(db: Session, user: schemas.UserReturn) -> Optional[models.User]:
@@ -297,6 +297,7 @@ def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
 def addUser(db: Session, user: schemas.UserCreate) -> Optional[models.User]:
     if user.gid != None:  # Checks for GID as this is the only mandatory field.
         uid = str(uuid4())  # Generates UUID.
+        (user.first, user.last) = prettifyName(user.first, user.last) # Prettifies name.
         userModel = models.User(
             uid=uid, **user.dict()
         )  # Creates model from dict of input values.
@@ -310,7 +311,7 @@ def addUser(db: Session, user: schemas.UserCreate) -> Optional[models.User]:
     return None
 
 
-def addClass(db: Session, newClass: schemas.Class) -> models.Class:
+def addClass(db: Session, newClass: schemas.Class) -> Optional[models.Class]:
     if (
         newClass.tid is not None
         and newClass.uid is not None
@@ -352,6 +353,9 @@ def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> Optional[model
 
 
 def addTeacherAlias(db: Session, newTeacherAlias: schemas.TeacherAliasCreate) -> Optional[models.Aliases]:
+
+    (newTeacherAlias.first, newTeacherAlias.last) = prettifyName(newTeacherAlias.first, newTeacherAlias.last) # To ensure that all names are in the correct format.
+
     if newTeacherAlias.tid is None:
         logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias.tid}")
         return None
@@ -371,7 +375,7 @@ def addTeacherAlias(db: Session, newTeacherAlias: schemas.TeacherAliasCreate) ->
 
 def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> Optional[models.Absence]:
     absence.teacher = schemas.TeacherCreate( **prettifyTeacher(absence.teacher).dict() ) # To ensure that all names that we work with are in the correct format.
-
+    
     if (
         absence.teacher.first is None
         or

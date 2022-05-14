@@ -82,7 +82,7 @@ returnTeach = crud.addTeacher(db, schemas.TeacherCreate(
     ))
 
 aliasCreation = crud.addTeacherAlias(db, schemas.TeacherAliasCreate(
-                    first="Kev",
+                    first="kEv",
                     last="Yang",
                     tid = returnTeach.tid
                     )
