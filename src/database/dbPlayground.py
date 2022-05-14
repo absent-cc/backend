@@ -82,8 +82,8 @@ returnTeach = crud.addTeacher(db, schemas.TeacherCreate(
     ))
 
 aliasCreation = crud.addTeacherAlias(db, schemas.TeacherAliasCreate(
-                    first="kev",
-                    last="yang",
+                    first="Kev",
+                    last="Yang",
                     tid = returnTeach.tid
                     )
                 )
@@ -92,7 +92,7 @@ aliasCreation = crud.addTeacherAlias(db, schemas.TeacherAliasCreate(
 
 absence = schemas.AbsenceCreate(
     teacher = schemas.TeacherCreate(
-        first = "kev",
+        first = "kEv",
         last = "yang",
         school = structs.SchoolName.NEWTON_SOUTH,
     ),

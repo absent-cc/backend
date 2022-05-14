@@ -10,7 +10,7 @@ from src.dataTypes import models
 from ....api import accounts, utils
 from ....dataTypes import schemas, structs
 from ....database import crud
-from ....utils.prettifyTeacherName import prettify
+from ....utils.prettifyTeacherName import prettifyTeacher
 
 NNHS_FIRSTS = []
 NNHS_LASTS = []
@@ -83,7 +83,7 @@ def getAbsenceList(
     list: List[models.Absence] = crud.getAbsenceList(db, date, school)
     returnAbsences: List[schemas.AbsenceReturn] = [
         schemas.AbsenceReturn(
-            length=absence.length, teacher=prettify(absence.teacher), note=absence.note
+            length=absence.length, teacher=prettifyTeacher(absence.teacher), note=absence.note
         )
         for absence in list
     ]

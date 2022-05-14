@@ -9,7 +9,7 @@ from loguru import logger
 from sqlalchemy import update
 
 from ..dataTypes import schemas, models, structs
-from ..utils.prettifyTeacherName import prettify
+from ..utils.prettifyTeacherName import prettifyTeacher
 
 
 def getUser(db: Session, user: schemas.UserReturn) -> Optional[models.User]:
@@ -337,7 +337,7 @@ def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> Optional[model
         and newTeacher.school is not None
     ):  # Checks for required fields.
         tid = secrets.token_hex(4)  # Generates hexadecimal TID.
-        newTeacher = prettify(schemas.TeacherReturn(**newTeacher.dict(), tid=tid))
+        newTeacher = prettifyTeacher(schemas.TeacherReturn(**newTeacher.dict(), tid=tid))
         teacherModel = models.Teacher(**newTeacher.dict())  # Creates a model.
         db.add(teacherModel)  # Adds teacher.
         db.commit()
@@ -370,6 +370,8 @@ def addTeacherAlias(db: Session, newTeacherAlias: schemas.TeacherAliasCreate) ->
 
 
 def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> Optional[models.Absence]:
+    absence.teacher = schemas.TeacherCreate( **prettifyTeacher(absence.teacher).dict() ) # To ensure that all names that we work with are in the correct format.
+
     if (
         absence.teacher.first is None
         or
@@ -394,7 +396,7 @@ def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> Optional[models.A
             teacher = teacherAlias
     absenceModel = models.Absence(
         date=absence.date, tid=teacher.tid, note=absence.note, length=absence.length
-    )   
+    )
     db.add(absenceModel)
     db.commit()
     logger.info(f"ADD: Absence added: {absence.date} | TID: {teacher.tid}")
