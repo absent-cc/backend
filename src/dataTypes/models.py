@@ -122,7 +122,9 @@ class Aliases(Base):
     first = Column(String(255), primary_key=True)
     last = Column(String(255), primary_key=True)
     tid = Column(String(36), ForeignKey(Teacher.tid, ondelete="CASCADE"))
-
+    
+    def __str__(self) -> str:
+        return f"{self.first} {self.last} ({self.tid})"
     # teacher = relationship("Teacher", back_populates="aliases")
 
 class Announcements(Base):

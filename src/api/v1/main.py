@@ -21,16 +21,8 @@ tags_metadata = [
         "description": "Teacher related endpoints.",
     },
     {
-        "name": "Analytics",
-        "description": "Endpoints for analytics.",
-    },
-    {
         "name": "Shields.io Badges",
         "description": "Endpoints for shields.io badges",
-    },
-    {
-        "name": "Admin",
-        "description": "Endpoints for administration of the service, such as sending announcements and accessing private information.",
     },
 ]
 

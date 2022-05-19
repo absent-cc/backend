@@ -393,3 +393,21 @@ class AnnouncementUpdate(AnnouncementCreate):
 
     class Config:
         orm_mode = True
+
+class TeacherAliasBase(BaseModel):
+    first: str
+    last: str
+
+    class Config:
+        orm_mode = True
+
+class TeacherAliasCreate(TeacherAliasBase):
+    tid: str
+
+    class Config:
+        orm_mode = True
+
+class TeacherAliasReturn(TeacherAliasCreate):
+    alid: str
+    class Config:
+        orm_mode = True

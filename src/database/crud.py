@@ -1,4 +1,5 @@
 import secrets
+from turtle import TurtleGraphicsError
 from sqlalchemy.orm import Session
 from datetime import datetime, date
 from typing import List, Optional, Tuple
@@ -8,7 +9,7 @@ from loguru import logger
 from sqlalchemy import update
 
 from ..dataTypes import schemas, models, structs
-from ..utils.prettifyTeacherName import prettify
+from ..utils.prettifyTeacherName import prettifyName, prettifyTeacher
 
 
 def getUser(db: Session, user: schemas.UserReturn) -> Optional[models.User]:
@@ -181,6 +182,30 @@ def getAlwaysNotify(db: Session, school: structs.SchoolName) -> models.User:
         .all()
     )
 
+def getTeacherAliasByTID(db: Session, teacher: schemas.TeacherReturn) -> models.Aliases:
+    if teacher.tid is not None:
+        logger.info(f"GET: Teacher alias requested: {teacher.tid}")
+        return (
+            db.query(models.Aliases)
+            .filter(models.Aliases.tid == teacher.tid)
+            .first()
+        )
+    logger.error(f"GET: Teacher alias lookup failed: {teacher.tid}")
+    return None
+
+def getTeacherAlias(db: Session, teacher: schemas.TeacherAliasBase) -> models.Aliases:
+    if teacher.first is not None and teacher.last is not None:
+        logger.info(f"GET: Teacher alias requested: {teacher.first} {teacher.last}")
+        return (
+            db.query(models.Aliases)
+            .filter(
+                models.Aliases.first == teacher.first,
+                models.Aliases.last == teacher.last,
+            )
+            .first()
+        )
+    logger.error(f"GET: Teacher alias lookup failed: {teacher.first} {teacher.last}")
+    return None
 
 # Peek the top entry in the absences table by date.
 def peekAbsence(db: Session, date: datetime = datetime.today().date()) -> tuple:
@@ -272,6 +297,7 @@ def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
 def addUser(db: Session, user: schemas.UserCreate) -> Optional[models.User]:
     if user.gid != None:  # Checks for GID as this is the only mandatory field.
         uid = str(uuid4())  # Generates UUID.
+        (user.first, user.last) = prettifyName(user.first, user.last) # Prettifies name.
         userModel = models.User(
             uid=uid, **user.dict()
         )  # Creates model from dict of input values.
@@ -285,7 +311,7 @@ def addUser(db: Session, user: schemas.UserCreate) -> Optional[models.User]:
     return None
 
 
-def addClass(db: Session, newClass: schemas.Class) -> models.Class:
+def addClass(db: Session, newClass: schemas.Class) -> Optional[models.Class]:
     if (
         newClass.tid is not None
         and newClass.uid is not None
@@ -305,14 +331,14 @@ def addClass(db: Session, newClass: schemas.Class) -> models.Class:
     return None
 
 
-def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> models.Teacher:
+def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> Optional[models.Teacher]:
     if (
         newTeacher.first is not None
         and newTeacher.last is not None
         and newTeacher.school is not None
     ):  # Checks for required fields.
         tid = secrets.token_hex(4)  # Generates hexadecimal TID.
-        newTeacher = prettify(schemas.TeacherReturn(**newTeacher.dict(), tid=tid))
+        newTeacher = prettifyTeacher(schemas.TeacherReturn(**newTeacher.dict(), tid=tid))
         teacherModel = models.Teacher(**newTeacher.dict())  # Creates a model.
         db.add(teacherModel)  # Adds teacher.
         db.commit()
@@ -325,15 +351,53 @@ def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> models.Teacher
     )
     return None
 
-def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> models.Absence:
+
+def addTeacherAlias(db: Session, newTeacherAlias: schemas.TeacherAliasCreate) -> Optional[models.Aliases]:
+
+    (newTeacherAlias.first, newTeacherAlias.last) = prettifyName(newTeacherAlias.first, newTeacherAlias.last) # To ensure that all names are in the correct format.
+
+    if newTeacherAlias.tid is None:
+        logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias.tid}")
+        return None
+    if getTeacher(db, schemas.TeacherReturn(tid=newTeacherAlias.tid)) is None:
+        logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias.tid}")
+        return None
+    
+    alid = secrets.token_hex(4)
+    teacherAlias = schemas.TeacherAliasReturn(**newTeacherAlias.dict(), alid=alid)
+    teacherAliasModel = models.Aliases(**teacherAlias.dict())
+
+    db.add(teacherAliasModel)
+    db.commit()
+    logger.info(f"ADD: Teacher alias added: {alid} | TID: {newTeacherAlias.tid}")
+    return teacherAliasModel
+
+
+def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> Optional[models.Absence]:
+    absence.teacher = schemas.TeacherCreate( **prettifyTeacher(absence.teacher).dict() ) # To ensure that all names that we work with are in the correct format.
+    
     if (
-        absence.teacher.first is not None
-        and absence.teacher.last is not None
-        and absence.teacher.school is not None
+        absence.teacher.first is None
+        or
+        absence.teacher.last is None
+        or
+        absence.teacher.school is None
     ):
-        teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
+        logger.error(f"ADD: Absence addition failed: {absence.teacher}")
+        return None
+    
+    teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
+    
     if teacher is None:
-        teacher = addTeacher(db, absence.teacher)
+        print("Teacher not found. Going through aliases")
+        # Teacher is not found, check if an alias exists.
+        teacherAlias = getTeacherAlias(db, schemas.TeacherAliasBase(**absence.teacher.dict()))
+        if teacherAlias is None:
+            print("Teacher alias not found")
+            teacher = addTeacher(db, absence.teacher)
+        else:
+            print("Teacher alias found")
+            teacher = teacherAlias
     absenceModel = models.Absence(
         date=absence.date, tid=teacher.tid, note=absence.note, length=absence.length
     )

@@ -12,7 +12,6 @@ from ....database import crud
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
-
 # @router.get(
 #     "/lookup/user/", response_model=List[schemas.UserInfoReturn], status_code=200
 # )
@@ -153,3 +152,21 @@ def removeSpecialDay(
     an = schemas.AnnouncementReturn(anid=anid)
     crud.removeAnnouncement(db, an)
     return schemas.Bool(success=True)
+
+@router.get("/teacher/", response_model=schemas.TeacherReturn, status_code=201)
+def getTeacher(
+    first: Optional[str] = None,
+    last: Optional[str] = None,
+    school: Optional[structs.SchoolName] = None,
+    db: Session = Depends(accounts.getDBSession),
+    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    return crud.getTeacher(db, schemas.TeacherReturn(first=first, last=last, school=school))
+
+@router.post("/teacher/alias", response_model=schemas.Bool, status_code=201)
+def addTeacherAlias(
+    alias: schemas.TeacherAliasCreate,
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    return crud.addTeacherAlias(db, alias)
