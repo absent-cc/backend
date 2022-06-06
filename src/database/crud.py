@@ -1,5 +1,4 @@
 import secrets
-from turtle import TurtleGraphicsError
 from sqlalchemy.orm import Session
 from datetime import datetime, date
 from typing import List, Optional, Tuple

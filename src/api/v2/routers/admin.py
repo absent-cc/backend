@@ -159,7 +159,7 @@ def getTeacher(
     last: Optional[str] = None,
     school: Optional[structs.SchoolName] = None,
     db: Session = Depends(accounts.getDBSession),
-    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     return crud.getTeacher(db, schemas.TeacherReturn(first=first, last=last, school=school))
 
