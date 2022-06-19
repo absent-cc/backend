@@ -56,7 +56,7 @@ class TeacherCreate(TeacherBase):
 
 
 class TeacherReturn(TeacherCreate):
-    tid: str = None
+    tid: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"{self.first} {self.last} {self.tid} {self.school}"
@@ -411,3 +411,30 @@ class TeacherAliasReturn(TeacherAliasCreate):
     alid: str
     class Config:
         orm_mode = True
+
+class FriendBase(BaseModel):
+    user: UserReturn
+    friend: UserReturn
+    status: structs.FriendshipStatus = structs.FriendshipStatus.NONE
+
+    class Config:
+        orm_mode = True
+    
+    def __str__(self) -> str:
+        return f"{self.user} --({self.status})--> {self.friend}"
+
+class FriendCreate(FriendBase):
+    date: date
+
+    class Config:
+        orm_mode = True
+    
+    def __str__(self) -> str:
+        return super().__str__() + f" | {self.date}"
+
+class FriendReturn(FriendCreate):
+    class Config:
+        orm_mode = True
+    
+    def __str__(self) -> str:
+        return super().__str__()

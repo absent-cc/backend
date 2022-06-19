@@ -275,15 +275,15 @@ def getSchedule(db: Session, user: schemas.UserReturn) -> Optional[List[models.C
     logger.error(f"GET: User schedule lookup failed: {user.uid}")
     return None
 
-def getFriends(db: Session, user: schemas.UserReturn, friend: schemas.UserReturn) -> Optional[List[models.Friends]]:
-    if user.uid is not None and friend.uid is not None:
-        logger.info(f"GET: Friend lookup requested: {user.uid} {friend.uid}")
+def getFriend(db: Session, friendship: schemas.FriendBase) -> Optional[List[models.Friends]]:
+    if friendship.user.uid is not None and friendship.friend.uid is not None:
+        logger.info(f"GET: Friend lookup requested: {friendship.user.uid} {friendship.friend.uid}")
         return (
             db.query(models.Friends)
-            .filter(models.Friends.uid == user.uid, models.Friends.friend_uid == friend.uid)
-            .all()
+            .filter(models.Friends.uid == friendship.user.uid, models.Friends.fid == friendship.friend.uid)
+            .first()
         )
-    logger.error(f"GET: Friend lookup failed: {user.uid} {friend.uid}")
+    logger.error(f"GET: Friend lookup failed: {friendship.user.uid} {friendship.friend.uid}")
     return None
 
 def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
@@ -446,61 +446,52 @@ def addAnnouncement(db: Session, announcement: schemas.AnnouncementBase) -> sche
         query = getAnnouncementByID(db, anid)
         logger.info("ADD: Announcement ID already exists, generating new ID")
     
-    db.add(
-        models.Announcements(
+    announcementModel = models.Announcements(
             anid=anid,
             title=announcement.title,
             content=announcement.content,
             date=announcement.date,
             school=announcement.school,
         )
-    )
+    db.add(announcementModel)
 
     db.commit()
     logger.info(f"ADD: Announcement added: {anid}")
+    # Rework so it doesn't return a bool.
     return schemas.Bool(success=True)
 
-def addFriend(db: Session, user: schemas.UserReturn, friend: schemas.UserReturn) -> schemas.Bool:
+def addFriend(db: Session, friendship: schemas.FriendCreate) -> Optional[models.Friends]:
     # Search user up in the database.
-    searched_user = getUser(db, schemas.UserReturn(uid=user.uid))
-    searched_friend = getUser(db, schemas.UserReturn(uid=friend.uid))
+    searched_user = getUser(db, schemas.UserReturn(uid=friendship.user.uid))
+    searched_friend = getUser(db, schemas.UserReturn(uid=friendship.friend.uid))
 
     # Validate that the user exists in the database.
     if searched_user is None or searched_friend is None:
         logger.error(f"ADD: Friend addition failed: {searched_user} -> {searched_friend}. User or Friend not found.")
-        return schemas.Bool(success=False)
-    if user.uid == friend.uid:
+        return None
+    if friendship.user.uid == friendship.friend.uid:
         logger.error(f"ADD: Friend addition failed: {searched_user} -> {searched_friend}. Friend and User cannot be the same person.")
-        return schemas.Bool(success=False)
+        return None
     
     success: schemas.Bool = schemas.Bool(success=True)
 
     # Check if entry already exists.
-    if getFriend(db, user=searched_user, friend=searched_friend) is None:
-        db.add(
-            models.Friends(
-                uid=user.uid, fid=friend.uid, date=datetime.now().date()
+    if getFriend(db, friendship) is None:
+        # Add entry to database.
+        friendship_entry = models.Friends(
+                uid=friendship.user.uid,
+                fid=friendship.friend.uid,
+                date=friendship.date,
+                status=friendship.status
             )
-        )
+        db.add(friendship_entry)
         db.commit()
         logger.info(f"ADD: Friend added: {searched_user} -> {searched_friend}")
+        return friendship_entry
     else:
-        logger.error(f"ADD: Friend addition failed: {searched_user} -> {searched_friend}. User to Friend already exists.")
-        success.success = False
-
-    if getFriend(db, user=searched_friend, friend=searched_user) is None:
-        db.add(
-            models.Friends(
-                uid=friend.uid, fid=user.uid, date=datetime.now().date()
-            )
-        ) 
-        db.commit()
-        logger.info(f"ADD: Friend added: {searched_user} -> {searched_friend}")
-    else:
-        logger.error(f"ADD: Friend addition failed: {searched_user} -> {searched_friend}. Friend to User already exists.")
-        success.success = False
+        logger.error(f"ADD: Friend addition failed: {searched_user} -> {searched_friend}. User to Friend already exists.") 
+        return None
     
-    return success
 
 def removeSession(db: Session, session: schemas.SessionReturn) -> bool:
     if session.sid is not None and session.uid is not None:

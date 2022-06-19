@@ -168,15 +168,16 @@ class Friends(Base):
     __tablename__ = "friends"
     uid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"), primary_key=True)
     fid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"), primary_key=True)
-    friendship = Column(Enum(structs.Friendship))
+    status = Column(Enum(structs.FriendshipStatus))
     date = Column(Date, primary_key=True)
 
     __table_args__ = (UniqueConstraint("uid", "fid"),)
 
     user = relationship("User", foreign_keys=[uid])
     friend = relationship("User", foreign_keys=[fid])
-    # friend = relationship("User", secondary="Friends", back_populates="friends")
-    # FIX THIS LATER
+
+    def __str__(self) -> str:
+        return f"{self.user} --({self.status})--> {self.friend} | {self.date}"
 
 class UserSocial(Base):
     __tablename__ = "social"
@@ -185,6 +186,7 @@ class UserSocial(Base):
     snapchat = Column(String(255))
     messenger = Column(String(255))
     phone = Column(String(255))
+    # Remeber if you make changes to the columns here, you make changes in schemas.py as well!
 
     __table_args__ = (UniqueConstraint("uid"),)
     user = relationship("User")
