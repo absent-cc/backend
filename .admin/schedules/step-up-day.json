@@ -1,0 +1,26 @@
+{
+  "date": "2022-06-10",
+  "name": "Step Up Day",
+  "schedule": [
+    {
+      "block": "C",
+      "startTime": "09:00:00",
+      "endTime": "10:00:00",
+      "lunches": null
+    },
+    {
+      "block": "WIN",
+      "startTime": "10:05:00",
+      "endTime": "10:55:00",
+      "lunches": null
+    },
+    {
+      "block": "D",
+      "startTime": "11:00:00",
+      "endTime": "12:00:00",
+      "lunches": null
+    }
+    ],
+  "note": "Step Up Day For Middle Schoolers",
+  "special": true
+}

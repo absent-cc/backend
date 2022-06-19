@@ -140,3 +140,13 @@ class Announcements(Base):
         lines="---------------------\n"
         header = f"Announcement:\n\tID: {self.anid}\n\tTitle: {self.title}\n\tDate: {self.date}\n\tSchool: {self.school}\n\tLast Update: {self.lastUpdate}\n\tContent:"
         return lines + header + "\n\t" + self.content + "\n" + lines
+    
+class Friends(Base):
+    __tablename__ = "friends"
+    uid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"), primary_key=True)
+    fid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"), primary_key=True)
+    friendship = Column(Enum(structs.Friendship))
+    date = Column(Date, primary_key=True)
+    # __table_args__ = (UniqueConstraint("uid", "fid"),)
+    user = relationship("User", back_populates="friends")
+    friend = relationship("User", back_populates="friends")

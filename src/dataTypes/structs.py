@@ -635,3 +635,11 @@ class SchoolBlocksOnDayWithTimes(Dict[int, ScheduleWithTimes]):
 
         def __repr__(self):
             return str(self.__dict__)
+
+class Friendship(Enum):
+    # Values are in order of relationship "strength"
+    BLOCKED: str = "Blocked"            # Cannot be seen by other
+    NONE: str = "None"                  # Name + Google image can be seen by other; Default state
+    ACQUAINTANCE: str = "Acquaintance"  # Instagram, Phone Number, etc. can be seen by other
+    FRIEND: str = "Friend"              # Schedule can be seen by other    
+    BFF: str = "BFF"                    # Location can be seen by other
