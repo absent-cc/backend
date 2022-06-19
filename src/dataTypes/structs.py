@@ -643,3 +643,7 @@ class Friendship(Enum):
     ACQUAINTANCE: str = "Acquaintance"  # Instagram, Phone Number, etc. can be seen by other
     FRIEND: str = "Friend"              # Schedule can be seen by other    
     BFF: str = "BFF"                    # Location can be seen by other
+
+class TeacherReportSource(Enum):
+    ADMIN: str = "Admin"
+    USER: str = "USER"

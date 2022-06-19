@@ -80,7 +80,7 @@ def getAbsenceList(
 ):
     if date is None:
         date = datetime.date.today()
-    list: List[models.Absence] = crud.getAbsenceList(db, date, school)
+    list: List[models.Absences] = crud.getAbsenceList(db, date, school)
     returnAbsences: List[schemas.AbsenceReturn] = [
         schemas.AbsenceReturn(
             length=absence.length, teacher=prettifyTeacher(absence.teacher), note=absence.note

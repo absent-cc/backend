@@ -1,3 +1,4 @@
+from ast import alias
 from email.policy import default
 from sqlalchemy import (
     Column,
@@ -22,6 +23,7 @@ else:
     from ..database.database import Base  # CHANGE THIS TO ..database for ALEMBIC
 
 
+# Table for everything User related
 class User(Base):
     __tablename__ = "users"
     uid = Column(String(36), primary_key=True)
@@ -31,27 +33,38 @@ class User(Base):
     school = Column(Enum(structs.SchoolName))
     grade = Column(Enum(structs.Grade))
 
-    schedule = relationship("Class", back_populates="user")
-    sessions = relationship("UserSession", back_populates="user")
+    schedule = relationship("Classes", back_populates="user")
+    sessions = relationship("UserSessions", back_populates="user")
     settings = relationship("UserSettings", back_populates="user")
+    social = relationship("UserSocial", back_populates="user")
+    friends = relationship("Friends", back_populates="user", foreign_keys="Friends.uid")
 
     def __str__(self) -> str:
         return f"{self.first} {self.last} ({self.school} {self.grade})"
 
+# Table for everything Teacher related
 class Teacher(Base):
     __tablename__ = "teachers"
     tid = Column(String(8), primary_key=True)
     first = Column(String(255, collation="nocase"))
     last = Column(String(255, collation="nocase"))
     school = Column(Enum(structs.SchoolName))
+    source = Column(Enum(structs.TeacherReportSource))
 
-    classes = relationship("Class", back_populates="teacher")
+    classes = relationship("Classes", back_populates="teacher")
+    aliases = relationship("Aliases", back_populates="teacher")
+    absences = relationship("Absences", back_populates="teacher")
+
     __table_args__ = (UniqueConstraint("first", "last", "school"),)
 
     def __str__(self) -> str:
         return f"{self.first} {self.last} ({self.school})"
 
-class UserSession(Base):
+# Table for User Sessions
+# This is a one-to-many relationship with User
+# (1 User - > X UserSession)
+# Each additional session is a new login on a device
+class UserSessions(Base):
     __tablename__ = "sessions"
     sid = Column(String(16), primary_key=True)
     uid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"))
@@ -60,10 +73,16 @@ class UserSession(Base):
     fcm_timestamp = Column(TIMESTAMP)
 
     user = relationship("User")
+
     __table_args__ = (UniqueConstraint("sid", "uid"),)
 
 
-class Class(Base):
+# Table listing Classes
+# Links a User to a Teacher through a Class entry
+# 1 to Many relationship with User and Teacher
+# (1 User - > X Class)
+# (1 Teacher - > X Class)
+class Classes(Base):
     __tablename__ = "classes"
     cid = Column(String(8), primary_key=True)
     tid = Column(String(8), ForeignKey(Teacher.tid, ondelete="CASCADE"))
@@ -72,12 +91,14 @@ class Class(Base):
 
     teacher = relationship("Teacher")
     user = relationship("User")
+
     __table_args__ = (UniqueConstraint("tid", "block", "uid"),)
 
     def __str__(self) -> str:
         return f"{self.block} {self.teacher} {self.user}"
-    
-class Absence(Base):
+
+
+class Absences(Base):
     __tablename__ = "absences"
     tid = Column(
         String(8), ForeignKey(Teacher.tid, ondelete="CASCADE"), primary_key=True
@@ -123,9 +144,10 @@ class Aliases(Base):
     last = Column(String(255), primary_key=True)
     tid = Column(String(36), ForeignKey(Teacher.tid, ondelete="CASCADE"))
     
+    teacher = relationship("Teacher")
+   
     def __str__(self) -> str:
         return f"{self.first} {self.last} ({self.tid})"
-    # teacher = relationship("Teacher", back_populates="aliases")
 
 class Announcements(Base):
     __tablename__ = "announcements"
@@ -140,13 +162,29 @@ class Announcements(Base):
         lines="---------------------\n"
         header = f"Announcement:\n\tID: {self.anid}\n\tTitle: {self.title}\n\tDate: {self.date}\n\tSchool: {self.school}\n\tLast Update: {self.lastUpdate}\n\tContent:"
         return lines + header + "\n\t" + self.content + "\n" + lines
-    
+
+
 class Friends(Base):
     __tablename__ = "friends"
     uid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"), primary_key=True)
     fid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"), primary_key=True)
     friendship = Column(Enum(structs.Friendship))
     date = Column(Date, primary_key=True)
-    # __table_args__ = (UniqueConstraint("uid", "fid"),)
-    user = relationship("User", back_populates="friends")
-    friend = relationship("User", back_populates="friends")
+
+    __table_args__ = (UniqueConstraint("uid", "fid"),)
+
+    user = relationship("User", foreign_keys=[uid])
+    friend = relationship("User", foreign_keys=[fid])
+    # friend = relationship("User", secondary="Friends", back_populates="friends")
+    # FIX THIS LATER
+
+class UserSocial(Base):
+    __tablename__ = "social"
+    uid = Column(String(36), ForeignKey(User.uid, ondelete="CASCADE"), primary_key=True)
+    instagram = Column(String(255))
+    snapchat = Column(String(255))
+    messenger = Column(String(255))
+    phone = Column(String(255))
+
+    __table_args__ = (UniqueConstraint("uid"),)
+    user = relationship("User")

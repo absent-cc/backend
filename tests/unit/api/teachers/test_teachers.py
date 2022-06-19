@@ -46,7 +46,7 @@ class TestTeachers(unittest.TestCase):
                     }  # Strip whitespace from all values.
 
                     # Add teacher to DB
-                    teacherMeta: models.Absence = crud.addAbsence(
+                    teacherMeta: models.Absences = crud.addAbsence(
                         TestTeachers._db,
                         AbsenceCreate(
                             teacher=TeacherCreate(

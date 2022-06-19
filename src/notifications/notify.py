@@ -17,7 +17,7 @@ class Notify:
         self.db = SessionLocal()
         self.school = school
         self.date = date
-        self.absences: Optional[List[models.Absence]] = crud.getAbsenceList(
+        self.absences: Optional[List[models.Absences]] = crud.getAbsenceList(
             self.db, self.date, self.school
         )
 

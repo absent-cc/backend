@@ -34,7 +34,7 @@ class TrojanHorse:
 
     counter = 0
     # For instances of Trojan Horse:
-    def increment():
+    def increment(self):
         TrojanHorse.counter += 1
 
         husk = {
