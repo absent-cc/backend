@@ -642,12 +642,14 @@ class FriendshipStatus(OrderedEnum):
     # Thus order declaration matters (OrderedEnum)
     BLOCKED: str = "Blocked"            # Cannot be seen by other
     NONE: str = "None"                  # Name + Google image can be seen by other; Default state
-    ACQUAINTANCE: str = "Acquaintance"  # Instagram, Phone Number, etc. can be seen by other
-    FRIEND: str = "Friend"              # Schedule can be seen by other    
+    REQUESTED: str = "Requested"        # Friend request sent
+    ACQUAINTANCE: str = "Acquaintance"  # Friend request accepted Instagram, Phone Number, etc. can be seen by other
+    FRIEND: str = "Friend"              # Schedule can be seen by other
     BFF: str = "BFF"                    # Location can be seen by other
 
     def __str__(self):
         return self.value
+
 class TeacherReportSource(Enum):
     ADMIN: str = "Admin"
     USER: str = "User"

@@ -1,3 +1,4 @@
+from inspect import getfile
 import secrets
 from sqlalchemy.orm import Session
 from datetime import datetime, date
@@ -26,7 +27,7 @@ def getUser(db: Session, user: schemas.UserReturn) -> Optional[models.User]:
     return None
 
 
-def getTeacher(db: Session, teacher: schemas.TeacherReturn) -> models.Teacher:
+def getTeacher(db: Session, teacher: schemas.TeacherReturn) -> Optional[models.Teacher]:
     if teacher.tid is not None:
         logger.info(f"GET: Teacher looked up by TID: {teacher.tid}")  # Logs lookup.
         return (
@@ -181,7 +182,7 @@ def getAlwaysNotify(db: Session, school: structs.SchoolName) -> models.User:
         .all()
     )
 
-def getTeacherAliasByTID(db: Session, teacher: schemas.TeacherReturn) -> models.Aliases:
+def getTeacherAliasByTID(db: Session, teacher: schemas.TeacherReturn) -> Optional[models.Aliases]:
     if teacher.tid is not None:
         logger.info(f"GET: Teacher alias requested: {teacher.tid}")
         return (
@@ -275,9 +276,9 @@ def getSchedule(db: Session, user: schemas.UserReturn) -> Optional[List[models.C
     logger.error(f"GET: User schedule lookup failed: {user.uid}")
     return None
 
-def getFriend(db: Session, friendship: schemas.FriendBase) -> Optional[List[models.Friends]]:
+def getFriend(db: Session, friendship: schemas.FriendBase) -> Optional[models.Friends]:
     if friendship.user.uid is not None and friendship.friend.uid is not None:
-        logger.info(f"GET: Friend lookup requested: {friendship.user.uid} {friendship.friend.uid}")
+        logger.info(f"GET: Friend lookup requested: {friendship.user.uid} --> {friendship.friend.uid}")
         return (
             db.query(models.Friends)
             .filter(models.Friends.uid == friendship.user.uid, models.Friends.fid == friendship.friend.uid)
@@ -286,6 +287,13 @@ def getFriend(db: Session, friendship: schemas.FriendBase) -> Optional[List[mode
     logger.error(f"GET: Friend lookup failed: {friendship.user.uid} {friendship.friend.uid}")
     return None
 
+def getFriends(db: Session, user: schemas.UserReturn) -> Optional[List[models.Friends]]:
+    if user.uid is not None:
+        logger.info(f"GET: Friends lookup requested: {user.uid}")
+        return db.query(models.Friends).filter(models.Friends.uid == user.uid).all()
+    logger.error(f"GET: Friends lookup failed: {user.uid}")
+    return None
+    
 def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
     logger.info(f"ADD: Added special day: {specialDay.date}")
     try:
@@ -467,10 +475,10 @@ def addFriend(db: Session, friendship: schemas.FriendCreate) -> Optional[models.
 
     # Validate that the user exists in the database.
     if searched_user is None or searched_friend is None:
-        logger.error(f"ADD: Friend addition failed: {searched_user} -> {searched_friend}. User or Friend not found.")
+        logger.error(f"ADD: Friend addition failed: {searched_user} --({friendship.status})--> {searched_friend}. User or Friend not found.")
         return None
     if friendship.user.uid == friendship.friend.uid:
-        logger.error(f"ADD: Friend addition failed: {searched_user} -> {searched_friend}. Friend and User cannot be the same person.")
+        logger.error(f"ADD: Friend addition failed: {searched_user.uid} --({friendship.status})--> {searched_friend.uid}. Friend and User cannot be the same person.")
         return None
     
     success: schemas.Bool = schemas.Bool(success=True)
@@ -486,12 +494,12 @@ def addFriend(db: Session, friendship: schemas.FriendCreate) -> Optional[models.
             )
         db.add(friendship_entry)
         db.commit()
-        logger.info(f"ADD: Friend added: {searched_user} -> {searched_friend}")
+        logger.info(f"ADD: Friend added: {searched_user.uid} --({friendship.status})--> {searched_friend.uid}")
         return friendship_entry
     else:
-        logger.error(f"ADD: Friend addition failed: {searched_user} -> {searched_friend}. User to Friend already exists.") 
+        logger.error(f"ADD: Friend addition failed: {searched_user.uid} --({friendship.status})--> {searched_friend.uid}. User to Friend already exists.")
         return None
-    
+
 
 def removeSession(db: Session, session: schemas.SessionReturn) -> bool:
     if session.sid is not None and session.uid is not None:
@@ -576,6 +584,19 @@ def removeAnnouncement(db, announcement: schemas.AnnouncementReturn) -> bool:
     logger.info(f"REMOVE: Removed announcement: {announcement.anid}")
     return True
 
+def removeFriend(db, friendship: schemas.FriendReturn) -> bool:
+    if friendship is None:
+        return False
+    if friendship.user.uid is None or friendship.friend.uid is None:
+        logger.error(f"REMOVE: Friend removal failed: {friendship.user.uid} -> {friendship.friend.uid}")
+        return False
+    db.query(models.Friends).filter(
+        models.Friends.uid == friendship.user.uid, models.Friends.fid == friendship.friend.uid
+    ).delete()
+    db.commit()
+    logger.info(f"REMOVE: Removed friendship: {friendship.user.uid} -> {friendship.friend.uid}")
+    return True
+
 def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> bool:
     if user.school is None:
         searched_user: Optional[models.User] = getUser(db, user)
@@ -600,14 +621,17 @@ def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> 
                         ),
                     )
                     if resTeacher is None:
-                        tid = addTeacher(
-                            db,
+                        addedTeacher = addTeacher(db,
                             schemas.TeacherCreate(
                                 first=teacher.first,
                                 last=teacher.last,
                                 school=user.school,
                             ),
-                        ).tid  # Adds them to DB if they don't exist.
+                        )
+                        if addedTeacher is None:
+                            logger.error(f"UPDATE: Updating schedule failed: {teacher.first} {teacher.last} failed to be added. Should never occur.")
+                            return False
+                        tid = addedTeacher.tid  # Adds them to DB if they don't exist.
                     else:
                         tid = resTeacher.tid  # Else, just reference them.
                     addClass(
@@ -696,7 +720,26 @@ def updateSpecialDay(db, updateSpecialDay: schemas.SpecialDay) -> schemas.Bool:
     logger.error(f"UPDATE: Special day update failed: {updateSpecialDay.date} Date does not exist")
     return schemas.Bool(success=False)
 
+def updateFriendStatus(db, friendship: schemas.FriendBase, status: structs.FriendshipStatus) -> schemas.Bool:
+    oldEntry = getFriend(db, friendship)
 
+    print(f"Old entry: {oldEntry} | {oldEntry.status}")
+    if oldEntry is None:
+        logger.error(f"UPDATE: Friend status update failed: {friendship.user.uid} -> {friendship.friend.uid}. Could not find friendship.")
+        return schemas.Bool(success=False)
+    
+    oldStatus = oldEntry.status
+
+    result = db.execute(
+                    update(models.Friends)
+                    .where(models.Friends.uid == friendship.user.uid, models.Friends.fid == friendship.friend.uid)
+                    .values(status=status)
+                    )
+    db.commit()
+
+    logger.info(f"UPDATE: Friend status updated: {friendship.user.uid} -> {friendship.friend.uid}. {oldStatus} -> {status}")
+    return schemas.Bool(success=True)
+    
 def reset(db):
     print("INTERNAL FLAG: RESETTING DB!")
     db.query(models.User).delete()

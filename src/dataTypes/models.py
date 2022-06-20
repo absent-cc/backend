@@ -16,6 +16,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, validates
 
 from . import structs
+from . import schemas
 
 if "alembic.env" in __name__:
     from ..database.database import Base  # CHANGE THIS TO ..database for ALEMBIC
@@ -41,6 +42,17 @@ class User(Base):
 
     def __str__(self) -> str:
         return f"{self.first} {self.last} ({self.school} {self.grade})"
+
+    def construct_schema(self) -> schemas.UserReturn:
+        return schemas.UserReturn(
+            uid=self.uid,
+            gid=self.gid,
+            first=self.first,
+            last=self.last,
+            school=self.school,
+            grade=self.grade,
+            schedule = schemas.ScheduleReturn.scheduleFromList([x.construct_schema() for x in self.schedule]),
+        )
 
 # Table for everything Teacher related
 class Teacher(Base):
@@ -96,6 +108,13 @@ class Classes(Base):
 
     def __str__(self) -> str:
         return f"{self.block} {self.teacher} {self.user}"
+
+    def construct_schema(self) -> schemas.Class:
+        return schemas.Class(
+            tid=self.tid,
+            block=self.block,
+            uid=self.uid,
+        )
 
 
 class Absences(Base):
@@ -178,6 +197,14 @@ class Friends(Base):
 
     def __str__(self) -> str:
         return f"{self.user} --({self.status})--> {self.friend} | {self.date}"
+
+    def construct_schema(self) -> schemas.FriendReturn:
+        return schemas.FriendReturn(
+            user = self.user,
+            friend = self.friend,
+            status = self.status,
+            date = self.date
+        )
 
 class UserSocial(Base):
     __tablename__ = "social"

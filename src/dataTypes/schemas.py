@@ -146,7 +146,8 @@ class UserReturn(UserCreate):
 
 class UserProfile(UserCreate):
     uid: Optional[str] = None
-
+    # Perhaps add settings here?
+    # And social media?
     class Config:
         orm_mode = True
 
@@ -413,8 +414,8 @@ class TeacherAliasReturn(TeacherAliasCreate):
         orm_mode = True
 
 class FriendBase(BaseModel):
-    user: UserReturn
-    friend: UserReturn
+    user: UserReturn            # Just needs UID
+    friend: UserReturn          # Just needs UID
     status: structs.FriendshipStatus = structs.FriendshipStatus.NONE
 
     class Config:
