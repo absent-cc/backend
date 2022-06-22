@@ -3,24 +3,20 @@ from datetime import datetime, timedelta, timezone
 from loguru import logger
 
 from .absences import AbsencePuller
-from ..dataTypes import structs
-from ..database import crud
-from ..database.database import SessionLocal
-from ..notifications.notify import Notify
-
+from ..dataTypes import structs                 # type: ignore
+from ..database import crud                     # type: ignore
+from ..database.database import SessionLocal    # type: ignore
+from ..notifications.notify import Notify       # type: ignore
 
 class SchoologyListener:
     def __init__(self, SCHOOLOGYCREDS):
         self.north = structs.SchoolName.NEWTON_NORTH
         self.south = structs.SchoolName.NEWTON_SOUTH
-        self.restTime = timedelta(seconds=30)
         self.sc = AbsencePuller(SCHOOLOGYCREDS)
 
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
-        date = datetime.now(timezone.utc) - timedelta(
-            hours=5
-        )  # Convert from UTC --> EST
+        date = datetime.now(timezone.utc) - timedelta( hours=5 )  # Convert from UTC --> EST
 
         # These statuses get updated when the listern is run.
         ## What happens is that each run function sees if the absent teachers have already been added to the database.
@@ -52,9 +48,9 @@ class SchoologyListener:
             southAbsences = crud.getAbsenceList(
                 listenerDB, school=structs.SchoolName.NEWTON_SOUTH
             )
-            southAbsencesExist = len(southAbsences) != 0
-
             listenerDB.close()
+            
+            southAbsencesExist: bool = len(southAbsences) != 0
 
             if southAbsencesExist:
                 logger.info("NSHS: Absences exist in the database")

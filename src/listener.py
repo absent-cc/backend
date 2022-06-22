@@ -7,6 +7,10 @@ from firebase_admin import credentials
 from .dataTypes import tools
 from .schoology.schoologyListener import *
 
+from .dataTypes import structs
+from loguru import logger
+
+from typing import Tuple
 # Get secrets info from config.ini
 config_path = "config.ini"
 south_key = tools.read_config(config_path, "NSHS", "key")
@@ -28,19 +32,19 @@ SCHOOLOGYCREDS = structs.SchoologyCreds(
 
 # Listen for Schoology updates.
 def listener():
-    saturday = 5
-    sunday = 6
+    saturday: int = 5
+    sunday: int = 6
     # debug mode
-    debugMode = False
+    debugMode: bool= False
 
-    dailyCheckTimeStart = 7  # hour. Default: 7
-    dailyCheckTimeEnd = 10  # hour. Default: 11
+    dailyCheckTimeStart: int = 7  # hour. Default: 7
+    dailyCheckTimeEnd: int = 10  # hour. Default: 11
 
-    resetTimeOne = (0, 0)  # Midnight
-    resetTimeTwo = (4, 20)  # Light It Up
+    resetTimeOne: Tuple[int, int]= (0, 0)  # Midnight
+    resetTimeTwo: Tuple[int, int]= (4, 20)  # Light It Up
 
-    schoologySuccessCheck = False
-    dayoffLatch = False
+    schoologySuccessCheck: bool = False
+    dayoffLatch: bool = False
 
     while True:
         currentTime = datetime.now(timezone.utc) - timedelta(
@@ -49,7 +53,7 @@ def listener():
 
         holiday: bool = False
 
-        dayOfTheWeek = currentTime.weekday()
+        dayOfTheWeek: int = currentTime.weekday()
 
         if not dayoffLatch:
             logger.info(f"Listening: {currentTime}")
@@ -60,16 +64,17 @@ def listener():
             holidayCheck = crud.getSpecialDay(db, date=currentTime.date())
 
             if holidayCheck is not None:
-                if (
-                    len(holidayCheck.schedule) == 0
-                ):  # If there is no schedule, it's a holiday. Remember that length property is defined in ScheduleWithTimes class.
+                if (len(holidayCheck.schedule) == 0):  
+                    # If there is no schedule, it's a holiday. Remember that length property is defined in ScheduleWithTimes class.
                     holiday = True
                     logger.info(f"Today is a holiday: {holidayCheck.name}")
                 else:
                     logger.info(f"Unique schedule for today, not a holiday")
 
             if (
-                dayOfTheWeek == saturday or dayOfTheWeek == sunday or holiday
+                dayOfTheWeek == saturday or 
+                dayOfTheWeek == sunday or 
+                holiday
             ) and not debugMode:
                 if not dayoffLatch:
                     logger.info(
@@ -81,9 +86,9 @@ def listener():
                 belowEndTime: bool = currentTime.hour <= dailyCheckTimeEnd
                 if (
                     aboveStartTime and belowEndTime and not schoologySuccessCheck
-                ) or debugMode:  # IF its during the check time and schoology hasn't already been checked.
+                ) or debugMode:  # If its during the check time and schoology hasn't already been checked.
                     logger.info("Polling schoology...")
-                    sc = SchoologyListener(SCHOOLOGYCREDS)
+                    sc: SchoologyListener = SchoologyListener(SCHOOLOGYCREDS)
                     schoologySuccessCheck: bool = sc.run()
                     logger.info(f"Schoology success: {schoologySuccessCheck}")
                     logger.info("Schoology poll complete")
