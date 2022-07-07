@@ -213,7 +213,18 @@ class UserSocial(Base):
     snapchat = Column(String(255))
     messenger = Column(String(255))
     phone = Column(String(255))
-    # Remeber if you make changes to the columns here, you make changes in schemas.py as well!
+    # Remember if you make changes to the columns here, you make changes in schemas.py as well!
 
     __table_args__ = (UniqueConstraint("uid"),)
     user = relationship("User")
+
+# Table to store the classes that have been canceled for a student
+class Canceled(Base):
+    __tablename__ = "canceled"
+    date = Column(Date, primary_key=True)
+    cid = Column(String(8), ForeignKey(Classes.cid, ondelete="CASCADE"), primary_key=True)
+
+    cls = relationship("Classes")
+
+    def __str__(self) -> str:
+        return f"{self.cls} on {self.date}"

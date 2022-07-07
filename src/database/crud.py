@@ -153,6 +153,37 @@ def getClassesByUser(db: Session, user: schemas.UserReturn) -> Optional[List[mod
     logger.error(f"GET: User class list lookup failed: {user.uid}")
     return None
 
+def getClass(db: Session, cls: schemas.Class) -> Optional[models.Classes]:
+    if cls.uid and cls.tid and cls.block:
+        logger.info(f"GET: Class lookup requested: {cls.uid} {cls.tid} {cls.block}")
+        return (
+            db.query(models.Classes)
+            .filter(models.Classes.uid == cls.uid, models.Classes.tid == cls.tid, models.Classes.block == cls.block)
+            .first()
+        )
+    logger.error(f"GET: Class lookup failed: {cls.uid} {cls.tid} {cls.block}")
+    return None
+
+def getCanceled(db: Session, canceled: schemas.Canceled) -> Optional[models.Canceled]:
+    cls = getClass(db, canceled.cls)
+
+    if cls is None:
+        logger.error(f"GET: Canceled lookup failed: {canceled.cls.uid} {canceled.cls.tid} {canceled.cls.block}")
+        return None
+    if canceled.date is None:
+        logger.error(f"GET: Canceled lookup failed. Needs a date.")
+        return None
+    
+    logger.info(f"GET: Canceled lookup requested: {canceled.date} {canceled.cls.tid} {canceled.cls.uid} {canceled.cls.block}")
+    return (
+        db.query(models.Canceled)
+        .filter(
+            models.Canceled.date == canceled.date,
+            models.Canceled.cid == cls.cid,
+        )
+        .first()
+    )
+
 
 def getClassesCount(db: Session) -> int:
     logger.info("GET: Class count requested.")
@@ -500,6 +531,35 @@ def addFriend(db: Session, friendship: schemas.FriendCreate) -> Optional[models.
         logger.error(f"ADD: Friend addition failed: {searched_user.uid} --({friendship.status})--> {searched_friend.uid}. User to Friend already exists.")
         return None
 
+def addCanceled(db: Session, canceled: schemas.Canceled) -> Optional[models.Canceled]:
+    # Search user up in the database.
+    searched_user = getUser(db, schemas.UserReturn(uid=canceled.cls.uid))
+
+    # Validate that the user exists in the database.
+    if searched_user is None:
+        logger.error(f"ADD: Canceled addition failed: {searched_user}")
+        return None
+
+    class_entry = getClass(db, canceled.cls)
+
+    if class_entry is None:
+        logger.error(f"ADD: Canceled addition failed: {searched_user}")
+        return None
+    
+    # Check if entry already exists.
+    if getCanceled(db, canceled) is None:
+        # Add entry to database.
+        canceled_entry = models.Canceled(
+                date=canceled.date,
+                cid=class_entry.cid,
+            )
+        db.add(canceled_entry)
+        db.commit()
+        logger.info(f"ADD: Canceled added: {searched_user.uid}")
+        return canceled_entry
+    else:
+        logger.error(f"ADD: Canceled addition failed: {searched_user.uid}")
+        return None
 
 def removeSession(db: Session, session: schemas.SessionReturn) -> bool:
     if session.sid is not None and session.uid is not None:

@@ -439,3 +439,10 @@ class FriendReturn(FriendCreate):
     
     def __str__(self) -> str:
         return super().__str__()
+
+class Canceled(BaseModel):
+    date: date
+    cls: Class
+
+    class Config:
+        orm_mode = True
