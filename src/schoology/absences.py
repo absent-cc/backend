@@ -74,18 +74,18 @@ class AbsencePuller:
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_SOUTH)
         return absences
 
-    # Wrapper to add in absences to the database.
-    # Returns success of the action
-    # Meant to avoid the need for ENV variables
-    def addAbsence(self, absence) -> bool:
-        try:
-            crud.addAbsence(self.db, absence)
-            return True
-        except Exception as e:
-            self.db.rollback()
-            print(e)
-            print(f"{absence} already exists in DB")
-            return False
+    # # Wrapper to add in absences to the database.
+    # # Returns success of the action
+    # # Meant to avoid the need for ENV variables
+    # def addAbsence(self, absence) -> bool:
+    #     try:
+    #         crud.addAbsence(self.db, absence)
+    #         return True
+    #     except Exception as e:
+    #         self.db.rollback()
+    #         print(e)
+    #         print(f"{absence} already exists in DB")
+    #         return False
 
 
 class ContentParser:
@@ -95,7 +95,7 @@ class ContentParser:
     def parse(
         self, update: structs.RawUpdate, school: structs.SchoolName
     ) -> Optional[List[schemas.AbsenceCreate]]:
-
+        
         if update == [] or update == None:
             return None
         if school == structs.SchoolName.NEWTON_NORTH:
@@ -111,7 +111,7 @@ class ContentParser:
             map = detection.mapColumns(update)
             obj = self.constructObject(update, map, structs.SchoolName.NEWTON_NORTH)
             return obj
-
+            
         elif school == structs.SchoolName.NEWTON_SOUTH:
             detection = ColumnDetection(structs.SchoolName.NEWTON_SOUTH)
             update.columns = detection.countColumns(update.content)[0]

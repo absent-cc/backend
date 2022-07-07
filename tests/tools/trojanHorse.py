@@ -74,5 +74,5 @@ class TrojanHorse:
             token=self.token, refresh=self.refresh, onboarded=False
         )
 
-    def resetDB(self):
-        crud.reset(TrojanHorse._db)
+    # def resetDB(self):
+    #     crud.reset(TrojanHorse._db)

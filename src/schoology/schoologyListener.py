@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta, timezone
+from typing import List
 
 from loguru import logger
+
+from src.dataTypes import models, schemas
 
 from .absences import AbsencePuller
 from ..dataTypes import structs                 # type: ignore
@@ -16,7 +19,8 @@ class SchoologyListener:
 
     # Run function, for listening and calling notifications code.
     def run(self) -> bool:
-        date = datetime.now(timezone.utc) - timedelta( hours=5 )  # Convert from UTC --> EST
+        date = datetime(2022, 6, 24)
+        # date = datetime.now(timezone.utc) - timedelta( hours=5 )  # Convert from UTC --> EST
 
         # These statuses get updated when the listern is run.
         ## What happens is that each run function sees if the absent teachers have already been added to the database.
@@ -46,16 +50,53 @@ class SchoologyListener:
                     listenerDB.rollback()
 
             southAbsences = crud.getAbsenceList(
-                listenerDB, school=structs.SchoolName.NEWTON_SOUTH
+                listenerDB, school=structs.SchoolName.NEWTON_SOUTH, searchDate=date
             )
             listenerDB.close()
             
-            southAbsencesExist: bool = len(southAbsences) != 0
+            southAbsencesExist: bool = (len(southAbsences) != 0)
 
+            print("HERE")
             if southAbsencesExist:
+                print("South Absences Exist")
+                db = SessionLocal()
                 logger.info("NSHS: Absences exist in the database")
                 statuses[self.south].updateState(True, None)
+                
+                todays_blocks: structs.ScheduleWithTimes = crud.getSchoolDaySchedule(db, date)
+                # If the absences exist, update canceled table
 
+                southAbsences = crud.getAbsenceList(
+                    db, school=structs.SchoolName.NEWTON_SOUTH, searchDate=date
+                )
+
+                for absence in southAbsences:
+                    teacher: models.Teacher = absence.teacher
+                    print(f"Teacher: {teacher}")
+                    for block in todays_blocks:
+                        print(f"Block: {block}")
+                        # Classes for that specific block
+                        classes: List[models.Classes]= crud.getClassesByTeacherAndBlock(db, teacher.construct_schema(), block.block)
+                        print(f"\tClasses: {classes}")
+                        if classes is None:
+                             # No classes for that teacher on that block
+                             # Skip to next for loop iteration
+                            continue
+                        for cls in classes:
+                            # Check if the absence is already in the database.
+                            canceled = schemas.Canceled(
+                                date = date,
+                                cls = cls.construct_schema(),
+                            )
+                            try:
+                                print("ADDING CANCELED")
+                                crud.addCanceled(db, canceled)
+                            except Exception as e:
+                                db.rollback()
+                                print(e)
+                                print(f"{absence} already exists in DB")
+                                return False
+            
             if (not statuses[self.south].notifications) and southAbsencesExist:
                 logger.info("NSHS: Notifications sent")
                 Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
@@ -82,16 +123,51 @@ class SchoologyListener:
                     listenerDB.rollback()
 
             northAbsences = crud.getAbsenceList(
-                listenerDB, school=structs.SchoolName.NEWTON_NORTH
+                listenerDB, school=structs.SchoolName.NEWTON_NORTH, searchDate=date
             )
-            northAbsencesExist = len(northAbsences) != 0
+            northAbsencesExist = (len(northAbsences) != 0)
 
             listenerDB.close()
 
             if northAbsencesExist:
                 logger.info("NNHS: Absences exist in the database")
                 statuses[self.north].updateState(True, None)
+                
+                db = SessionLocal()
+                todays_blocks: structs.ScheduleWithTimes = crud.getSchoolDaySchedule(db, date)
+                # If the absences exist, update canceled table
 
+                southAbsences = crud.getAbsenceList(
+                    db, school=structs.SchoolName.NEWTON_NORTH, searchDate=date
+                )
+
+                for absence in southAbsences:
+                    teacher: models.Teacher = absence.teacher
+                    print(f"Teacher: {teacher}")
+                    for block in todays_blocks:
+                        print(f"Block: {block}")
+                        # Classes for that specific block
+                        classes: List[models.Classes]= crud.getClassesByTeacherAndBlock(db, teacher.construct_schema(), block.block)
+                        print(f"\tClasses: {classes}")
+                        if classes is None:
+                             # No classes for that teacher on that block
+                             # Skip to next for loop iteration
+                            continue
+                        for cls in classes:
+                            # Check if the absence is already in the database.
+                            canceled = schemas.Canceled(
+                                date = date,
+                                cls = cls.construct_schema(),
+                            )
+                            try:
+                                print("ADDING CANCELED")
+                                crud.addCanceled(db, canceled)
+                            except Exception as e:
+                                db.rollback()
+                                print(e)
+                                print(f"{absence} already exists in DB")
+                                return False
+            
             if (not statuses[self.north].notifications) and northAbsencesExist:
                 logger.info("NNHS: Notifications sent")
                 Notify(structs.SchoolName.NEWTON_NORTH).sendMessages()

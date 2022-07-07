@@ -72,6 +72,13 @@ class Teacher(Base):
     def __str__(self) -> str:
         return f"{self.first} {self.last} ({self.school})"
 
+    def construct_schema(self) -> schemas.TeacherReturn:
+        return schemas.TeacherReturn(
+            first=self.first,
+            last=self.last,
+            school=self.school,
+            tid=self.tid,
+        )
 # Table for User Sessions
 # This is a one-to-many relationship with User
 # (1 User - > X UserSession)
@@ -108,6 +115,9 @@ class Classes(Base):
 
     def __str__(self) -> str:
         return f"{self.block} {self.teacher} {self.user}"
+
+    def __repr__(self) -> str:
+        return str(self)
 
     def construct_schema(self) -> schemas.Class:
         return schemas.Class(

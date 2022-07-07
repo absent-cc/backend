@@ -54,7 +54,14 @@ def getTeacher(db: Session, teacher: schemas.TeacherReturn) -> Optional[models.T
     )
     return None
 
-
+# FOR DEBUG PURPOSES ONLY!
+def getTeacherByName(db: Session, first: str, last: str) -> Optional[models.Teacher]:
+    logger.info(f"GET: Looked up teacher by name: {first} {last}")
+    return (
+        db.query(models.Teacher)
+        .filter(models.Teacher.first == first, models.Teacher.last == last)
+        .first()
+    )
 def getSession(db: Session, session: schemas.SessionReturn) -> Optional[models.UserSessions]:
     if (
         session.sid is not None and session.uid is not None
@@ -151,6 +158,17 @@ def getClassesByUser(db: Session, user: schemas.UserReturn) -> Optional[List[mod
             db.query(models.Classes).filter(models.Classes.uid == user.uid).all()
         )  # Returns all entries in classes table for a given user.
     logger.error(f"GET: User class list lookup failed: {user.uid}")
+    return None
+
+def getClassesByTeacherAndBlock(db: Session, teacher: schemas.TeacherReturn, block: structs.SchoolBlock) -> Optional[List[models.Classes]]:
+    if teacher.tid is not None and block is not None:
+        logger.info(f"GET: Teacher class list requested: {teacher.tid} {block}")
+        return (
+            db.query(models.Classes)
+            .filter(models.Classes.tid == teacher.tid, models.Classes.block == block)
+            .all()
+        )  # Returns all entries in classes table for a given user.
+    logger.error(f"GET: Teacher class list lookup failed: {teacher.tid} {block}")
     return None
 
 def getClass(db: Session, cls: schemas.Class) -> Optional[models.Classes]:
