@@ -3,6 +3,7 @@ from email.policy import default
 from sqlalchemy import (
     Column,
     ForeignKey,
+    Index,
     UniqueConstraint,
     TIMESTAMP,
     Date,
@@ -72,6 +73,9 @@ class Teacher(Base):
     def __str__(self) -> str:
         return f"{self.first} {self.last} ({self.school})"
 
+    def __repr__(self) -> str:
+        return str(self)
+        
     def construct_schema(self) -> schemas.TeacherReturn:
         return schemas.TeacherReturn(
             first=self.first,
@@ -231,10 +235,16 @@ class UserSocial(Base):
 # Table to store the classes that have been canceled for a student
 class Canceled(Base):
     __tablename__ = "canceled"
-    date = Column(Date, primary_key=True)
+    date = Column(Date, primary_key=True, index=True)
     cid = Column(String(8), ForeignKey(Classes.cid, ondelete="CASCADE"), primary_key=True)
+    # school = Column(Enum(structs.SchoolName), nullable=True)
 
     cls = relationship("Classes")
 
+    # __table_args__ = (Index("idx_canceled", "date"),)
+
     def __str__(self) -> str:
         return f"{self.cls} on {self.date}"
+
+    def __repr__(self) -> str:
+        return str(self)

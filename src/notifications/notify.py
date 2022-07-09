@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, List
+from typing import Dict, Optional, List, Tuple
 
 from firebase_admin import messaging
 from loguru import logger
@@ -24,6 +24,23 @@ class Notify:
         self.APN_HEADERS = {
             "apns_priority": "10",
         }
+
+    def calculateAbsencesNew(self):
+        print("Calculating absences")
+        canceleds: List[models.Canceled] = crud.getCanceledsBySchool(self.db, self.school, self.date)
+        print(canceleds)
+        absentGroups: Dict[Tuple[models.Teacher, structs.SchoolBlock], List[models.User]] = {}
+
+        for canceled in canceleds:
+            teacher = canceled.cls.teacher
+            block = canceled.cls.block
+            if (teacher, block) not in absentGroups:
+                absentGroups[(teacher, block)] = [canceled.cls.user]
+            else:
+                absentGroups[(teacher, block)].append(canceled.cls.user)
+
+        print(f"abSENT Groups: {absentGroups}")
+        # always notify people down below
 
     def calculateAbsences(self):
 

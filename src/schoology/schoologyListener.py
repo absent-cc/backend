@@ -27,8 +27,8 @@ class SchoologyListener:
         ## They then update the statuses to reflect that, so in essence the state is now stored as a computed property of the absences table in the database.
         statuses = {
             # School : Tuple(pull status, notify status)
-            structs.SchoolName.NEWTON_SOUTH: structs.ListenerStatus(school=self.south),  # Default is False, False (Always pull, always notify)
-            structs.SchoolName.NEWTON_NORTH: structs.ListenerStatus(school=self.north),
+            structs.SchoolName.NEWTON_SOUTH: structs.ListenerStatus(school=self.south, date=date),  # Default is False, False (Always pull, always notify)
+            structs.SchoolName.NEWTON_NORTH: structs.ListenerStatus(school=self.north, date=date),
         }
 
         def southRun() -> bool:
@@ -56,9 +56,7 @@ class SchoologyListener:
             
             southAbsencesExist: bool = (len(southAbsences) != 0)
 
-            print("HERE")
             if southAbsencesExist:
-                print("South Absences Exist")
                 db = SessionLocal()
                 logger.info("NSHS: Absences exist in the database")
                 statuses[self.south].updateState(True, None)
@@ -72,12 +70,9 @@ class SchoologyListener:
 
                 for absence in southAbsences:
                     teacher: models.Teacher = absence.teacher
-                    print(f"Teacher: {teacher}")
                     for block in todays_blocks:
-                        print(f"Block: {block}")
                         # Classes for that specific block
                         classes: List[models.Classes]= crud.getClassesByTeacherAndBlock(db, teacher.construct_schema(), block.block)
-                        print(f"\tClasses: {classes}")
                         if classes is None:
                              # No classes for that teacher on that block
                              # Skip to next for loop iteration
@@ -89,7 +84,6 @@ class SchoologyListener:
                                 cls = cls.construct_schema(),
                             )
                             try:
-                                print("ADDING CANCELED")
                                 crud.addCanceled(db, canceled)
                             except Exception as e:
                                 db.rollback()
@@ -97,11 +91,14 @@ class SchoologyListener:
                                 print(f"{absence} already exists in DB")
                                 return False
             
-            if (not statuses[self.south].notifications) and southAbsencesExist:
-                logger.info("NSHS: Notifications sent")
-                Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
-                statuses[self.south].updateState(True, True)
-                return True
+            Notify(structs.SchoolName.NEWTON_SOUTH, date).calculateAbsencesNew()
+
+            # if (not statuses[self.south].notifications) and southAbsencesExist:
+            #     logger.info("NSHS: Notifications sent")
+            #     Notify(structs.SchoolName.NEWTON_SOUTH).calculateAbsencesNew()
+            #     # Notify(structs.SchoolName.NEWTON_SOUTH).sendMessages()
+            #     statuses[self.south].updateState(True, True)
+            #     return True
 
             return statuses[self.south].notifications and statuses[self.south].absences
 
@@ -143,12 +140,9 @@ class SchoologyListener:
 
                 for absence in southAbsences:
                     teacher: models.Teacher = absence.teacher
-                    print(f"Teacher: {teacher}")
                     for block in todays_blocks:
-                        print(f"Block: {block}")
                         # Classes for that specific block
                         classes: List[models.Classes]= crud.getClassesByTeacherAndBlock(db, teacher.construct_schema(), block.block)
-                        print(f"\tClasses: {classes}")
                         if classes is None:
                              # No classes for that teacher on that block
                              # Skip to next for loop iteration
@@ -160,7 +154,6 @@ class SchoologyListener:
                                 cls = cls.construct_schema(),
                             )
                             try:
-                                print("ADDING CANCELED")
                                 crud.addCanceled(db, canceled)
                             except Exception as e:
                                 db.rollback()
@@ -178,13 +171,14 @@ class SchoologyListener:
             return statuses[self.north].notifications and statuses[self.north].absences
 
         southRes = southRun()
-        northRes = northRun()
+        # northRes = northRun()
 
-        if southRes is None or northRes is None:
-            logger.error("southRes or northRes is None")
+        # if southRes is None or northRes is None:
+        #     logger.error("southRes or northRes is None")
 
-        logger.info(f"southRes: {southRes}, northRes: {northRes}")
-        return southRes and northRes
+        # logger.info(f"southRes: {southRes}, northRes: {northRes}")
+        # return southRes and northRes
+        return southRes
 
 
 # if __name__ == "__main__":

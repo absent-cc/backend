@@ -95,7 +95,27 @@ canceled1 = schemas.Canceled(
     cls = model_class1.construct_schema()
 )
 
-# model_canceled = crud.addCanceled(db, canceled1)
+canceled2 = schemas.Canceled(
+    date = date.today(),
+    cls = model_class2.construct_schema()
+)
 
-list = crud.getClassesByTeacherAndBlock(db, model_teacher1.construct_schema(), structs.SchoolBlock.A)
-print(list)
+canceled3 = schemas.Canceled(
+    date = date.today(),
+    cls = model_class3.construct_schema()
+)
+
+canceled4 = schemas.Canceled(
+    date = date.today(),
+    cls = model_class4.construct_schema()
+)
+
+
+# model_canceled1 = crud.addCanceled(db, canceled1)
+# model_canceled2 = crud.addCanceled(db, canceled2)
+# model_canceled3 = crud.addCanceled(db, canceled3)
+# model_canceled4 = crud.addCanceled(db, canceled4)
+
+# print(crud.getCanceledsBySchool(db, structs.SchoolName.NEWTON_SOUTH, date.today()))
+# list = crud.getClassesByTeacherAndBlock(db, model_teacher1.construct_schema(), structs.SchoolBlock.A)
+# print(list)

@@ -202,6 +202,9 @@ def getCanceled(db: Session, canceled: schemas.Canceled) -> Optional[models.Canc
         .first()
     )
 
+# Might be really slow!
+def getCanceledsBySchool(db: Session, school: structs.SchoolName, date: date,) -> List[models.Canceled]:
+    return db.query(models.Canceled).filter(models.Canceled.date == date).join(models.Classes).join(models.Teacher).filter(models.Teacher.school == school).all()
 
 def getClassesCount(db: Session) -> int:
     logger.info("GET: Class count requested.")
