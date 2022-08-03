@@ -26,7 +26,7 @@ class Notify:
             "apns_priority": "10",
         }
 
-    def calculateAbsencesNew(self) -> Dict[Tuple[models.Teacher, structs.SchoolBlock], List[models.User]]:
+    def calculateAbsences(self) -> Dict[Tuple[models.Teacher, structs.SchoolBlock], List[models.User]]:
         canceleds: List[models.Canceled] = crud.getCanceledsBySchool(self.db, self.school, self.date)
         absentGroups: Dict[Tuple[models.Teacher, structs.SchoolBlock], List[models.User]] = {}
 
@@ -39,56 +39,6 @@ class Notify:
                 absentGroups[(teacher, block)].append(canceled.cls.user)
 
         return absentGroups
-
-    def calculateAbsences(self):
-
-        hasAbsentTeacher = set()
-        alwaysNotify = set()
-
-        validBlocks = structs.SchoolBlocksOnDayWithTimes()[self.date.weekday()].blocks()
-        # validBlocks = structs.SchoolBlocksOnDay()[self.date.weekday()]
-        absences = crud.getAbsenceList(self.db, self.date, self.school)
-
-        for absence in absences:
-            for block in validBlocks:
-                classes = [cls for cls in absence.teacher.classes if cls.block == block]
-                for cls in classes:
-                    try:
-                        if cls.user.settings[0].notify:  # Add the people with absent teachers.
-                            for session in cls.user.sessions:
-                                if (
-                                    session.fcm_token is not None
-                                    and len(session.fcm_token.strip()) != 0
-                                    and (
-                                        bool(session.fcm_token)
-                                        and bool(session.fcm_token.strip())
-                                    )
-                                    != False
-                                ):
-                                    # Check if not None, not empty str, and if it does not contain a leading whitespace (which breaks stuff)
-                                    hasAbsentTeacher.add(session.fcm_token)
-                                else:
-                                    logger.info(
-                                        f"{cls.user} has invalid FCM token formats"
-                                    )
-                    except Exception as e:
-                        logger.error(f"{cls.user} has invalid FCM token formats")
-                        logger.error(e)
-
-        alwaysNotifyUsers: List[models.User] = crud.getAlwaysNotify(self.db, self.school)
-
-        for notifyEntry in alwaysNotifyUsers:
-            user = notifyEntry.user
-            for session in user.sessions:
-                if (
-                    session.fcm_token is not None
-                    and len(session.fcm_token.strip()) != 0
-                    and (bool(session.fcm_token) and bool(session.fcm_token.strip()))
-                    != False
-                ):
-                    # Check if not None, not empty str, and if it does not contain a leading whitespace (which breaks stuff)
-                    alwaysNotify.add(session.fcm_token)
-        return hasAbsentTeacher, alwaysNotify
 
     def validateFCMToken(self, token: str) -> bool:
         return token is not None and len(token.strip()) != 0 and (bool(token) and bool(token.strip())) != False
@@ -105,7 +55,7 @@ class Notify:
         return allTokens
 
     def prepareAbsentTeacher(self) -> Dict[Tuple[models.Teacher, structs.SchoolBlock], List[str]]:
-        absentGroups: Dict[Tuple[models.Teacher, structs.SchoolBlock], List[models.User]]= self.calculateAbsencesNew()
+        absentGroups: Dict[Tuple[models.Teacher, structs.SchoolBlock], List[models.User]]= self.calculateAbsences()
 
         # Maps
         fcmTokenByTeacher: Dict[Tuple[models.Teacher, structs.SchoolBlock], List[str]] = {}

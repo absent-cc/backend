@@ -93,7 +93,6 @@ class SchoologyListener:
             
             print(crud.getCanceledsBySchool(db, structs.SchoolName.NEWTON_SOUTH, date))
             db.close()
-            Notify(structs.SchoolName.NEWTON_SOUTH, date).calculateAbsencesNew()
             Notify(structs.SchoolName.NEWTON_SOUTH, date).sendMessages()
             # if (not statuses[self.south].notifications) and southAbsencesExist:
             #     logger.info("NSHS: Notifications sent")
