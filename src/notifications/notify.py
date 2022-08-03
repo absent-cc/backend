@@ -5,7 +5,7 @@ from firebase_admin import messaging
 from loguru import logger
 
 from src.database.database import SessionLocal
-from ..dataTypes import structs, models # type: ignore 
+from ..dataTypes import structs, models # type: ignore
 from ..database import crud # type: ignore
 
 
@@ -111,6 +111,8 @@ class Notify:
                 if self.validateFCMToken(session.fcm_token):
                     allTokens.append(session.fcm_token)
         
+        print(f"Always notify: {allTokens}")
+        print(type(allTokens))
         return allTokens
 
     def prepareAbsentTeacher(self) -> Dict[Tuple[models.Teacher, structs.SchoolBlock], List[str]]:
@@ -122,7 +124,6 @@ class Notify:
         fcmTokenByTeacher: Dict[Tuple[models.Teacher, structs.SchoolBlock], List[str]] = {}
 
         for teacher_block, users in absentGroups.items():
-            print(users)
             total_fcm_tokens: List[str] = []
             # Get all the FCM tokens for the teacher and block
             for user in users:
@@ -152,20 +153,14 @@ class Notify:
         multicastMessages = []
 
         for teacher_block, fcm_tokens in fcmTokensByTeacher.items():
-            print("FCM Token Type")
-            print(fcm_tokens)
-            print(type(fcm_tokens))
-            print("Entering For Loop")
             for i in range(0, len(fcm_tokens), 500):
                 chunked_tokens = fcm_tokens[i : i + 500]
-                print(chunked_tokens)
-                print(type(chunked_tokens))
                 title = f"{teacher_block[1]}: {teacher_block[0].first} {teacher_block[0].last}"
                 absentEntry = crud.getAbsenceByTeacherAndDate(self.db, teacher_block[0], self.date)
                 if absentEntry is None:
                     body = "Cancelled Class! Click me to see details!"
                 else:
-                    body = f"Cancelled Class! {absentEntry.note}"
+                    body = f"Duration: {absentEntry.length} | Note: {absentEntry.note}"
                 msg = messaging.MulticastMessage(
                     tokens=chunked_tokens,
                     notification=messaging.Notification(
@@ -178,10 +173,10 @@ class Notify:
                 multicastMessages.append(msg)
 
         # Notify the always notify people.
-
-        for fcm_token in alwaysNotify:
+        for i in range(0, len(alwaysNotify), 500):
+            chunked_always_notify = alwaysNotify[i : i + 500]
             msg = messaging.MulticastMessage(
-                tokens=fcm_token,
+                tokens=chunked_always_notify,
                 notification=messaging.Notification(
                     title="abSENT List Posted",
                     body="Hey there! Today's absent list has been posted. Click me to view.",
@@ -189,14 +184,20 @@ class Notify:
                 android=messaging.AndroidConfig(priority="high"),
                 apns=messaging.APNSConfig(headers=self.APN_HEADERS),
             )
+            # print(msg)
             multicastMessages.append(msg)
 
         print("Sending messages...")
         for message in multicastMessages:
+            print(message.data)
+            print(message.notification.title)
+            print(message.notification.body)
+            print(message.tokens)
+            print(len(message.tokens))
+
             # response = messaging.send_multicast(message)
             # logger.info(
             #     f"Notifications for {self.school} sent. Number of failures: {response.failure_count}"
             # )
-            print(message)
-        
+ 
         return True

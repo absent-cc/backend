@@ -123,11 +123,22 @@ def run():
         uid = model_user4.uid
     )
 
+    settings1 = schemas.UserSettings(
+        showFreeAsAbsent=True,
+        notify=True,
+        notifyWhenNone=True,
+    )
+
     model_class1=crud.addClass(db, class1)
     model_class2 = crud.addClass(db, class2)
     model_class3 = crud.addClass(db, class3)
     model_class4 = crud.addClass(db, class4)
 
+    model_settings1 = crud.updateUserSettings(db, settings1, model_user1.uid)
+    model_settings2 = crud.updateUserSettings(db, settings1, model_user2.uid)
+    model_settings3 = crud.updateUserSettings(db, settings1, model_user3.uid)
+    model_settings4 = crud.updateUserSettings(db, settings1, model_user4.uid)
+    
 # canceled1 = schemas.Canceled(
 #     date = date.today(),
 #     cls = model_class1.construct_schema()
