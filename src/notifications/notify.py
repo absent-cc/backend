@@ -27,9 +27,7 @@ class Notify:
         }
 
     def calculateAbsencesNew(self) -> Dict[Tuple[models.Teacher, structs.SchoolBlock], List[models.User]]:
-        print("Calculating absences")
         canceleds: List[models.Canceled] = crud.getCanceledsBySchool(self.db, self.school, self.date)
-        print(f"Canceleds: {canceleds}")
         absentGroups: Dict[Tuple[models.Teacher, structs.SchoolBlock], List[models.User]] = {}
 
         for canceled in canceleds:
@@ -39,13 +37,8 @@ class Notify:
                 absentGroups[(teacher, block)] = [canceled.cls.user]
             else:
                 absentGroups[(teacher, block)].append(canceled.cls.user)
-                print(type(canceled.cls.user)) # check the type on cls.user
-
-        print(f"abSENT Groups: {absentGroups}")
 
         return absentGroups
-        # LEFT OFF HERE
-        # always notify people down below
 
     def calculateAbsences(self):
 
@@ -87,7 +80,6 @@ class Notify:
         for notifyEntry in alwaysNotifyUsers:
             user = notifyEntry.user
             for session in user.sessions:
-                print(session.fcm_token)
                 if (
                     session.fcm_token is not None
                     and len(session.fcm_token.strip()) != 0
@@ -110,15 +102,10 @@ class Notify:
             for session in user.sessions:
                 if self.validateFCMToken(session.fcm_token):
                     allTokens.append(session.fcm_token)
-        
-        print(f"Always notify: {allTokens}")
-        print(type(allTokens))
         return allTokens
 
     def prepareAbsentTeacher(self) -> Dict[Tuple[models.Teacher, structs.SchoolBlock], List[str]]:
         absentGroups: Dict[Tuple[models.Teacher, structs.SchoolBlock], List[models.User]]= self.calculateAbsencesNew()
-
-        print(f"absentGroups: {absentGroups}")
 
         # Maps
         fcmTokenByTeacher: Dict[Tuple[models.Teacher, structs.SchoolBlock], List[str]] = {}
@@ -139,8 +126,6 @@ class Notify:
             # Add the FCM tokens to the dictionary
             if teacher_block not in fcmTokenByTeacher:
                 fcmTokenByTeacher[teacher_block] = total_fcm_tokens
-            else:
-                print("THIS SHOULD NEVER BE CALLED!")
         
         return fcmTokenByTeacher
         
@@ -184,20 +169,13 @@ class Notify:
                 android=messaging.AndroidConfig(priority="high"),
                 apns=messaging.APNSConfig(headers=self.APN_HEADERS),
             )
-            # print(msg)
             multicastMessages.append(msg)
 
-        print("Sending messages...")
+        logger.info(f"Sending {len(multicastMessages)} Firebase notification messages")
         for message in multicastMessages:
-            print(message.data)
-            print(message.notification.title)
-            print(message.notification.body)
-            print(message.tokens)
-            print(len(message.tokens))
-
-            # response = messaging.send_multicast(message)
-            # logger.info(
-            #     f"Notifications for {self.school} sent. Number of failures: {response.failure_count}"
-            # )
+            response = messaging.send_multicast(message)
+            logger.info(
+                f"Notifications for {self.school} sent. Number of failures: {response.failure_count}"
+            )
  
         return True
