@@ -1,4 +1,3 @@
-from inspect import getfile
 import secrets
 from sqlalchemy.orm import Session
 from datetime import datetime, date
@@ -124,6 +123,16 @@ def getSessionList(db: Session, user: schemas.UserReturn) -> Optional[List[model
     logger.error(f"GET: Session list lookup failed for user: {user.uid}")
     return None
 
+def getAbsenceByTeacherAndDate(db: Session, teacher: schemas.TeacherReturn, date: date) -> Optional[models.Absences]:
+    if teacher.tid is not None:
+        logger.info(f"GET: Absence lookup by teacher: {teacher.tid}")
+        return (
+            db.query(models.Absences)
+            .filter(models.Absences.tid == teacher.tid, models.Absences.date == date)
+            .first()
+        )
+    logger.error(f"GET: Absence lookup failed for teacher: {teacher.tid}")
+    return None
 
 def getAbsenceList(
     db: Session,
@@ -140,6 +149,7 @@ def getAbsenceList(
         logger.info(
             f"GET: Absence list requested for school: {school} on: {str(searchDate)}"
         )
+        print(absences)
         return absences
     absences = db.query(models.Absences).filter(models.Absences.date == searchDate).all()
     logger.info(f"GET: Absence list requested for + {str(searchDate)}")
@@ -204,6 +214,7 @@ def getCanceled(db: Session, canceled: schemas.Canceled) -> Optional[models.Canc
 
 # Might be really slow!
 def getCanceledsBySchool(db: Session, school: structs.SchoolName, date: date,) -> List[models.Canceled]:
+    logger.info(f"GET: Canceleds by school requested: {school} {date}") 
     return db.query(models.Canceled).filter(models.Canceled.date == date).join(models.Classes).join(models.Teacher).filter(models.Teacher.school == school).all()
 
 def getClassesCount(db: Session) -> int:
@@ -223,7 +234,7 @@ def getUserSettings(db: Session, user: schemas.UserReturn) -> Optional[models.Us
     return None
 
 
-def getAlwaysNotify(db: Session, school: structs.SchoolName) -> models.User:
+def getAlwaysNotify(db: Session, school: structs.SchoolName) -> List[models.User]:
     logger.info("GET: Looked up users to always notify")
     return (
         db.query(models.UserSettings)

@@ -91,8 +91,10 @@ class SchoologyListener:
                                 print(f"{absence} already exists in DB")
                                 return False
             
+            print(crud.getCanceledsBySchool(db, structs.SchoolName.NEWTON_SOUTH, date))
+            db.close()
             Notify(structs.SchoolName.NEWTON_SOUTH, date).calculateAbsencesNew()
-
+            Notify(structs.SchoolName.NEWTON_SOUTH, date).sendMessages()
             # if (not statuses[self.south].notifications) and southAbsencesExist:
             #     logger.info("NSHS: Notifications sent")
             #     Notify(structs.SchoolName.NEWTON_SOUTH).calculateAbsencesNew()
@@ -181,8 +183,9 @@ class SchoologyListener:
         return southRes
 
 
+## Outdated
 # if __name__ == "__main__":
-#     config = ConfigParser()
+#     config = configparser.ConfigParser()
 #     config.read('config.ini')
 #     creds = config['SCHOOLOGY']
 #     sl = SchoologyListener(creds)

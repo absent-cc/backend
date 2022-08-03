@@ -1,6 +1,8 @@
 from .schoologyListener import *
-
+from datetime import datetime
 from ..dataTypes import tools, structs
+from ..notifications.notify import Notify
+from ..database import canceledPlayground
 
 config_path = "config.ini"
 south_key = tools.read_config(config_path, "NSHS", "key")
@@ -20,4 +22,7 @@ SCHOOLOGYCREDS = structs.SchoologyCreds(
     },
 )
 
+canceledPlayground.run()
 SchoologyListener(SCHOOLOGYCREDS).run()
+# date = datetime(2022, 6, 24)
+# Notify(structs.SchoolName.NEWTON_SOUTH, date).calculateAbsencesNew()

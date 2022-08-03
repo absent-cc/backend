@@ -6,109 +6,147 @@ from .database import SessionLocal
 from ..dataTypes import structs, schemas
 from datetime import date, time, datetime
 
-db = SessionLocal()
+def run():
+    db = SessionLocal()
 
-user1 = schemas.UserCreate(
-    gid=1,
-    first="John",
-    last="Doe",
-    school=structs.SchoolName.NEWTON_SOUTH,
-    grade=10,
-)
+    user1 = schemas.UserCreate(
+        gid=1,
+        first="John",
+        last="Doe",
+        school=structs.SchoolName.NEWTON_SOUTH,
+        grade=10,
+    )
 
-user2 = schemas.UserCreate(
-    gid=2,
-    first="Jane",
-    last="Doe",
-    school=structs.SchoolName.NEWTON_SOUTH,
-    grade=10,
-)
+    user2 = schemas.UserCreate(
+        gid=2,
+        first="Jane",
+        last="Doe",
+        school=structs.SchoolName.NEWTON_SOUTH,
+        grade=10,
+    )
 
-user3 = schemas.UserCreate(
-    gid=3,
-    first="Jack",
-    last="Diane",
-    school=structs.SchoolName.NEWTON_NORTH,
-    grade=10,
-)
+    user3 = schemas.UserCreate(
+        gid=3,
+        first="Jack",
+        last="Diane",
+        school=structs.SchoolName.NEWTON_NORTH,
+        grade=10,
+    )
 
-user4 = schemas.UserCreate(
-    gid=4,
-    first="Jill",
-    last="Diane",
-    school=structs.SchoolName.NEWTON_NORTH,
-    grade=10,
-)
+    user4 = schemas.UserCreate(
+        gid=4,
+        first="Jill",
+        last="Diane",
+        school=structs.SchoolName.NEWTON_NORTH,
+        grade=10,
+    )
 
-teacher1 = schemas.TeacherCreate(
-    first="Rachel",
-    last="Becker",
-    school=structs.SchoolName.NEWTON_SOUTH,
-)
+    teacher1 = schemas.TeacherCreate(
+        first="Rachel",
+        last="Becker",
+        school=structs.SchoolName.NEWTON_SOUTH,
+    )
 
-teacher2 = schemas.TeacherCreate(
-    first="Amy",
-    last="Winston",
-    school=structs.SchoolName.NEWTON_NORTH,
-)
+    teacher2 = schemas.TeacherCreate(
+        first="Amy",
+        last="Winston",
+        school=structs.SchoolName.NEWTON_NORTH,
+    )
 
-model_user1 = crud.addUser(db, user1)
-model_user2 = crud.addUser(db, user2)
-model_user3 = crud.addUser(db, user3)
-model_user4 = crud.addUser(db, user4)
+    model_user1 = crud.addUser(db, user1)
+    model_user2 = crud.addUser(db, user2)
+    model_user3 = crud.addUser(db, user3)
+    model_user4 = crud.addUser(db, user4)
 
-model_teacher1 = crud.addTeacher(db, teacher1)
-model_teacher2 = crud.addTeacher(db, teacher2)
-# model_teacher1 = crud.getTeacherByName(db, "Rachel", "Becker")
+    session1 = schemas.SessionCreate(
+        uid=model_user1.uid,
+    )
+    session2 = schemas.SessionCreate(
+        uid=model_user2.uid,
+    )
+    session3 = schemas.SessionCreate(
+        uid=model_user3.uid,
+    )
+    session4 = schemas.SessionCreate(
+        uid=model_user4.uid,
+    )
 
-class1 = schemas.Class(
-    tid = model_teacher1.tid,
-    block = structs.SchoolBlock.C,
-    uid = model_user1.uid,
-)
+    model_session1 = crud.addSession(db, session1)
+    model_session2 = crud.addSession(db, session2)
+    model_session3 = crud.addSession(db, session3)
+    model_session4 = crud.addSession(db, session4)
 
-class2 = schemas.Class(
-    tid = model_teacher1.tid,
-    block = structs.SchoolBlock.C,
-    uid = model_user2.uid
-)
+    token1 = schemas.Token(
+        token="1"
+    )
+    token2 = schemas.Token(
+        token="2"
+    )
+    token3 = schemas.Token(
+        token="3"
+    )
+    token4 = schemas.Token(
+        token="4"
+    )
 
-class3 = schemas.Class(
-    tid = model_teacher2.tid,
-    block = structs.SchoolBlock.C,
-    uid = model_user3.uid
-)
+    crud.updateFCMToken(db, token1, model_session1.uid, model_session1.sid)
+    crud.updateFCMToken(db, token2, model_session2.uid, model_session2.sid)
+    crud.updateFCMToken(db, token3, model_session3.uid, model_session3.sid)
+    crud.updateFCMToken(db, token4, model_session4.uid, model_session4.sid)
 
-class4 = schemas.Class(
-    tid = model_teacher2.tid,
-    block = structs.SchoolBlock.C,
-    uid = model_user4.uid
-)
+    model_teacher1 = crud.addTeacher(db, teacher1)
+    model_teacher2 = crud.addTeacher(db, teacher2)
+    # model_teacher1 = crud.getTeacherByName(db, "Rachel", "Becker")
 
-model_class1=crud.addClass(db, class1)
-model_class2 = crud.addClass(db, class2)
-model_class3 = crud.addClass(db, class3)
-model_class4 = crud.addClass(db, class4)
 
-canceled1 = schemas.Canceled(
-    date = date.today(),
-    cls = model_class1.construct_schema()
-)
+    class1 = schemas.Class(
+        tid = model_teacher1.tid,
+        block = structs.SchoolBlock.C,
+        uid = model_user1.uid,
+    )
 
-canceled2 = schemas.Canceled(
-    date = date.today(),
-    cls = model_class2.construct_schema()
-)
+    class2 = schemas.Class(
+        tid = model_teacher1.tid,
+        block = structs.SchoolBlock.C,
+        uid = model_user2.uid
+    )
 
-canceled3 = schemas.Canceled(
-    date = date.today(),
-    cls = model_class3.construct_schema()
-)
+    class3 = schemas.Class(
+        tid = model_teacher2.tid,
+        block = structs.SchoolBlock.C,
+        uid = model_user3.uid
+    )
 
-canceled4 = schemas.Canceled(
-    date = date.today(),
-    cls = model_class4.construct_schema()
-)
+    class4 = schemas.Class(
+        tid = model_teacher2.tid,
+        block = structs.SchoolBlock.C,
+        uid = model_user4.uid
+    )
+
+    model_class1=crud.addClass(db, class1)
+    model_class2 = crud.addClass(db, class2)
+    model_class3 = crud.addClass(db, class3)
+    model_class4 = crud.addClass(db, class4)
+
+# canceled1 = schemas.Canceled(
+#     date = date.today(),
+#     cls = model_class1.construct_schema()
+# )
+
+# canceled2 = schemas.Canceled(
+#     date = date.today(),
+#     cls = model_class2.construct_schema()
+# )
+
+# canceled3 = schemas.Canceled(
+#     date = date.today(),
+#     cls = model_class3.construct_schema()
+# )
+
+# canceled4 = schemas.Canceled(
+#     date = date.today(),
+#     cls = model_class4.construct_schema()
+# )
 
 
 # model_canceled1 = crud.addCanceled(db, canceled1)
@@ -119,3 +157,5 @@ canceled4 = schemas.Canceled(
 # print(crud.getCanceledsBySchool(db, structs.SchoolName.NEWTON_SOUTH, date.today()))
 # list = crud.getClassesByTeacherAndBlock(db, model_teacher1.construct_schema(), structs.SchoolBlock.A)
 # print(list)
+
+# run()

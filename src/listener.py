@@ -107,7 +107,7 @@ def listener():
             dayoffLatch = False
             schoologySuccessCheck = False
 
-        logger.info(f"Notify call times: {Notify.NUMBER_OF_CALLS}")
+        # logger.info(f"Notify call times: {Notify.NUMBER_OF_CALLS}")
         time.sleep(15)  # Sleep for 15 seconds.
 
 
