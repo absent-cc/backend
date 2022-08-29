@@ -1,5 +1,6 @@
 import csv as c
 import datetime
+from tokenize import String
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends
@@ -12,11 +13,11 @@ from ....dataTypes import schemas, structs
 from ....database import crud
 from ....utils.prettifyTeacherName import prettifyTeacher
 
-NNHS_FIRSTS = []
-NNHS_LASTS = []
+NNHS_FIRSTS: List[str]= []
+NNHS_LASTS: List[str] = []
 
-NSHS_FIRSTS = []
-NSHS_LASTS = []
+NSHS_FIRSTS: List[str] = []
+NSHS_LASTS: List[str] = []
 
 
 def readCSV(school: structs.SchoolName) -> bool:

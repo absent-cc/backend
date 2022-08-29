@@ -58,6 +58,15 @@ class LunchBlock(str, Enum):
     L2 = "L2"
     L3 = "L3"
 
+class AbsenceLength(str, Enum):
+    ALL_DAY = "All Day"
+    PARTIAL_DAY = "Partial Day"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
 
 class SchoolBlocksOnDay(Dict[int, SchoolBlock]):
     def __init__(self):
