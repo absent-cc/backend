@@ -119,7 +119,7 @@ def updateAnnouncement(
 def addSpecialDay(
     specialDay: schemas.SpecialDay,
     db: Session = Depends(accounts.getDBSession),
-    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     # Check if a special day already exists
     try:
@@ -148,7 +148,7 @@ def removeSpecialDay(
     date: datetime.date,
     school: Optional[structs.SchoolName] = None,
     db: Session = Depends(accounts.getDBSession),
-    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     result = crud.removeSpecialDay(db, date, school)
     return schemas.Bool(success=True)

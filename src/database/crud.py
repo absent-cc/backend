@@ -223,6 +223,12 @@ def getAbsencesCount(db: Session) -> int:
 
 
 def getSpecialDay(db: Session, date: date, school: Optional[structs.SchoolName] = None) -> models.SpecialDays:
+    if school is not None:
+        logger.info(f"GET: Special day requested: {date} for school: {school}")
+        result = db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
+        if result is None:
+            return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
+    
     logger.info(f"GET: Special day lookup requested: {date}")
     return db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
 
@@ -500,10 +506,10 @@ def removeSpecialDay(db, date: date, school: Optional[structs.SchoolName] = None
         db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).delete()
         db.commit()
         print("Special day removed")
+        return True
     except Exception as e:
         logger.error(f"REMOVE: Special day removal failed: {e}")
         return False
-    return True
 
 
 def removeClassesByUser(
