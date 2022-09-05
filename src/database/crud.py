@@ -818,7 +818,7 @@ def updateSpecialDay(db, updateSpecialDay: schemas.SpecialDay) -> schemas.Bool:
 def updateFriendStatus(db, friendship: schemas.FriendBase, status: structs.FriendshipStatus) -> schemas.Bool:
     oldEntry = getFriend(db, friendship)
 
-    print(f"Old entry: {oldEntry} | {oldEntry.status}")
+    # print(f"Old entry: {oldEntry} | {oldEntry.status}")
     if oldEntry is None:
         logger.error(f"UPDATE: Friend status update failed: {friendship.user.uid} -> {friendship.friend.uid}. Could not find friendship.")
         return schemas.Bool(success=False)

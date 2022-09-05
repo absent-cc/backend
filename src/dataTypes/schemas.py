@@ -416,7 +416,7 @@ class TeacherAliasReturn(TeacherAliasCreate):
 class FriendBase(BaseModel):
     user: UserReturn            # Just needs UID
     friend: UserReturn          # Just needs UID
-    status: structs.FriendshipStatus = structs.FriendshipStatus.NONE
+    status: structs.FriendshipStatus = structs.FriendshipStatus.NONE # type: ignore
 
     class Config:
         orm_mode = True

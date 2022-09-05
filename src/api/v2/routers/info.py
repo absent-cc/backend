@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from src.dataTypes import structs, schemas
-from ....utils.weekGen import weekDayGenerator
-from ....api import accounts
-from ....database import crud
-from ....api import utils
+from ....utils.weekGen import weekDayGenerator  # type: ignore
+from ....api import accounts                    # type: ignore
+from ....database import crud                   # type: ignore
+from ....api import utils                       # type: ignore
 
 router = APIRouter(prefix="/info", tags=["Info"])
 
