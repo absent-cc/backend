@@ -157,6 +157,7 @@ class SpecialDays(Base):
     name = Column(String(255))
     schedule = Column(PickleType)
     note = Column(String(255))
+    school = Column(Enum(structs.SchoolName))
 
     @validates("schedule")
     def validate_schedule_type(self, key, value):

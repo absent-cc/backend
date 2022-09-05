@@ -286,10 +286,13 @@ def getAbsencesCount(db: Session) -> int:
     return db.query(models.Absences).count()
 
 
-def getSpecialDay(db: Session, date: date) -> models.SpecialDays:
-    logger.info(f"GET: Special day lookup requested: {date}")
-    return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
-
+def getSpecialDay(db: Session, date: date, school: Optional[structs.SchoolName] = None) -> models.SpecialDays:
+    if school is None:
+        logger.info(f"GET: Special day lookup requested: {date}")
+        return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
+    else:
+        logger.info(f"GET: Special day lookup requested: {date} {school}")
+        return db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
 
 def getSchoolDaySchedule(db: Session, date: date) -> structs.ScheduleWithTimes:
     logger.info(f"GET: School day schedule requested: {str(date)}")
