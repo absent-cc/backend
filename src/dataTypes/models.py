@@ -10,7 +10,9 @@ from sqlalchemy import (
     Enum,
     PickleType,
     Text, 
-    DateTime
+    DateTime,
+    Integer,
+    PrimaryKeyConstraint
 )
 from sqlalchemy.orm import relationship, validates
 
@@ -101,10 +103,12 @@ class UserSettings(Base):
 
 class SpecialDays(Base):
     __tablename__ = "special_days"
-    date = Column(Date, primary_key=True)
+    spid = Column(Integer, primary_key=True, autoincrement=True)
+    date = Column(Date)
     name = Column(String(255))
     schedule = Column(PickleType)
     note = Column(String(255))
+    school = Column(Enum(structs.SchoolName))
 
     @validates("schedule")
     def validate_schedule_type(self, key, value):

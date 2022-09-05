@@ -222,9 +222,9 @@ def getAbsencesCount(db: Session) -> int:
     return db.query(models.Absence).count()
 
 
-def getSpecialDay(db: Session, date: date) -> models.SpecialDays:
+def getSpecialDay(db: Session, date: date, school: Optional[structs.SchoolName] = None) -> models.SpecialDays:
     logger.info(f"GET: Special day lookup requested: {date}")
-    return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
+    return db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
 
 
 def getSchoolDaySchedule(db: Session, date: date) -> structs.ScheduleWithTimes:
@@ -284,6 +284,7 @@ def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
                 name=specialDay.name,
                 schedule=specialDay.schedule,
                 note=specialDay.note,
+                school=specialDay.school,
             )
         )
     except Exception as e:
@@ -489,10 +490,16 @@ def removeClass(db, cls: schemas.Class) -> bool:
     return False
 
 
-def removeSpecialDay(db, date: date) -> bool:
-    logger.info(f"REMOVE: Special day removed: {date}")
+def removeSpecialDay(db, date: date, school: Optional[structs.SchoolName] = None) -> bool:
+    logger.info(f"REMOVE: Special day removed: {date} {school}")
+    specialDay = getSpecialDay(db, date, school)
+    if specialDay is None:
+        logger.error(f"REMOVE: Special day removal failed because it doesn't exist: {date} {school}")
+        return False
     try:
-        db.query(models.SpecialDays).filter(models.SpecialDays.date == date).delete()
+        db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).delete()
+        db.commit()
+        print("Special day removed")
     except Exception as e:
         logger.error(f"REMOVE: Special day removal failed: {e}")
         return False
@@ -638,11 +645,12 @@ def updateSpecialDay(db, updateSpecialDay: schemas.SpecialDay) -> schemas.Bool:
     if getSpecialDay(db, updateSpecialDay.date) is not None:
         result = db.execute(
             update(models.SpecialDays)
-            .where(models.SpecialDays.date == updateSpecialDay.date)
+            .where(models.SpecialDays.date == updateSpecialDay.date, models.SpecialDays.school == updateSpecialDay.school)
             .values(
                 name = updateSpecialDay.name,
                 schedule = updateSpecialDay.schedule,
                 note = updateSpecialDay.note,
+                school = updateSpecialDay.school,
             )
         )
         db.commit()

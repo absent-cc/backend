@@ -129,7 +129,7 @@ def addSpecialDay(
         utils.raiseError(422, "Schedule data is wrong", structs.ErrorType.PAYLOAD)
         logger.error("Received incorrect format or invalid data for schedule")
         return schemas.Bool(success=False)
-    result = crud.getSpecialDay(db, specialDay.date)
+    result = crud.getSpecialDay(db, specialDay.date, specialDay.school)
     if result is None:
         logger.info(
             f"No special day found for date {specialDay.date}. Creating new one"
@@ -145,12 +145,12 @@ def addSpecialDay(
 
 @router.delete("/schedule/", response_model=schemas.Bool, status_code=201)
 def removeSpecialDay(
-    anid: str,
+    date: datetime.date,
+    school: Optional[structs.SchoolName] = None,
     db: Session = Depends(accounts.getDBSession),
     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
-    an = schemas.AnnouncementReturn(anid=anid)
-    crud.removeAnnouncement(db, an)
+    result = crud.removeSpecialDay(db, date, school)
     return schemas.Bool(success=True)
 
 @router.get("/teacher/", response_model=schemas.TeacherReturn, status_code=201)

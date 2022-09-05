@@ -320,6 +320,7 @@ class SchoolDay(BaseModel):
     schedule: structs.ScheduleWithTimes
     note: Optional[str] = None
     special: bool
+    school: Optional[structs.SchoolName] = None
 
     class Config:
         orm_mode = True
@@ -368,7 +369,6 @@ class NormalDay(SchoolDay):
     name = "Normal Day"
     note = "No special schedule"
     special = False
-    school: Optional[structs.SchoolName] = None
 
 class AnnouncementBase(BaseModel):
     title: str
