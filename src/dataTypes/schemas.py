@@ -351,6 +351,7 @@ class SchoolDay(BaseModel):
                 ],
                 "note": "Happy New Years!",
                 "special": True,
+                "school": "NSHS"
             }
         }
     
