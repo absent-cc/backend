@@ -17,12 +17,13 @@ from typing import Optional, List
 @router.get("/schedule/day", response_model=schemas.SchoolDay, status_code=200)
 def getSchedule(
     date: datetime.date = None,
+    school: Optional[structs.SchoolName] = None,
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
 ):
     if date is None:
         date = datetime.date.today()
 
-    specialDayInDB = crud.getSpecialDay(db, date=date)
+    specialDayInDB = crud.getSpecialDay(db, date, school)
 
     if specialDayInDB is not None:
         return schemas.SpecialDay(
@@ -30,16 +31,20 @@ def getSchedule(
             name=specialDayInDB.name,
             schedule=specialDayInDB.schedule,
             note=specialDayInDB.note,
+            school=school
         )
 
     return schemas.NormalDay(
-        date=date, schedule=structs.SchoolBlocksOnDayWithTimes()[date.weekday()]
+        date=date, 
+        schedule=structs.SchoolBlocksOnDayWithTimes()[date.weekday()],
+        school=school
     )
 
 
 @router.get("/schedule/week/", response_model=List[schemas.SchoolDay], status_code=200)
 def weekPeek(
     date: Optional[datetime.date] = None,
+    school: Optional[structs.SchoolName] = None,
     db: Session = Depends(accounts.getDBSession),  # Initializes a DB.
 ):
     if date is None:
@@ -54,7 +59,7 @@ def weekPeek(
     # Generate weekdays to iterate over:
     weekdays: List[datetime.date] = weekDayGenerator(year, week)
 
-    return [getSchedule(day, db) for day in weekdays]
+    return [getSchedule(day, db, school) for day in weekdays]
 
 
 # @router.get("/announcements/slice", response_model=List[schemas.AnnouncementReturn], status_code=200)

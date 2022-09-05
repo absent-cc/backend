@@ -368,6 +368,7 @@ class NormalDay(SchoolDay):
     name = "Normal Day"
     note = "No special schedule"
     special = False
+    school: Optional[structs.SchoolName] = None
 
 class AnnouncementBase(BaseModel):
     title: str
