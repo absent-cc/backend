@@ -8,6 +8,7 @@ from ....utils.weekGen import weekDayGenerator
 from ....api import accounts
 from ....database import crud
 from ....api import utils
+from loguru import logger
 
 router = APIRouter(prefix="/info", tags=["Info"])
 
@@ -22,9 +23,8 @@ def getSchedule(
 ):
     if date is None:
         date = datetime.date.today()
-
+    
     specialDayInDB = crud.getSpecialDay(db, date, school)
-
     if specialDayInDB is not None:
         return schemas.SpecialDay(
             date=date,
@@ -59,7 +59,7 @@ def weekPeek(
     # Generate weekdays to iterate over:
     weekdays: List[datetime.date] = weekDayGenerator(year, week)
 
-    return [getSchedule(day, db, school) for day in weekdays]
+    return [getSchedule(day, school, db) for day in weekdays]
 
 
 # @router.get("/announcements/slice", response_model=List[schemas.AnnouncementReturn], status_code=200)
