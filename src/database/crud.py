@@ -227,7 +227,7 @@ def getSpecialDay(db: Session, date: date, school: Optional[structs.SchoolName] 
         logger.info(f"GET: Special day requested: {date} for school: {school}")
         result = db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
         if result is None:
-            return db.query(models.SpecialDays).filter(models.SpecialDays.date == date).first()
+            return db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == None).first()
     
     logger.info(f"GET: Special day lookup requested: {date}")
     return db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
