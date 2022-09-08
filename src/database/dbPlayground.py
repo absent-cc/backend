@@ -75,28 +75,50 @@ db = SessionLocal()
 #         )
 #     )
 
-returnTeach = crud.addTeacher(db, schemas.TeacherCreate(
-    first = "Tuen Wing",
-    last = "Fan",
-    school = structs.SchoolName.NEWTON_SOUTH,
-    ))
+# returnTeach = crud.addTeacher(db, schemas.TeacherCreate(
+#     first = "Tuen Wing",
+#     last = "Fan",
+#     school = structs.SchoolName.NEWTON_SOUTH,
+#     ))
 
-aliasCreation = crud.addTeacherAlias(db, schemas.TeacherAliasCreate(
-                    first="Tuen",
-                    last="Wing Fan",
-                    tid = returnTeach.tid
-                    )
-                )
+# aliasCreation = crud.addTeacherAlias(db, schemas.TeacherAliasCreate(
+#                     first="Tuen",
+#                     last="Wing Fan",
+#                     tid = returnTeach.tid
+#                     )
+#                 )
 
-# print(aliasCreation)
+# # print(aliasCreation)
 
-absence = schemas.AbsenceCreate(
-    teacher = schemas.TeacherCreate(
-        first = "Tuen",
-        last = "Wing Fan",
-        school = structs.SchoolName.NEWTON_SOUTH,
-    ),
-    date = date.today(),
+# absence = schemas.AbsenceCreate(
+#     teacher = schemas.TeacherCreate(
+#         first = "Tuen",
+#         last = "Wing Fan",
+#         school = structs.SchoolName.NEWTON_SOUTH,
+#     ),
+#     date = date.today(),
+# )
+
+# crud.addAbsence(db, absence)
+
+specialDay1 = schemas.SpecialDay(
+    name="Test Day",
+    date=date.today(),
+    school=structs.SchoolName.NEWTON_SOUTH,
+    schedule = structs.SchoolBlocksOnDayWithTimes()[1],
+    note = "This is a test day."
 )
 
-crud.addAbsence(db, absence)
+crud.addSpecialDay(db, specialDay1)
+
+print(crud.getSpecialDay(db, date.today(), specialDay1.school))
+
+crud.updateSpecialDay(db, schemas.SpecialDay(
+    name="New Entry",
+    date=date.today(),
+    school=structs.SchoolName.NEWTON_SOUTH,
+    schedule = structs.SchoolBlocksOnDayWithTimes()[1],
+    note = "This is a test day."
+))
+
+print(crud.getSpecialDay(db, date.today(), specialDay1.school).name)

@@ -228,6 +228,7 @@ def getSpecialDay(db: Session, date: date, school: Optional[structs.SchoolName] 
         result = db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
         if result is None:
             return db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == None).first()
+        return result
     
     logger.info(f"GET: Special day lookup requested: {date}")
     return db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
@@ -645,10 +646,11 @@ def updateAnnouncement(db, updateAnnouncement: schemas.AnnouncementUpdate) -> sc
     return schemas.Bool(success=True)
     
 def updateSpecialDay(db, updateSpecialDay: schemas.SpecialDay) -> schemas.Bool:
+    print("Updating special day")
     if updateSpecialDay.date is None:
         logger.error(f"UPDATE: Special day update failed: {updateSpecialDay.date}")
         return schemas.Bool(success=False)
-    if getSpecialDay(db, updateSpecialDay.date) is not None:
+    if getSpecialDay(db, updateSpecialDay.date, updateSpecialDay.school) is not None:
         result = db.execute(
             update(models.SpecialDays)
             .where(models.SpecialDays.date == updateSpecialDay.date, models.SpecialDays.school == updateSpecialDay.school)
