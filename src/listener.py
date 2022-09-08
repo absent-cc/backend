@@ -34,7 +34,7 @@ def listener():
     debugMode = False
 
     dailyCheckTimeStart = 7  # hour. Default: 7
-    dailyCheckTimeEnd = 10  # hour. Default: 11
+    dailyCheckTimeEnd = 12  # hour. Default: 11
 
     resetTimeOne = (0, 0)  # Midnight
     resetTimeTwo = (4, 20)  # Light It Up
