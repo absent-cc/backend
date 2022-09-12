@@ -364,7 +364,7 @@ class ScheduleWithTimes(List[BlockWithTimes]):
             field_schema["items"] = schema_of(BlockWithTimes)
             # field_schema['examples'] = [BlockWithTimes.schema_json()['properties']['examples']]
             # field_schema['examples'] = schema_of(BlockWithTimes)['examples']
-        
+
     # @staticmethod
     # def parse_json(json_data: ) -> "ScheduleWithTimes":
     #     if json_data is None:

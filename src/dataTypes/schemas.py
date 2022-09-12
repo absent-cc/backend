@@ -43,7 +43,7 @@ class TeacherBase(BaseModel):
 
     def __repr__(self) -> str:
         return f"{self.first} {self.last}"
-    
+
     def __str__(self) -> str:
         return self.__repr__()
 
@@ -81,6 +81,7 @@ class Schedule(BaseModel):
 
     def __str__(self) -> str:
         return f"A: {self.A}\nADV: {self.ADVISORY}\nB: {self.B}\nC: {self.C}\nD: {self.D}\nE: {self.E}\nF: {self.F}\nG: {self.G}\nEXTRA: {self.EXTRA}"
+
 
 class ScheduleReturn(BaseModel):
     A: Optional[List[TeacherReturn]] = None
@@ -202,7 +203,7 @@ class UserInfoReturn(UserInfoBase):
     schedule: Optional[ScheduleReturn] = None
     profile: Optional[UserProfile] = None
     onboarded: Optional[bool] = None
-        
+
 
 class SessionCredentials(BaseModel):
     token: Optional[str] = None
@@ -273,6 +274,7 @@ class Analytics(BaseModel):
 
 class Bool(BaseModel):
     success: bool
+
 
 class Badges(BaseModel):
     schemaVersion: int = 1
@@ -351,16 +353,16 @@ class SchoolDay(BaseModel):
                 ],
                 "note": "Happy New Years!",
                 "special": True,
-                "school": "NSHS"
+                "school": "NSHS",
             }
         }
-    
+
     @validator("date")
     def checkDate(cls, v):
         if not isinstance(v, date):
             raise ValueError("Invalid date.")
         return v
-    
+
 
 class SpecialDay(SchoolDay):
     special = True
@@ -371,6 +373,7 @@ class NormalDay(SchoolDay):
     note = "No special schedule"
     special = False
 
+
 class AnnouncementBase(BaseModel):
     title: str
     content: str
@@ -380,21 +383,25 @@ class AnnouncementBase(BaseModel):
     class Config:
         orm_mode = True
 
+
 class AnnouncementCreate(AnnouncementBase):
     anid: str
+
     class Config:
         orm_mode = True
+
 
 class AnnouncementReturn(AnnouncementCreate):
-
     class Config:
         orm_mode = True
+
 
 class AnnouncementUpdate(AnnouncementCreate):
     updateTime: datetime
 
     class Config:
         orm_mode = True
+
 
 class TeacherAliasBase(BaseModel):
     first: str
@@ -403,13 +410,16 @@ class TeacherAliasBase(BaseModel):
     class Config:
         orm_mode = True
 
+
 class TeacherAliasCreate(TeacherAliasBase):
     tid: str
 
     class Config:
         orm_mode = True
 
+
 class TeacherAliasReturn(TeacherAliasCreate):
     alid: str
+
     class Config:
         orm_mode = True

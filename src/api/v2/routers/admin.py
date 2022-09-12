@@ -153,6 +153,7 @@ def removeSpecialDay(
     result = crud.removeSpecialDay(db, date, school)
     return schemas.Bool(success=True)
 
+
 @router.get("/teacher/", response_model=schemas.TeacherReturn, status_code=201)
 def getTeacher(
     first: Optional[str] = None,
@@ -161,7 +162,10 @@ def getTeacher(
     db: Session = Depends(accounts.getDBSession),
     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
-    return crud.getTeacher(db, schemas.TeacherReturn(first=first, last=last, school=school))
+    return crud.getTeacher(
+        db, schemas.TeacherReturn(first=first, last=last, school=school)
+    )
+
 
 @router.post("/teacher/alias", response_model=schemas.Bool, status_code=201)
 def addTeacherAlias(

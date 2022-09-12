@@ -105,20 +105,23 @@ specialDay1 = schemas.SpecialDay(
     name="Test Day",
     date=date.today(),
     school=structs.SchoolName.NEWTON_SOUTH,
-    schedule = structs.SchoolBlocksOnDayWithTimes()[1],
-    note = "This is a test day."
+    schedule=structs.SchoolBlocksOnDayWithTimes()[1],
+    note="This is a test day.",
 )
 
 crud.addSpecialDay(db, specialDay1)
 
 print(crud.getSpecialDay(db, date.today(), specialDay1.school))
 
-crud.updateSpecialDay(db, schemas.SpecialDay(
-    name="New Entry",
-    date=date.today(),
-    school=structs.SchoolName.NEWTON_SOUTH,
-    schedule = structs.SchoolBlocksOnDayWithTimes()[1],
-    note = "This is a test day."
-))
+crud.updateSpecialDay(
+    db,
+    schemas.SpecialDay(
+        name="New Entry",
+        date=date.today(),
+        school=structs.SchoolName.NEWTON_SOUTH,
+        schedule=structs.SchoolBlocksOnDayWithTimes()[1],
+        note="This is a test day.",
+    ),
+)
 
 print(crud.getSpecialDay(db, date.today(), specialDay1.school).name)

@@ -11,12 +11,13 @@ def prettifyTeacher(teacher: TeacherReturn) -> TeacherReturn:
 
     prettyFirst, prettyLast = prettifyName(str(teacher.first), str(teacher.last))
 
-    if hasattr(teacher, "tid"): 
+    if hasattr(teacher, "tid"):
         return TeacherReturn(
             tid=teacher.tid, first=prettyFirst, last=prettyLast, school=teacher.school
         )
     else:
         return TeacherReturn(first=prettyFirst, last=prettyLast, school=teacher.school)
+
 
 def prettifyName(first: str, last: str) -> Tuple[str, str]:
     first_split = re.split(splitTable, first.lower())
@@ -39,6 +40,7 @@ def prettifyName(first: str, last: str) -> Tuple[str, str]:
     prettyLast = prettyCompile(last_split, last_delim)
 
     return prettyFirst, prettyLast
+
 
 # if __name__ == "__main__":
 #     # print(prettify(TeacherBase(first="jimmy-john", last="smith-jr")))

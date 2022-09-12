@@ -23,6 +23,8 @@ def getAbsences(db: Session = Depends(accounts.getDBSession)) -> schemas.Absence
 
 
 @router.get("/classes/count/", response_model=schemas.ClassCountBadge)
-def getNumberOfClasses(db: Session = Depends(accounts.getDBSession)) -> schemas.ClassCountBadge:
+def getNumberOfClasses(
+    db: Session = Depends(accounts.getDBSession),
+) -> schemas.ClassCountBadge:
     classes = crud.getClassesCount(db)
     return schemas.ClassCountBadge(message=str(classes))
