@@ -10,5 +10,6 @@ def dateRangeGen(start: date, end: date) -> List[date]:
         curr += timedelta(days=1)
     return dates
 
+
 # if __name__ == "__main__":
 #     print(dateRangeGen(date(2020, 1, 1), date(2020, 1, 10)))

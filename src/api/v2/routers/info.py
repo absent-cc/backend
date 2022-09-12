@@ -23,7 +23,7 @@ def getSchedule(
 ):
     if date is None:
         date = datetime.date.today()
-    
+
     specialDayInDB = crud.getSpecialDay(db, date, school)
     if specialDayInDB is not None:
         return schemas.SpecialDay(
@@ -31,13 +31,13 @@ def getSchedule(
             name=specialDayInDB.name,
             schedule=specialDayInDB.schedule,
             note=specialDayInDB.note,
-            school=school
+            school=school,
         )
 
     return schemas.NormalDay(
-        date=date, 
+        date=date,
         schedule=structs.SchoolBlocksOnDayWithTimes()[date.weekday()],
-        school=school
+        school=school,
     )
 
 

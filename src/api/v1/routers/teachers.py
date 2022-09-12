@@ -83,7 +83,9 @@ def getAbsenceList(
     list: List[models.Absence] = crud.getAbsenceList(db, date, school)
     returnAbsences: List[schemas.AbsenceReturn] = [
         schemas.AbsenceReturn(
-            length=absence.length, teacher=prettifyTeacher(absence.teacher), note=absence.note
+            length=absence.length,
+            teacher=prettifyTeacher(absence.teacher),
+            note=absence.note,
         )
         for absence in list
     ]

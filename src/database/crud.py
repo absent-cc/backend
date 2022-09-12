@@ -94,7 +94,7 @@ def getUsersByName(db: Session, first: str, last: str) -> List[models.User]:
     logger.info(f"GET: Looked up user by name: {first} {last}")
     return (
         db.query(models.User)
-        .filter(models.User.first== first, models.User.last == last)
+        .filter(models.User.first == first, models.User.last == last)
         .all()
     )
 
@@ -143,7 +143,9 @@ def getAbsenceCount(db: Session) -> int:
     return db.query(models.Absence).count()
 
 
-def getClassesByUser(db: Session, user: schemas.UserReturn) -> Optional[List[models.Class]]:
+def getClassesByUser(
+    db: Session, user: schemas.UserReturn
+) -> Optional[List[models.Class]]:
     if user.uid is not None:
         logger.info(f"GET: User class list requested: {user.uid}")
         return (
@@ -181,16 +183,16 @@ def getAlwaysNotify(db: Session, school: structs.SchoolName) -> models.User:
         .all()
     )
 
+
 def getTeacherAliasByTID(db: Session, teacher: schemas.TeacherReturn) -> models.Aliases:
     if teacher.tid is not None:
         logger.info(f"GET: Teacher alias requested: {teacher.tid}")
         return (
-            db.query(models.Aliases)
-            .filter(models.Aliases.tid == teacher.tid)
-            .first()
+            db.query(models.Aliases).filter(models.Aliases.tid == teacher.tid).first()
         )
     logger.error(f"GET: Teacher alias lookup failed: {teacher.tid}")
     return None
+
 
 def getTeacherAlias(db: Session, teacher: schemas.TeacherAliasBase) -> models.Aliases:
     if teacher.first is not None and teacher.last is not None:
@@ -206,13 +208,10 @@ def getTeacherAlias(db: Session, teacher: schemas.TeacherAliasBase) -> models.Al
     logger.error(f"GET: Teacher alias lookup failed: {teacher.first} {teacher.last}")
     return None
 
+
 # Peek the top entry in the absences table by date.
 def peekAbsence(db: Session, date: datetime = datetime.today().date()) -> tuple:
-    query = (
-        db.query(models.Absence)
-        .filter(models.Absence.date == date)
-        .first()
-    )
+    query = db.query(models.Absence).filter(models.Absence.date == date).first()
     logger.info(f"PEEK: First absence requested: {query.date}")
     return query
 
@@ -222,16 +221,34 @@ def getAbsencesCount(db: Session) -> int:
     return db.query(models.Absence).count()
 
 
-def getSpecialDay(db: Session, date: date, school: Optional[structs.SchoolName] = None) -> models.SpecialDays:
+def getSpecialDay(
+    db: Session, date: date, school: Optional[structs.SchoolName] = None
+) -> models.SpecialDays:
     if school is not None:
         logger.info(f"GET: Special day requested: {date} for school: {school}")
-        result = db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
+        result = (
+            db.query(models.SpecialDays)
+            .filter(
+                models.SpecialDays.date == date, models.SpecialDays.school == school
+            )
+            .first()
+        )
         if result is None:
-            return db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == None).first()
+            return (
+                db.query(models.SpecialDays)
+                .filter(
+                    models.SpecialDays.date == date, models.SpecialDays.school == None
+                )
+                .first()
+            )
         return result
-    
+
     logger.info(f"GET: Special day lookup requested: {date}")
-    return db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).first()
+    return (
+        db.query(models.SpecialDays)
+        .filter(models.SpecialDays.date == date, models.SpecialDays.school == school)
+        .first()
+    )
 
 
 def getSchoolDaySchedule(db: Session, date: date) -> structs.ScheduleWithTimes:
@@ -241,16 +258,26 @@ def getSchoolDaySchedule(db: Session, date: date) -> structs.ScheduleWithTimes:
         return specialDayCheck.schedule
     return structs.SchoolBlocksOnDayWithTimes()[date.weekday()]
 
+
 def getAnnouncementByID(db: Session, id: str) -> models.Announcements:
     logger.info(f"GET: Announcement lookup requested: {id}")
-    return db.query(models.Announcements).filter(models.Announcements.anid == id).first()
+    return (
+        db.query(models.Announcements).filter(models.Announcements.anid == id).first()
+    )
 
-def getAnnouncementByDateAndSchool(db: Session, date: date, school: Optional[structs.SchoolName] = None) -> models.Announcements:
+
+def getAnnouncementByDateAndSchool(
+    db: Session, date: date, school: Optional[structs.SchoolName] = None
+) -> models.Announcements:
     if school is not None:
-        logger.info(f"GET: Announcement lookup requested by date and school: {date} {school}")
+        logger.info(
+            f"GET: Announcement lookup requested by date and school: {date} {school}"
+        )
         return (
             db.query(models.Announcements)
-            .filter(models.Announcements.date == date, models.Announcements.school == school)
+            .filter(
+                models.Announcements.date == date, models.Announcements.school == school
+            )
             .all()
         )
     else:
@@ -261,26 +288,44 @@ def getAnnouncementByDateAndSchool(db: Session, date: date, school: Optional[str
             .all()
         )
 
-def getAnnouncementsSlice(db: Session, top: int, bottom: int, school: Optional[structs.SchoolName] = None) -> List[models.Announcements]:
+
+def getAnnouncementsSlice(
+    db: Session, top: int, bottom: int, school: Optional[structs.SchoolName] = None
+) -> List[models.Announcements]:
     if school is None:
         logger.info(f"GET: Announcement lookup requested for all schools")
-        return db.query(models.Announcements).order_by(models.Announcements.date.desc()).slice(top, bottom).all()
+        return (
+            db.query(models.Announcements)
+            .order_by(models.Announcements.date.desc())
+            .slice(top, bottom)
+            .all()
+        )
     logger.info(f"GET: Announcement list requested by school {school}")
-    return db.query(models.Announcements).order_by(models.Announcements.date.desc()).filter((models.Announcements.school == school) | (models.Announcements.school == None)).slice(top, bottom).all()
+    return (
+        db.query(models.Announcements)
+        .order_by(models.Announcements.date.desc())
+        .filter(
+            (models.Announcements.school == school)
+            | (models.Announcements.school == None)
+        )
+        .slice(top, bottom)
+        .all()
+    )
 
-def getAnnouncementsByPage(db: Session, page: int, page_size: int, school: Optional[structs.SchoolName] = None) -> List[models.Announcements]:
+
+def getAnnouncementsByPage(
+    db: Session, page: int, page_size: int, school: Optional[structs.SchoolName] = None
+) -> List[models.Announcements]:
     return getAnnouncementsSlice(db, page * page_size, (page + 1) * page_size, school)
+
 
 def getSchedule(db: Session, user: schemas.UserReturn) -> Optional[List[models.Class]]:
     if user.uid is not None:
         logger.info(f"GET: User schedule requested: {user.uid}")
-        return (
-            db.query(models.Class)
-            .filter(models.Class.uid == user.uid)
-            .all()
-        )
+        return db.query(models.Class).filter(models.Class.uid == user.uid).all()
     logger.error(f"GET: User schedule lookup failed: {user.uid}")
     return None
+
 
 def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
     logger.info(f"ADD: Added special day: {specialDay.date}")
@@ -304,7 +349,9 @@ def addSpecialDay(db: Session, specialDay: schemas.SpecialDay) -> bool:
 def addUser(db: Session, user: schemas.UserCreate) -> Optional[models.User]:
     if user.gid != None:  # Checks for GID as this is the only mandatory field.
         uid = str(uuid4())  # Generates UUID.
-        (user.first, user.last) = prettifyName(user.first, user.last) # Prettifies name.
+        (user.first, user.last) = prettifyName(
+            user.first, user.last
+        )  # Prettifies name.
         userModel = models.User(
             uid=uid, **user.dict()
         )  # Creates model from dict of input values.
@@ -338,14 +385,18 @@ def addClass(db: Session, newClass: schemas.Class) -> Optional[models.Class]:
     return None
 
 
-def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> Optional[models.Teacher]:
+def addTeacher(
+    db: Session, newTeacher: schemas.TeacherCreate
+) -> Optional[models.Teacher]:
     if (
         newTeacher.first is not None
         and newTeacher.last is not None
         and newTeacher.school is not None
     ):  # Checks for required fields.
         tid = secrets.token_hex(4)  # Generates hexadecimal TID.
-        newTeacher = prettifyTeacher(schemas.TeacherReturn(**newTeacher.dict(), tid=tid))
+        newTeacher = prettifyTeacher(
+            schemas.TeacherReturn(**newTeacher.dict(), tid=tid)
+        )
         teacherModel = models.Teacher(**newTeacher.dict())  # Creates a model.
         db.add(teacherModel)  # Adds teacher.
         db.commit()
@@ -359,9 +410,13 @@ def addTeacher(db: Session, newTeacher: schemas.TeacherCreate) -> Optional[model
     return None
 
 
-def addTeacherAlias(db: Session, newTeacherAlias: schemas.TeacherAliasCreate) -> Optional[models.Aliases]:
+def addTeacherAlias(
+    db: Session, newTeacherAlias: schemas.TeacherAliasCreate
+) -> Optional[models.Aliases]:
 
-    (newTeacherAlias.first, newTeacherAlias.last) = prettifyName(newTeacherAlias.first, newTeacherAlias.last) # To ensure that all names are in the correct format.
+    (newTeacherAlias.first, newTeacherAlias.last) = prettifyName(
+        newTeacherAlias.first, newTeacherAlias.last
+    )  # To ensure that all names are in the correct format.
 
     if newTeacherAlias.tid is None:
         logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias.tid}")
@@ -369,7 +424,7 @@ def addTeacherAlias(db: Session, newTeacherAlias: schemas.TeacherAliasCreate) ->
     if getTeacher(db, schemas.TeacherReturn(tid=newTeacherAlias.tid)) is None:
         logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias.tid}")
         return None
-    
+
     alid = secrets.token_hex(4)
     teacherAlias = schemas.TeacherAliasReturn(**newTeacherAlias.dict(), alid=alid)
     teacherAliasModel = models.Aliases(**teacherAlias.dict())
@@ -381,24 +436,26 @@ def addTeacherAlias(db: Session, newTeacherAlias: schemas.TeacherAliasCreate) ->
 
 
 def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> Optional[models.Absence]:
-    absence.teacher = schemas.TeacherCreate( **prettifyTeacher(absence.teacher).dict() ) # To ensure that all names that we work with are in the correct format.
-    
+    absence.teacher = schemas.TeacherCreate(
+        **prettifyTeacher(absence.teacher).dict()
+    )  # To ensure that all names that we work with are in the correct format.
+
     if (
         absence.teacher.first is None
-        or
-        absence.teacher.last is None
-        or
-        absence.teacher.school is None
+        or absence.teacher.last is None
+        or absence.teacher.school is None
     ):
         logger.error(f"ADD: Absence addition failed: {absence.teacher}")
         return None
-    
+
     teacher = getTeacher(db, schemas.TeacherReturn(**absence.teacher.dict()))
-    
+
     if teacher is None:
         print("Teacher not found. Going through aliases")
         # Teacher is not found, check if an alias exists.
-        teacherAlias = getTeacherAlias(db, schemas.TeacherAliasBase(**absence.teacher.dict()))
+        teacherAlias = getTeacherAlias(
+            db, schemas.TeacherAliasBase(**absence.teacher.dict())
+        )
         if teacherAlias is None:
             print("Teacher alias not found")
             teacher = addTeacher(db, absence.teacher)
@@ -431,7 +488,10 @@ def addSession(db: Session, newSession: schemas.SessionCreate) -> models.UserSes
     logger.error(f"ADD: Session addition failed: {newSession.uid}")
     return None
 
-def addAnnouncement(db: Session, announcement: schemas.AnnouncementBase) -> schemas.Bool:
+
+def addAnnouncement(
+    db: Session, announcement: schemas.AnnouncementBase
+) -> schemas.Bool:
     anid = secrets.token_hex(4)  # Generates hexadecimal TID.
     query = getAnnouncementByID(db, anid)
 
@@ -439,7 +499,7 @@ def addAnnouncement(db: Session, announcement: schemas.AnnouncementBase) -> sche
         anid = secrets.token_hex(4)
         query = getAnnouncementByID(db, anid)
         logger.info("ADD: Announcement ID already exists, generating new ID")
-    
+
     db.add(
         models.Announcements(
             anid=anid,
@@ -453,7 +513,7 @@ def addAnnouncement(db: Session, announcement: schemas.AnnouncementBase) -> sche
     db.commit()
     logger.info(f"ADD: Announcement added: {anid}")
     return schemas.Bool(success=True)
-    
+
 
 def removeSession(db: Session, session: schemas.SessionReturn) -> bool:
     if session.sid is not None and session.uid is not None:
@@ -497,14 +557,20 @@ def removeClass(db, cls: schemas.Class) -> bool:
     return False
 
 
-def removeSpecialDay(db, date: date, school: Optional[structs.SchoolName] = None) -> bool:
+def removeSpecialDay(
+    db, date: date, school: Optional[structs.SchoolName] = None
+) -> bool:
     logger.info(f"REMOVE: Special day removed: {date} {school}")
     specialDay = getSpecialDay(db, date, school)
     if specialDay is None:
-        logger.error(f"REMOVE: Special day removal failed because it doesn't exist: {date} {school}")
+        logger.error(
+            f"REMOVE: Special day removal failed because it doesn't exist: {date} {school}"
+        )
         return False
     try:
-        db.query(models.SpecialDays).filter(models.SpecialDays.date == date, models.SpecialDays.school == school).delete()
+        db.query(models.SpecialDays).filter(
+            models.SpecialDays.date == date, models.SpecialDays.school == school
+        ).delete()
         db.commit()
         print("Special day removed")
         return True
@@ -537,16 +603,20 @@ def removeAbsencesByDate(db, date: datetime) -> bool:
     logger.info(f"REMOVE: Removed absences for date: {str(date)}")
     return True
 
+
 def removeAnnouncement(db, announcement: schemas.AnnouncementReturn) -> bool:
     if announcement is None:
         return False
     if announcement.anid is None:
         logger.error(f"REMOVE: Announcement removal failed: {announcement.anid}")
         return False
-    db.query(models.Announcements).filter(models.Announcements.anid == announcement.anid).delete()
+    db.query(models.Announcements).filter(
+        models.Announcements.anid == announcement.anid
+    ).delete()
     db.commit()
     logger.info(f"REMOVE: Removed announcement: {announcement.anid}")
     return True
+
 
 def updateSchedule(db, user: schemas.UserReturn, schedule: schemas.Schedule) -> bool:
     if user.school is None:
@@ -627,24 +697,27 @@ def updateFCMToken(db, token: schemas.Token, uid: str, sid: str) -> models.UserS
     return result
 
 
-def updateAnnouncement(db, updateAnnouncement: schemas.AnnouncementUpdate) -> schemas.Bool:
+def updateAnnouncement(
+    db, updateAnnouncement: schemas.AnnouncementUpdate
+) -> schemas.Bool:
     if updateAnnouncement.anid is None:
         logger.error(f"UPDATE: Announcement update failed: {updateAnnouncement.anid}")
         return False
-    
+
     result = db.execute(
         update(models.Announcements)
         .where(models.Announcements.anid == updateAnnouncement.anid)
         .values(
-            title = updateAnnouncement.title,
-            content = updateAnnouncement.content,
-            school = updateAnnouncement.school,
+            title=updateAnnouncement.title,
+            content=updateAnnouncement.content,
+            school=updateAnnouncement.school,
         )
     )
     db.commit()
     logger.info(f"UPDATE: Announcement updated: {updateAnnouncement.anid}")
     return schemas.Bool(success=True)
-    
+
+
 def updateSpecialDay(db, updateSpecialDay: schemas.SpecialDay) -> schemas.Bool:
     print("Updating special day")
     if updateSpecialDay.date is None:
@@ -653,18 +726,23 @@ def updateSpecialDay(db, updateSpecialDay: schemas.SpecialDay) -> schemas.Bool:
     if getSpecialDay(db, updateSpecialDay.date, updateSpecialDay.school) is not None:
         result = db.execute(
             update(models.SpecialDays)
-            .where(models.SpecialDays.date == updateSpecialDay.date, models.SpecialDays.school == updateSpecialDay.school)
+            .where(
+                models.SpecialDays.date == updateSpecialDay.date,
+                models.SpecialDays.school == updateSpecialDay.school,
+            )
             .values(
-                name = updateSpecialDay.name,
-                schedule = updateSpecialDay.schedule,
-                note = updateSpecialDay.note,
-                school = updateSpecialDay.school,
+                name=updateSpecialDay.name,
+                schedule=updateSpecialDay.schedule,
+                note=updateSpecialDay.note,
+                school=updateSpecialDay.school,
             )
         )
         db.commit()
         logger.info(f"UPDATE: Special day updated: {updateSpecialDay.date}")
         return schemas.Bool(success=True)
-    logger.error(f"UPDATE: Special day update failed: {updateSpecialDay.date} Date does not exist")
+    logger.error(
+        f"UPDATE: Special day update failed: {updateSpecialDay.date} Date does not exist"
+    )
     return schemas.Bool(success=False)
 
 

@@ -9,10 +9,10 @@ from sqlalchemy import (
     Boolean,
     Enum,
     PickleType,
-    Text, 
+    Text,
     DateTime,
     Integer,
-    PrimaryKeyConstraint
+    PrimaryKeyConstraint,
 )
 from sqlalchemy.orm import relationship, validates
 
@@ -40,6 +40,7 @@ class User(Base):
     def __str__(self) -> str:
         return f"{self.first} {self.last} ({self.school} {self.grade})"
 
+
 class Teacher(Base):
     __tablename__ = "teachers"
     tid = Column(String(8), primary_key=True)
@@ -52,6 +53,7 @@ class Teacher(Base):
 
     def __str__(self) -> str:
         return f"{self.first} {self.last} ({self.school})"
+
 
 class UserSession(Base):
     __tablename__ = "sessions"
@@ -78,7 +80,8 @@ class Class(Base):
 
     def __str__(self) -> str:
         return f"{self.block} {self.teacher} {self.user}"
-    
+
+
 class Absence(Base):
     __tablename__ = "absences"
     tid = Column(
@@ -115,7 +118,7 @@ class SpecialDays(Base):
         if type(value) != structs.ScheduleWithTimes:
             raise ValueError("Schedule must be of type ScheduleWithTimes")
         return value
-    
+
     def __str__(self) -> str:
         return f"{self.name} ({self.date}):\n\t{self.schedule}\n\tNote: {self.note}"
 
@@ -126,21 +129,23 @@ class Aliases(Base):
     first = Column(String(255), primary_key=True)
     last = Column(String(255), primary_key=True)
     tid = Column(String(36), ForeignKey(Teacher.tid, ondelete="CASCADE"))
-    
+
     def __str__(self) -> str:
         return f"{self.first} {self.last} ({self.tid})"
+
     # teacher = relationship("Teacher", back_populates="aliases")
+
 
 class Announcements(Base):
     __tablename__ = "announcements"
     anid = Column(String(8), primary_key=True)
     title = Column(String(255))
-    content = Column(Text) # Markdown variably sized string
+    content = Column(Text)  # Markdown variably sized string
     date = Column(Date)
     school = Column(Enum(structs.SchoolName), nullable=True)
     lastUpdate = Column(DateTime, nullable=True)
 
     def __str__(self) -> str:
-        lines="---------------------\n"
+        lines = "---------------------\n"
         header = f"Announcement:\n\tID: {self.anid}\n\tTitle: {self.title}\n\tDate: {self.date}\n\tSchool: {self.school}\n\tLast Update: {self.lastUpdate}\n\tContent:"
         return lines + header + "\n\t" + self.content + "\n" + lines
