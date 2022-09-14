@@ -41,12 +41,13 @@ class AbsencePuller:
             "Casey Friend",
             "Suzanne Spirito",
             "Jason Williams",
+            "Amy Winston",
         ]
         feed = []
         for update in reversed(self.api[school].get_feed()):
             user = self.api[school].get_user(update.uid)
             if user.name_display in teachers:
-                feed.append((user.name_display, update.body, update.last_updated))
+                feed.append((user.name_display, update.body, update.created))
         return feed
 
     # Gets the absence table for the date requested as defined by 'date'. Returns just this update for furthing processing. The date argument ultimately comes from the call of this function in main.py.
@@ -55,8 +56,6 @@ class AbsencePuller:
         for poster, body, feedDate in feed:
             postDate = datetime.utcfromtimestamp(int(feedDate))
             if date.date() == postDate.date():
-                # print("HERE")
-                # print(poster, body, feedDate)
                 splitBody = body.split("\n")
                 logger.info(f"Raw update: {splitBody}")
                 return structs.RawUpdate(content=splitBody, poster=poster)
