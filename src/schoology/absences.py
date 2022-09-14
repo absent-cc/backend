@@ -76,7 +76,7 @@ class AbsencePuller:
                 table = structs.RawUpdate(content=splitBody, poster=poster)
                 absences = ContentParser(date).parse(table, school)
                 logger.info(absences)
-                if absences is None:
+                if absences is not None:
                     return absences
         return absences
 
