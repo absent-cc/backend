@@ -35,7 +35,7 @@ class SchoologyListener:
 
         def southRun() -> bool:
             # Get the absences
-            absences = self.sc.filterAbsencesSouth(date)
+            absences = self.sc.filterAbsences(structs.SchoolName.NEWTON_SOUTH, date)
 
             # Setup DB Session
             listenerDB = SessionLocal()
@@ -72,7 +72,7 @@ class SchoologyListener:
 
         def northRun() -> bool:
             # Get the absences
-            absences = self.sc.filterAbsencesNorth(date)
+            absences = self.sc.filterAbsences(structs.SchoolName.NEWTON_NORTH, date)
 
             if absences is None:
                 return False

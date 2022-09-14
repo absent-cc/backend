@@ -61,13 +61,26 @@ class AbsencePuller:
                 return structs.RawUpdate(content=splitBody, poster=poster)
         return None
 
-    # Takes the raw North attendance table from the prior function and parses it, using the AbsentTeacher dataclass. Returns an array of entries utilizing this class.
-    def filterAbsencesNorth(self, date):
-        table = self.getCurrentTable(structs.SchoolName.NEWTON_NORTH, date)
-        absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_NORTH)
+    # Gets the raw attendance table and parses it, using the AbsentTeacher dataclass. Returns an array of entries utilizing this class.
+    def filterAbsences(self, school: structs.SchoolName, date):
+        feed = self.getFeed(school)
+        logger.info(feed)
+        logger.info(date.date())
+        for poster, body, feedDate in feed:
+            postDate = datetime.utcfromtimestamp(int(feedDate))
+            logger.info(body)
+            logger.info(postDate.date())
+            if date.date() == postDate.date():
+                splitBody = body.split("\n")
+                logger.info(f"Raw update: {splitBody}")
+                table = structs.RawUpdate(content=splitBody, poster=poster)
+                absences = ContentParser(date).parse(table, school)
+                logger.info(absences)
+                if absences is None:
+                    return absences
         return absences
 
-    # Same as the above, but the parsing is handled slightly differently due to the South absence table being differenct in formatting.
+    # DEP
     def filterAbsencesSouth(self, date):
         table = self.getCurrentTable(structs.SchoolName.NEWTON_SOUTH, date)
         absences = ContentParser(date).parse(table, structs.SchoolName.NEWTON_SOUTH)
