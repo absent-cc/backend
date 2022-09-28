@@ -1,0 +1,55 @@
+{
+    "date": "2022-09-07",
+    "name": "2nd Day of School",
+    "schedule": [
+        {
+            "block": "C",
+            "startTime": "09:00:00",
+            "endTime": "10:15:00",
+            "lunches": null
+        },
+        {
+            "block": "ADVISORY",
+            "startTime": "10:20:00",
+            "endTime": "11:10:00",
+            "lunches": null
+        },
+        {
+            "block": "D",
+            "startTime": "11:15:00",
+            "endTime": "13:05:00",
+            "lunches": [
+               {
+                  "lunch": "L1",
+                  "startTime": "11:15:00",
+                  "endTime": "11:45:00"
+                },
+                {
+                  "lunch": "L2",
+                  "startTime": "11:55:00",
+                  "endTime": "12:25:00"
+                },
+                {
+                  "lunch": "L3",
+                  "startTime": "12:35:00",
+                  "endTime": "13:05:00"
+                }
+             ]
+        },
+        {
+            "block": "E",
+            "startTime": "13:10:00",
+            "endTime": "14:25:00",
+            "lunches": null
+        },
+        {
+            "block": "F",
+            "startTime": "14:30:00",
+            "endTime": "15:45:00",
+            "lunches": null
+        }
+    ],
+    "note": "2nd Day of School!",
+    "special": true,
+    "school": "NNHS"
+}

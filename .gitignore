@@ -136,7 +136,9 @@ oauth/
 .vscode/
 logs/
 creds/*
-data/*
+
+!/data/specialday_entries/**
+teachers.csv
 src/tools/googleTokenGen.py
 src/state.ini
 abSENT/

@@ -1,0 +1,33 @@
+{
+    "date": "2022-09-28",
+    "name": "September Half Day",
+    "schedule": [
+        {
+            "block": "A",
+            "startTime": "09:00:00",
+            "endTime": "09:50:00",
+            "lunches": null
+        },
+        {
+            "block": "B",
+            "startTime": "09:55:00",
+            "endTime": "10:45:00",
+            "lunches": null
+        },
+        {
+            "block": "WIN",
+            "startTime": "10:50:00",
+            "endTime": "11:35:00",
+            "lunches": null
+        },
+        {
+            "block": "E",
+            "startTime": "11:40",
+            "endTime": "12:30",
+            "lunches": null
+        }
+    ],
+    "note": "Have a great half day!",
+    "special": true,
+    "school": null
+}
