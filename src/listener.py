@@ -32,6 +32,7 @@ def listener():
     sunday = 6
     # debug mode
     debugMode = False
+    # debugMode = True
 
     dailyCheckTimeStart = 7  # hour. Default: 7
     dailyCheckTimeEnd = 12  # hour. Default: 11

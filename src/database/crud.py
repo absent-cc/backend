@@ -462,6 +462,7 @@ def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> Optional[models.A
         else:
             print("Teacher alias found")
             teacher = teacherAlias
+            
     absenceModel = models.Absence(
         date=absence.date, tid=teacher.tid, note=absence.note, length=absence.length
     )

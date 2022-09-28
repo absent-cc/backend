@@ -45,6 +45,10 @@ class SchoologyListener:
 
             # Add the absences to the database.
             for absence in absences:
+                # Do not add the absence if it is a null absence, one with first and last blank.
+                if (absence.teacher.first is None) or (absence.teacher.last is None) or (absence.teacher.first == "") or (absence.teacher.last == ""):
+                    continue
+                
                 # Check if the absence is already in the database.
                 try:
                     crud.addAbsence(listenerDB, absence)
