@@ -10,11 +10,11 @@ abSENT uses the [Schoolopy](https://github.com/ErikBoesen/schoolopy) API wrapper
 ## How does it work?
 Students sign up in our app. Their schedule is then saved as a postgres database using 3 tables:
 
-- One table stores students and their characteristics (name, Google subject ID, FCM device details, etc)
+- One table stores students and their characteristics (name, Google subject ID, etc)
 - Another stores teachers and their characteristics (name)
 - The third table is an array of classes that maps teacher & block -> student. 
 
-Every school day, abSENT retrives the new absence list and parses it. It then queries the SQLite database by teacher ID and block to find students who have absent teachers. These students are then notifed that their teacher is absent.
+Every school day, abSENT retrives the new absence list and parses it. It then queries the postgres database by teacher ID and block to find students who have absent teachers. These students are then notifed that their teacher is absent.
 
 ## Why?
 Refreshing Schoology 20 times every morning is somewhat draining.
