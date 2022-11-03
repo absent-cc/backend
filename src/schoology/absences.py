@@ -66,6 +66,7 @@ class AbsencePuller:
         feed = self.getFeed(school)
         logger.info(feed)
         logger.info(date.date())
+        print(feed[len(feed) - 1])
         for poster, body, feedDate in feed:
             postDate = datetime.utcfromtimestamp(int(feedDate))
             logger.info(body)
@@ -76,9 +77,9 @@ class AbsencePuller:
                 table = structs.RawUpdate(content=splitBody, poster=poster)
                 absences = ContentParser(date).parse(table, school)
                 logger.info(absences)
-                if absences is not None:
+                if absences != None:
                     return absences
-        return absences
+        return None
 
     # DEP
     def filterAbsencesSouth(self, date):
