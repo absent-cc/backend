@@ -6,6 +6,7 @@ from firebase_admin import credentials
 
 from .dataTypes import tools
 from .schoology.schoologyListener import *
+from .dataTypes import structs
 
 # Get secrets info from config.ini
 config_path = "config.ini"
@@ -31,7 +32,7 @@ def listener():
     saturday = 5
     sunday = 6
     # debug mode
-    debugMode = False
+    debugMode = True
     # debugMode = True
 
     dailyCheckTimeStart = 7  # hour. Default: 7
@@ -40,7 +41,8 @@ def listener():
     resetTimeOne = (0, 0)  # Midnight
     resetTimeTwo = (4, 20)  # Light It Up
 
-    schoologySuccessCheck = False
+    southCheck: bool = False
+    northCheck: bool = False
     dayoffLatch = False
 
     while True:
@@ -54,7 +56,7 @@ def listener():
 
         if not dayoffLatch:
             logger.info(f"Listening: {currentTime}")
-            logger.info(f"Schoology success: {schoologySuccessCheck}")
+            logger.info(f"Schoology success: NSHS: {southCheck}, NNHS: {northCheck}.")
 
             db = SessionLocal()
 
@@ -81,15 +83,24 @@ def listener():
                 aboveStartTime: bool = currentTime.hour >= dailyCheckTimeStart
                 belowEndTime: bool = currentTime.hour <= dailyCheckTimeEnd
                 if (
-                    aboveStartTime and belowEndTime and not schoologySuccessCheck
-                ) or debugMode:  # IF its during the check time and schoology hasn't already been checked.
+                    aboveStartTime and belowEndTime
+                ) or debugMode:  # If its during the check time and schoology hasn't already been checked.
                     logger.info("Polling schoology...")
                     sc = SchoologyListener(SCHOOLOGYCREDS)
-                    schoologySuccessCheck: bool = sc.run()
-                    logger.info(f"Schoology success: {schoologySuccessCheck}")
-                    logger.info("Schoology poll complete")
+
+                    if not southCheck:
+                        southCheck = sc.southRun()
+                    else:
+                        logger.info("South has already been checked today.")
+
+                    if not northCheck:
+                        northCheck = sc.northRun()
+                    else:
+                        logger.info("North has already been checked today.")
+                    
+                    logger.info(f"Schoology success: NSHS: {southCheck}, NNHS: {northCheck}.")
                 else:
-                    if schoologySuccessCheck:
+                    if southCheck and northCheck:
                         logger.info(
                             "Skipping check, already have absence list for today"
                         )
@@ -101,7 +112,8 @@ def listener():
             # Only change value when it is latched (true)
             logger.info("Resetting state for the new day")
             dayoffLatch = False
-            schoologySuccessCheck = False
+            southCheck = False
+            northCheck = False
 
         logger.info(f"Notify call times: {Notify.NUMBER_OF_CALLS}")
         time.sleep(15)  # Sleep for 15 seconds.
