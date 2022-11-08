@@ -22,7 +22,7 @@ if len(cfg.sections()) == 0:
 SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{cfg['PostgreSQL']['user']}:{cfg['PostgreSQL']['password']}@127.0.0.1:5432/{cfg['PostgreSQL']['name']}"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    pool_size=0,
+    pool_size=100,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
