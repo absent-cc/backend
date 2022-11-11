@@ -19,7 +19,7 @@ class SchoologyListener:
     # Run function, for listening and calling notifications code.
     
     def currentTime(self) -> datetime:
-        return datetime.now(timezone.utc) - timedelta(hours=5)
+        return datetime.now(timezone.utc) - timedelta(hours=36)
     
         # These statuses get updated when the listern is run.
         ## What happens is that each run function sees if the absent teachers have already been added to the database.

@@ -101,27 +101,52 @@ db = SessionLocal()
 
 # crud.addAbsence(db, absence)
 
-specialDay1 = schemas.SpecialDay(
-    name="Test Day",
-    date=date.today(),
+# specialDay1 = schemas.SpecialDay(
+#     name="Test Day",
+#     date=date.today(),
+#     school=structs.SchoolName.NEWTON_SOUTH,
+#     schedule=structs.SchoolBlocksOnDayWithTimes()[1],
+#     note="This is a test day.",
+# )
+
+# crud.addSpecialDay(db, specialDay1)
+
+# print(crud.getSpecialDay(db, date.today(), specialDay1.school))
+
+# crud.updateSpecialDay(
+#     db,
+#     schemas.SpecialDay(
+#         name="New Entry",
+#         date=date.today(),
+#         school=structs.SchoolName.NEWTON_SOUTH,
+#         schedule=structs.SchoolBlocksOnDayWithTimes()[1],
+#         note="This is a test day.",
+#     ),
+# )
+
+
+# print(crud.getSpecialDay(db, date.today(), specialDay1.school).name)
+
+brianBaron = schemas.TeacherCreate(
+    first="Bob",
+    last="Baron",
     school=structs.SchoolName.NEWTON_SOUTH,
-    schedule=structs.SchoolBlocksOnDayWithTimes()[1],
-    note="This is a test day.",
 )
 
-crud.addSpecialDay(db, specialDay1)
+crud.addTeacher(db, brianBaron)
 
-print(crud.getSpecialDay(db, date.today(), specialDay1.school))
-
-crud.updateSpecialDay(
-    db,
-    schemas.SpecialDay(
-        name="New Entry",
-        date=date.today(),
-        school=structs.SchoolName.NEWTON_SOUTH,
-        schedule=structs.SchoolBlocksOnDayWithTimes()[1],
-        note="This is a test day.",
-    ),
+print(crud.getTeacher(db, teacher=schemas.TeacherReturn(first="Brian", last="Baron", school=structs.SchoolName.NEWTON_SOUTH)))
+# Alias Creation
+alias1 = schemas.TeacherAliasCreate(
+    first="Brian",
+    last="Baron",
+    actual_first="Bob",
+    actual_last="Baron",
+    school=structs.SchoolName.NEWTON_SOUTH,
 )
 
-print(crud.getSpecialDay(db, date.today(), specialDay1.school).name)
+crud.addTeacherAlias(db, alias1)
+print(crud.getTeacherAlias(db, alias1))
+
+print(crud.getTeacherAliases(db))
+

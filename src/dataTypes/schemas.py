@@ -406,20 +406,26 @@ class AnnouncementUpdate(AnnouncementCreate):
 class TeacherAliasBase(BaseModel):
     first: str
     last: str
+    school: structs.SchoolName
 
     class Config:
         orm_mode = True
 
 
 class TeacherAliasCreate(TeacherAliasBase):
-    tid: str
+    actual_first: str
+    actual_last: str
 
     class Config:
         orm_mode = True
+    
+    def __str__(self) -> str:
+        return f"{self.first} {self.last} -> {self.actual_first} {self.actual_last} ({self.school})"
 
 
 class TeacherAliasReturn(TeacherAliasCreate):
     alid: str
+    tid: str
 
     class Config:
         orm_mode = True

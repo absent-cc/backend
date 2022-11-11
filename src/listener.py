@@ -32,7 +32,7 @@ def listener():
     saturday = 5
     sunday = 6
     # debug mode
-    debugMode = False
+    debugMode = True
     # debugMode = True
 
     dailyCheckTimeStart = 7  # hour. Default: 7
@@ -97,7 +97,11 @@ def listener():
                         northCheck = sc.northRun()
                     else:
                         logger.info("North has already been checked today.")
-                    
+
+                    # REMOVE ME!
+                    if southCheck and northCheck:
+                        return 1
+                        logger.info("Schoology check failed.") 
                     logger.info(f"Schoology success: NSHS: {southCheck}, NNHS: {northCheck}.")
                 else:
                     if southCheck and northCheck:
@@ -171,3 +175,4 @@ if __name__ == "__main__":
     )
 
     listener()
+    print("logger done")
