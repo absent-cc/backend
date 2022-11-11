@@ -196,13 +196,14 @@ def getTeacherAliasByTID(db: Session, teacher: schemas.TeacherReturn) -> models.
 
 
 def getTeacherAlias(db: Session, teacher: schemas.TeacherAliasBase) -> models.Aliases:
-    if teacher.first is not None and teacher.first is not None:
+    if teacher.first is not None and teacher.first is not None and teacher.school is not None:
         logger.info(f"GET: Teacher alias requested: {teacher}")
         return (
             db.query(models.Aliases)
             .filter(
                 models.Aliases.first == teacher.first,
                 models.Aliases.last == teacher.last,
+                models.Aliases.school == teacher.school,
             )
             .first()
         )
@@ -425,7 +426,7 @@ def addTeacherAlias(
         newTeacherAlias.first, newTeacherAlias.first
     )  # To ensure that all names are in the correct format.
 
-    teacher = getTeacher(db, schemas.TeacherReturn(first=newTeacherAlias.actual_first, last=newTeacherAlias.actual_last, school=newTeacherAlias.school))
+    teacher = getTeacher(db, schemas.TeacherReturn(first=newTeacherAlias.actual_first, last=newTeacherAlias.actual_last, school=newTeacherAlias.actual_school))
     if teacher is None:
         logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias}. Teacher not found.")
         return None
@@ -433,7 +434,7 @@ def addTeacherAlias(
     alid = secrets.token_hex(4)
     teacherAlias = schemas.TeacherAliasReturn(**newTeacherAlias.dict(), alid=alid, tid=teacher.tid)
     print(f"Teacher Alias object: {teacherAlias}")
-    teacherAliasModel = models.Aliases(first=newTeacherAlias.first, last=newTeacherAlias.last, tid=teacher.tid, alid=alid)
+    teacherAliasModel = models.Aliases(**teacherAlias.dict())
 
     db.add(teacherAliasModel)
     db.commit()

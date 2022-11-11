@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from src import utils
 from src.api import accounts
 from src.dataTypes import models, schemas, structs
+from ....utils.prettifyTeacherName import prettifyName
 
 from ....database import crud
 
@@ -167,10 +168,30 @@ def getTeacher(
     )
 
 
+@router.get("/teacher/alias", response_model=Optional[schemas.TeacherAliasReturn], status_code=201)
+def getTeacherAlias(
+    first: str,
+    last: str,
+    school: structs.SchoolName,
+    db: Session = Depends(accounts.getDBSession),
+    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    (first, last) = prettifyName(first, last)
+    return crud.getTeacherAlias(db, schemas.TeacherAliasBase(first=first, last=last, school=school))
+
+
 @router.post("/teacher/alias", response_model=schemas.Bool, status_code=201)
 def addTeacherAlias(
     alias: schemas.TeacherAliasCreate,
     db: Session = Depends(accounts.getDBSession),
-    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
     return crud.addTeacherAlias(db, alias)
+
+
+@router.get("/teacher/aliases", response_model=List[schemas.TeacherAliasReturn], status_code=201)
+def getTeacherAliases(
+    db: Session = Depends(accounts.getDBSession),
+    # creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    return crud.getTeacherAliases(db)

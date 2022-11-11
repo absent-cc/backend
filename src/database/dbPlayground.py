@@ -140,9 +140,10 @@ print(crud.getTeacher(db, teacher=schemas.TeacherReturn(first="Brian", last="Bar
 alias1 = schemas.TeacherAliasCreate(
     first="Brian",
     last="Baron",
+    school=structs.SchoolName.NEWTON_SOUTH,
     actual_first="Bob",
     actual_last="Baron",
-    school=structs.SchoolName.NEWTON_SOUTH,
+    actual_school=structs.SchoolName.NEWTON_SOUTH,
 )
 
 crud.addTeacherAlias(db, alias1)

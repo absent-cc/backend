@@ -415,7 +415,7 @@ class TeacherAliasBase(BaseModel):
 class TeacherAliasCreate(TeacherAliasBase):
     actual_first: str
     actual_last: str
-
+    actual_school: structs.SchoolName
     class Config:
         orm_mode = True
     
@@ -423,7 +423,7 @@ class TeacherAliasCreate(TeacherAliasBase):
         return f"{self.first} {self.last} -> {self.actual_first} {self.actual_last} ({self.school})"
 
 
-class TeacherAliasReturn(TeacherAliasCreate):
+class TeacherAliasReturn(TeacherAliasBase):
     alid: str
     tid: str
 
