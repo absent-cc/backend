@@ -146,8 +146,9 @@ alias1 = schemas.TeacherAliasCreate(
     actual_school=structs.SchoolName.NEWTON_SOUTH,
 )
 
-crud.addTeacherAlias(db, alias1)
+returnAlias = crud.addTeacherAlias(db, alias1)
 print(crud.getTeacherAlias(db, alias1))
 
 print(crud.getTeacherAliases(db))
 
+# crud.updateTeacherAlias(db, schemas.TeacherAliasUpdate(entryToUpdate=returnAlias, first="Bible", last="Baron", school=structs.SchoolName.NEWTON_SOUTH))

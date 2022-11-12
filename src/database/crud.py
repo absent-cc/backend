@@ -185,16 +185,6 @@ def getAlwaysNotify(db: Session, school: structs.SchoolName) -> models.User:
     )
 
 
-def getTeacherAliasByTID(db: Session, teacher: schemas.TeacherReturn) -> models.Aliases:
-    if teacher.tid is not None:
-        logger.info(f"GET: Teacher alias requested: {teacher.tid}")
-        return (
-            db.query(models.Aliases).filter(models.Aliases.tid == teacher.tid).first()
-        )
-    logger.error(f"GET: Teacher alias lookup failed: {teacher.tid}")
-    return None
-
-
 def getTeacherAlias(db: Session, teacher: schemas.TeacherAliasBase) -> models.Aliases:
     if teacher.first is not None and teacher.first is not None and teacher.school is not None:
         logger.info(f"GET: Teacher alias requested: {teacher}")
@@ -753,7 +743,28 @@ def updateSpecialDay(db, updateSpecialDay: schemas.SpecialDay) -> schemas.Bool:
     )
     return schemas.Bool(success=False)
 
+def updateTeacherAlias(db, teacher: schemas.TeacherAliasUpdate) -> schemas.TeacherAliasReturn:
+    aliasTeacher = getTeacherAlias(db, teacher.entryToUpdate)
+    print("Internal crud update is: ", teacher.entryToUpdate)
+    if aliasTeacher is None:
+        logger.error(f"UPDATE: Teacher alias update failed: {teacher}. Does not exist")
+        return None
+    result = db.execute(
+        update(models.Aliases)
+        .where(
+            models.Aliases.alid == aliasTeacher.alid,
+        )
+        .values(
+            first=teacher.first,
+            last=teacher.last,
+            school=teacher.school,
+        )
+    )
+    db.commit()
+    logger.info(f"UPDATE: Teacher alias updated: {teacher}")
+    return result
 
+    
 def reset(db):
     print("INTERNAL FLAG: RESETTING DB!")
     db.query(models.User).delete()

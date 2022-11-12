@@ -410,6 +410,9 @@ class TeacherAliasBase(BaseModel):
 
     class Config:
         orm_mode = True
+    
+    def __str__(self) -> str:
+        return f"{self.first} {self.last} ({self.school})"
 
 
 class TeacherAliasCreate(TeacherAliasBase):
@@ -422,10 +425,24 @@ class TeacherAliasCreate(TeacherAliasBase):
     def __str__(self) -> str:
         return f"{self.first} {self.last} -> {self.actual_first} {self.actual_last} ({self.school})"
 
-
+    def __repr__(self) -> str:
+        return self.__repr__()
+    
 class TeacherAliasReturn(TeacherAliasBase):
     alid: str
     tid: str
+
+    class Config:
+        orm_mode = True
+
+class TeacherAliasUpdate(TeacherAliasBase):
+    entryToUpdate: TeacherAliasReturn
+
+    def __str__(self) -> str:
+        return f"{self.entryToUpdate.first} {self.entryToUpdate.last} {self.entryToUpdate.school}({self.entryToUpdate.alid}) -> {self.first} {self.last} {self.school}"
+
+    def __repr__(self) -> str:
+        return self.__repr__()
 
     class Config:
         orm_mode = True
