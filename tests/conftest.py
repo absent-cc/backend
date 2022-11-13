@@ -5,6 +5,7 @@ from src.database.database import SessionLocal
 
 _db = SessionLocal()
 
+
 def pytest_configure(config):
     # Reset DB
     print("RESETTING DB FOR PYTEST!")

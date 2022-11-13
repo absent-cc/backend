@@ -1,0 +1,15 @@
+[Unit]
+Description=Schoology listener and notifications engine powering abSENT
+After=network.target
+
+[Service]
+WorkingDirectory=/home/rk/backend
+
+User=rk
+
+Restart=always
+
+ExecStart=/usr/bin/screen -DmS absent /home/rk/backend/.venv/bin/python -m src.listener
+
+[Install]
+WantedBy=multi-user.target

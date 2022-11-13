@@ -5,7 +5,7 @@ import csv
 # files = ['NSHS_teachers', 'NNHS_teachers']
 
 # for path in files:
-path = 'NNHS_teachers' # Specify the file to be converted
+path = "NNHS_teachers"  # Specify the file to be converted
 
 with open(path + ".tsv", "r") as file:
     file = file.readlines()
@@ -21,5 +21,5 @@ with open(path + ".csv", "w") as csvFile:
         for i in range(1, -1, -1):
             line = seperated[i]
             actualContent = line[0:-1]
-            rowToWrite.append(actualContent) 
+            rowToWrite.append(actualContent)
         writer.writerow(rowToWrite)

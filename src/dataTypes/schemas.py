@@ -1,69 +1,98 @@
-from typing import List, Literal, Optional, Tuple, Union
-from uuid import UUID
-from pydantic import BaseModel, validator
-from ..dataTypes import structs
 from datetime import datetime, date
+from typing import List, Optional, Union
+from uuid import UUID
 
-from ..database.database import Base
+from pydantic import BaseModel, validator
+
+from ..dataTypes import structs
+
+
+class UserSettings(BaseModel):
+    showFreeAsAbsent: bool = False
+    notify: bool = True
+    notifyWhenNone: bool = True
+
+    class Config:
+        orm_mode = True
+
+
+class UserSettingsCreate(UserSettings):
+    uid: UUID
+
 
 class UserBase(BaseModel):
-    first: str = None
-    last: str = None
-    school: structs.SchoolName = None
-    grade: Literal[9, 10, 11, 12] = None
+    first: Optional[str] = None
+    last: Optional[str] = None
+    school: Optional[structs.SchoolName] = None
+    grade: Optional[structs.Grade] = None
 
     def __str__(self) -> str:
-        return f"{self.first} {self.last}"
-    
+        return f"{self.first} {self.last} ({self.school} {self.grade})"
+
     def __hash__(self):
         return hash(str(self.number))
 
+
 class UserCreate(UserBase):
-    gid: str = None
+    gid: Optional[str] = None
+
 
 class TeacherBase(BaseModel):
-    first: str = None
-    last: str = None
+    first: Optional[str] = None
+    last: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"{self.first} {self.last}"
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
 
 class TeacherCreate(TeacherBase):
-    school: structs.SchoolName = None
+    school: Optional[structs.SchoolName] = None
 
     def __repr__(self) -> str:
         return f"{self.first} {self.last}"
+
 
 class TeacherReturn(TeacherCreate):
     tid: str = None
-    
+
     def __repr__(self) -> str:
         return f"{self.first} {self.last} {self.tid} {self.school}"
 
     class Config:
         orm_mode = True
 
+
 class Schedule(BaseModel):
-    A: List[TeacherBase] = None
-    ADVISORY: List[TeacherBase] = None
-    B: List[TeacherBase] = None
-    C: List[TeacherBase] = None
-    D: List[TeacherBase] = None
-    E: List[TeacherBase] = None
-    F: List[TeacherBase] = None
-    G: List[TeacherBase] = None
-    EXTRA: List[TeacherBase] = None
+    A: Optional[List[TeacherBase]] = None
+    ADVISORY: Optional[List[TeacherBase]] = None
+    B: Optional[List[TeacherBase]] = None
+    C: Optional[List[TeacherBase]] = None
+    D: Optional[List[TeacherBase]] = None
+    E: Optional[List[TeacherBase]] = None
+    F: Optional[List[TeacherBase]] = None
+    G: Optional[List[TeacherBase]] = None
+    EXTRA: Optional[List[TeacherBase]] = None
+
+    class Config:
+        orm_mode = True
+
+    def __str__(self) -> str:
+        return f"A: {self.A}\nADV: {self.ADVISORY}\nB: {self.B}\nC: {self.C}\nD: {self.D}\nE: {self.E}\nF: {self.F}\nG: {self.G}\nEXTRA: {self.EXTRA}"
+
 
 class ScheduleReturn(BaseModel):
-    A: List[TeacherReturn] = None
-    ADVISORY: List[TeacherReturn] = None
-    B: List[TeacherReturn] = None
-    C: List[TeacherReturn] = None
-    D: List[TeacherReturn] = None
-    E: List[TeacherReturn] = None
-    F: List[TeacherReturn] = None
-    G: List[TeacherReturn] = None
-    EXTRA: List[TeacherReturn] = None
+    A: Optional[List[TeacherReturn]] = None
+    ADVISORY: Optional[List[TeacherReturn]] = None
+    B: Optional[List[TeacherReturn]] = None
+    C: Optional[List[TeacherReturn]] = None
+    D: Optional[List[TeacherReturn]] = None
+    E: Optional[List[TeacherReturn]] = None
+    F: Optional[List[TeacherReturn]] = None
+    G: Optional[List[TeacherReturn]] = None
+    EXTRA: Optional[List[TeacherReturn]] = None
 
     class Config:
         orm_mode = True
@@ -73,24 +102,25 @@ class ScheduleReturn(BaseModel):
         schedule = ScheduleReturn()
         for cls in classes:
             current = getattr(schedule, cls.block)
-            if current != None:
+            if current is not None:
                 current.append(TeacherReturn.from_orm(cls.teacher))
                 setattr(schedule, cls.block, current)
             else:
                 setattr(schedule, cls.block, [TeacherReturn.from_orm(cls.teacher)])
         return schedule
 
+
 class Class(BaseModel):
-    tid: str = None
-    block: structs.SchoolBlock = None
-    uid: str = None
+    tid: Optional[str] = None
+    block: Optional[structs.SchoolBlock] = None
+    uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
     def __repr__(self) -> str:
         return f"tid: {self.tid} Block: {self.block} uid: {self.uid}"
-    
+
     # @staticmethod
     # def listFromSchedule(schedule: Schedule, uid: str):
     #     clsList = []
@@ -99,62 +129,92 @@ class Class(BaseModel):
     #             clsList.append(Class(block=ReverseBlockMapper()[block[0]], uid=uid))
     #     return clsList
 
+
 class TeacherFull(TeacherReturn):
     schedule: List[Class] = []
-    
+
     class Config:
         orm_mode = True
 
+
 class UserReturn(UserCreate):
-    uid: str = None
+    uid: Optional[str] = None
     schedule: Union[ScheduleReturn, List[Class]] = []
 
     class Config:
         orm_mode = True
 
+
+class UserProfile(UserCreate):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class UserSchedule(UserCreate):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
 class SessionCreate(BaseModel):
     uid: Optional[str] = None
-    @validator('uid')
+
+    @validator("uid")
     def checkUIDLength(cls, v):
         try:
             UUID(v)
             return v
         except:
-            raise ValueError('Invalid UID.')
+            raise ValueError("Invalid UID.")
+
 
 class SessionReturn(SessionCreate):
     sid: Optional[str] = None
     last_accessed: Optional[datetime] = None
 
-    @validator('sid')
+    @validator("sid")
     def checkSIDLength(cls, v):
         if len(v) != 16:
-            raise ValueError('SID Must be 17 characters long.')
+            raise ValueError("SID Must be 17 characters long.")
         return v
+
     class Config:
         orm_mode = True
+
 
 class Token(BaseModel):
     token: str
 
-class UserInfo(BaseModel):
-    profile: UserBase
-    schedule: Schedule
-    fcm: Token
 
-class UserInfoReturn(BaseModel):
-    profile: UserBase
-    schedule: ScheduleReturn
-    fcm: Token
+class UserInfoBase(BaseModel):
+    settings: Optional[UserSettings] = None
+
+
+class UserInfoUpdate(UserInfoBase):
+    schedule: Optional[Schedule] = None
+    profile: Optional[UserBase] = None
+    fcm: Optional[Token] = None
+
+
+class UserInfoReturn(UserInfoBase):
+    schedule: Optional[ScheduleReturn] = None
+    profile: Optional[UserProfile] = None
+    onboarded: Optional[bool] = None
+
 
 class SessionCredentials(BaseModel):
     token: Optional[str] = None
     refresh: Optional[str] = None
     onboarded: Optional[bool] = None
 
+
 class AbsenceBase(BaseModel):
     length: Optional[str] = None
     note: Optional[str] = None
+
 
 class AbsenceCreate(AbsenceBase):
     teacher: TeacherCreate
@@ -163,55 +223,58 @@ class AbsenceCreate(AbsenceBase):
     def __repr__(self) -> str:
         return super().__repr__()
 
+
 class AbsenceReturn(AbsenceBase):
     teacher: TeacherReturn
 
-class CanceledClassCreate(Class):
-    date: date
-
-    def __repr__(self) -> str:
-        return super().__repr__()
 
 class PartialName(BaseModel):
-    name: str 
-    school: str
+    name: str
+    school: structs.SchoolName
 
-    @validator('name')
+    @validator("name")
     def checkPartialName(cls, v):
         if (len(v)) < 3:
-            raise ValueError('Phrase too short.')
+            raise ValueError("Phrase too short.")
         return v
-        
-    @validator('school')
-    def checkSchoolName(cls, v):
-        if (v != "NNHS") and (v != "NSHS"):
-            raise ValueError('Invalid school.')
-        return v
+
 
 class SessionList(BaseModel):
     sessions: List[SessionReturn]
+
 
 class AbsenceList(BaseModel):
     absences: List[AbsenceReturn]
     date: date
 
+
+class ManualAbsencesReturn(BaseModel):
+    absences: List[AbsenceList]
+    success: bool
+
+
 class AutoComplete(BaseModel):
     suggestions: list
 
+
 class TeacherValid(BaseModel):
     value: bool
-    formatted: str = None
-    suggestions: List[str] = None
+    formatted: Optional[str] = None
+    suggestions: Optional[List[str]] = None
+
 
 class ClassList(BaseModel):
-    classes: List[structs.SchoolBlock] = None
+    classes: Optional[List[structs.SchoolBlock]] = None
+
 
 class Analytics(BaseModel):
     userCount: int
     totalAbsences: int
 
+
 class Bool(BaseModel):
     success: bool
+
 
 class Badges(BaseModel):
     schemaVersion: int = 1
@@ -228,20 +291,158 @@ class Badges(BaseModel):
     # style: str = "flat"
     # cacheSeconds: int = 300
 
+
 class UserCountBadge(Badges):
     label = "Active Users"
     message: str
+
 
 class AbsencesBadge(Badges):
     label = "Absences Reported"
     message: str
 
+
 class ClassCountBadge(Badges):
     label = "Classes Serving"
     message: str
 
+
 class ClassCanceledBadge(Badges):
-    label = "Classes Cancelled"
+    label = "Free Blocks Recorded"
     message: str
+
+
 class Date(BaseModel):
     date: date
+
+
+class SchoolDay(BaseModel):
+    date: date
+    name: str
+    schedule: structs.ScheduleWithTimes
+    note: Optional[str] = None
+    special: bool
+    school: Optional[structs.SchoolName] = None
+
+    class Config:
+        orm_mode = True
+        arbitrary_types_allowed = True
+
+        # @staticmethod
+        # def schema_extra(schema: Dict[str, Any], model: Type['SchoolDay']) -> None:
+        #     for prop in schema.get('properties', {}).values():
+        #         prop.pop('title', None)
+
+        schema_extra = {
+            "example": {
+                "date": "2020-01-01",
+                "name": "New Years Day",
+                "schedule": [
+                    {
+                        "block": "A",
+                        "startTime": "09:00:00",
+                        "endTime": "10:00:00",
+                        "lunches": [
+                            {
+                                "lunch": "L1",
+                                "startTime": "10:00:00",
+                                "endTime": "11:00:00",
+                            },
+                        ],
+                    },
+                ],
+                "note": "Happy New Years!",
+                "special": True,
+                "school": "NSHS",
+            }
+        }
+
+    @validator("date")
+    def checkDate(cls, v):
+        if not isinstance(v, date):
+            raise ValueError("Invalid date.")
+        return v
+
+
+class SpecialDay(SchoolDay):
+    special = True
+
+
+class NormalDay(SchoolDay):
+    name = "Normal Day"
+    note = "No special schedule"
+    special = False
+
+
+class AnnouncementBase(BaseModel):
+    title: str
+    content: str
+    school: Optional[structs.SchoolName]
+    date: Optional[date]
+
+    class Config:
+        orm_mode = True
+
+
+class AnnouncementCreate(AnnouncementBase):
+    anid: str
+
+    class Config:
+        orm_mode = True
+
+
+class AnnouncementReturn(AnnouncementCreate):
+    class Config:
+        orm_mode = True
+
+
+class AnnouncementUpdate(AnnouncementCreate):
+    updateTime: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class TeacherAliasBase(BaseModel):
+    first: str
+    last: str
+    school: structs.SchoolName
+
+    class Config:
+        orm_mode = True
+    
+    def __str__(self) -> str:
+        return f"{self.first} {self.last} ({self.school})"
+
+
+class TeacherAliasCreate(TeacherAliasBase):
+    actual_first: str
+    actual_last: str
+    actual_school: structs.SchoolName
+    class Config:
+        orm_mode = True
+    
+    def __str__(self) -> str:
+        return f"{self.first} {self.last} -> {self.actual_first} {self.actual_last} ({self.school})"
+
+    def __repr__(self) -> str:
+        return self.__repr__()
+    
+class TeacherAliasReturn(TeacherAliasBase):
+    alid: str
+    tid: str
+
+    class Config:
+        orm_mode = True
+
+class TeacherAliasUpdate(TeacherAliasBase):
+    entryToUpdate: TeacherAliasReturn
+
+    def __str__(self) -> str:
+        return f"{self.entryToUpdate.first} {self.entryToUpdate.last} {self.entryToUpdate.school}({self.entryToUpdate.alid}) -> {self.first} {self.last} {self.school}"
+
+    def __repr__(self) -> str:
+        return self.__repr__()
+
+    class Config:
+        orm_mode = True

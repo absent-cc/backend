@@ -1,0 +1,8 @@
+Marc Banks : ('Marcia', 'Bergman') 130, 80, 50 // Appears Twice
+Lan Lan Chen : ('Lan', 'Lan Chen') 127, 60, 67 // Double Check, also appears twice
+Hae-Kyung Choi : ('Hae-Kyung', 'Choi (Hae)') 157, 100, 57
+John Curley : ('John', 'Conte') 136, 100, 36 // Appears Three Times
+Ted Dalicandro : ('Ted', 'Loynd') 140, 100, 40 // Ted vs Theodore
+Kristian Sumner : ('Christina', 'Sergi') 126, 71, 55 // Doulbe check against other Ms. Sumner
+Jilleen Songin : ('Alex', 'Strongin') 122, 36, 86 // Doulbe check
+Amanda Bastien : ('Amanda', 'Watkins') 157, 100, 57 // Shows up twice

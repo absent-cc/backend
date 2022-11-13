@@ -1,0 +1,57 @@
+{
+    "date": "2022-09-06",
+    "name": "1st Day of School",
+    "schedule": [
+        {
+            "block": "ADVISORY",
+            "startTime": "12:40:00",
+            "endTime": "13:05:00",
+            "lunches": null
+        },
+        {
+            "block": "A",
+            "startTime": "13:10:00",
+            "endTime": "13:25:00",
+            "lunches": null
+        },
+        {
+            "block": "B",
+            "startTime": "13:30:00",
+            "endTime": "13:45:00",
+            "lunches": null
+        },
+        {
+            "block": "C",
+            "startTime": "13:50:00",
+            "endTime": "14:05:00",
+            "lunches": null
+        },
+        {
+            "block": "D",
+            "startTime": "14:10:00",
+            "endTime": "14:25:00",
+            "lunches": null
+        },
+        {
+            "block": "E",
+            "startTime": "14:30:00",
+            "endTime": "14:45:00",
+            "lunches": null
+        },
+        {
+            "block": "F",
+            "startTime": "14:50:00",
+            "endTime": "15:05:00",
+            "lunches": null
+        },
+        {
+            "block": "G",
+            "startTime": "15:10:00",
+            "endTime": "15:25:00",
+            "lunches": null
+        }
+    ],
+    "note": "1st Day of School!",
+    "special": true,
+    "school": "NSHS"
+}

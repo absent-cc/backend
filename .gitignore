@@ -136,13 +136,15 @@ oauth/
 .vscode/
 logs/
 creds/*
-data/*
+
+!/data/specialday_entries/**
+teachers.csv
 src/tools/googleTokenGen.py
+src/state.ini
 abSENT/
 secrets.ini
 testing_config.ini
 .idea/
-oauth/
 alembic/versions/*
 src/api/debug_scripts/*
 
