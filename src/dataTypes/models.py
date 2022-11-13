@@ -128,6 +128,7 @@ class Aliases(Base):
     alid = Column(String(8), primary_key=True)
     first = Column(String(255), primary_key=True)
     last = Column(String(255), primary_key=True)
+    school = Column(Enum(structs.SchoolName))
     tid = Column(String(36), ForeignKey(Teacher.tid, ondelete="CASCADE"))
 
     def __str__(self) -> str:

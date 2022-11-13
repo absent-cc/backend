@@ -45,6 +45,7 @@ def getTeacher(db: Session, teacher: schemas.TeacherReturn) -> models.Teacher:
             .filter(
                 models.Teacher.first == teacher.first,
                 models.Teacher.last == teacher.last,
+                models.Teacher.school == teacher.school,
             )
             .first()
         )
@@ -104,7 +105,7 @@ def getUserCount(db: Session) -> int:
     return db.query(models.User).count()
 
 
-def getSessionList(db: Session, user: schemas.UserReturn) -> List[models.UserSession]:
+def getSessionList(db: Session, user: schemas.UserReturn) -> Optional[List[models.UserSession]]:
     if user.uid is not None:
         sessions = (
             db.query(models.UserSession)
@@ -160,7 +161,7 @@ def getClassesCount(db: Session) -> int:
     return db.query(models.Class).distinct(models.Class.block, models.Class.tid).count()
 
 
-def getUserSettings(db: Session, user: schemas.UserReturn) -> models.UserSettings:
+def getUserSettings(db: Session, user: schemas.UserReturn) -> Optional[models.UserSettings]:
     if user.uid is not None:
         logger.info(f"GET: User settings requested: {user.uid}")
         return (
@@ -184,33 +185,27 @@ def getAlwaysNotify(db: Session, school: structs.SchoolName) -> models.User:
     )
 
 
-def getTeacherAliasByTID(db: Session, teacher: schemas.TeacherReturn) -> models.Aliases:
-    if teacher.tid is not None:
-        logger.info(f"GET: Teacher alias requested: {teacher.tid}")
-        return (
-            db.query(models.Aliases).filter(models.Aliases.tid == teacher.tid).first()
-        )
-    logger.error(f"GET: Teacher alias lookup failed: {teacher.tid}")
-    return None
-
-
 def getTeacherAlias(db: Session, teacher: schemas.TeacherAliasBase) -> models.Aliases:
-    if teacher.first is not None and teacher.last is not None:
-        logger.info(f"GET: Teacher alias requested: {teacher.first} {teacher.last}")
+    if teacher.first is not None and teacher.first is not None and teacher.school is not None:
+        logger.info(f"GET: Teacher alias requested: {teacher}")
         return (
             db.query(models.Aliases)
             .filter(
                 models.Aliases.first == teacher.first,
                 models.Aliases.last == teacher.last,
+                models.Aliases.school == teacher.school,
             )
             .first()
         )
-    logger.error(f"GET: Teacher alias lookup failed: {teacher.first} {teacher.last}")
+    logger.error(f"GET: Teacher alias lookup failed: {teacher}. Alias not found")
     return None
 
+def getTeacherAliases(db: Session) -> List[models.Aliases]:
+    logger.info("GET: Teacher aliases requested")
+    return db.query(models.Aliases).all()
 
 # Peek the top entry in the absences table by date.
-def peekAbsence(db: Session, date: datetime = datetime.today().date()) -> tuple:
+def peekAbsence(db: Session, date: date = datetime.today().date()) -> tuple:
     query = db.query(models.Absence).filter(models.Absence.date == date).first()
     logger.info(f"PEEK: First absence requested: {query.date}")
     return query
@@ -413,25 +408,27 @@ def addTeacher(
 def addTeacherAlias(
     db: Session, newTeacherAlias: schemas.TeacherAliasCreate
 ) -> Optional[models.Aliases]:
+    if len(newTeacherAlias.first) == 0 or len(newTeacherAlias.first) == 0 or newTeacherAlias.school is None:
+        logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias}. No alias provided.")
+        return None
 
-    (newTeacherAlias.first, newTeacherAlias.last) = prettifyName(
-        newTeacherAlias.first, newTeacherAlias.last
+    (newTeacherAlias.first, newTeacherAlias.first) = prettifyName(
+        newTeacherAlias.first, newTeacherAlias.first
     )  # To ensure that all names are in the correct format.
 
-    if newTeacherAlias.tid is None:
-        logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias.tid}")
-        return None
-    if getTeacher(db, schemas.TeacherReturn(tid=newTeacherAlias.tid)) is None:
-        logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias.tid}")
+    teacher = getTeacher(db, schemas.TeacherReturn(first=newTeacherAlias.actual_first, last=newTeacherAlias.actual_last, school=newTeacherAlias.actual_school))
+    if teacher is None:
+        logger.error(f"ADD: Teacher alias addition failed: {newTeacherAlias}. Teacher not found.")
         return None
 
     alid = secrets.token_hex(4)
-    teacherAlias = schemas.TeacherAliasReturn(**newTeacherAlias.dict(), alid=alid)
+    teacherAlias = schemas.TeacherAliasReturn(**newTeacherAlias.dict(), alid=alid, tid=teacher.tid)
+    print(f"Teacher Alias object: {teacherAlias}")
     teacherAliasModel = models.Aliases(**teacherAlias.dict())
 
     db.add(teacherAliasModel)
     db.commit()
-    logger.info(f"ADD: Teacher alias added: {alid} | TID: {newTeacherAlias.tid}")
+    logger.info(f"ADD: Teacher alias added: {alid} | TID: {teacher.tid}")
     return teacherAliasModel
 
 
@@ -454,13 +451,13 @@ def addAbsence(db: Session, absence: schemas.AbsenceCreate) -> Optional[models.A
         print("Teacher not found. Going through aliases")
         # Teacher is not found, check if an alias exists.
         teacherAlias = getTeacherAlias(
-            db, schemas.TeacherAliasBase(**absence.teacher.dict())
+            db, schemas.TeacherAliasBase(first=absence.teacher.first, last=absence.teacher.last, school=absence.teacher.school)
         )
         if teacherAlias is None:
             print("Teacher alias not found")
             teacher = addTeacher(db, absence.teacher)
         else:
-            print("Teacher alias found")
+            print("Teacher alias found: " + teacherAlias.tid)
             teacher = teacherAlias
             
     absenceModel = models.Absence(
@@ -746,7 +743,28 @@ def updateSpecialDay(db, updateSpecialDay: schemas.SpecialDay) -> schemas.Bool:
     )
     return schemas.Bool(success=False)
 
+def updateTeacherAlias(db, teacher: schemas.TeacherAliasUpdate) -> schemas.TeacherAliasReturn:
+    aliasTeacher = getTeacherAlias(db, teacher.entryToUpdate)
+    print("Internal crud update is: ", teacher.entryToUpdate)
+    if aliasTeacher is None:
+        logger.error(f"UPDATE: Teacher alias update failed: {teacher}. Does not exist")
+        return None
+    result = db.execute(
+        update(models.Aliases)
+        .where(
+            models.Aliases.alid == aliasTeacher.alid,
+        )
+        .values(
+            first=teacher.first,
+            last=teacher.last,
+            school=teacher.school,
+        )
+    )
+    db.commit()
+    logger.info(f"UPDATE: Teacher alias updated: {teacher}")
+    return result
 
+    
 def reset(db):
     print("INTERNAL FLAG: RESETTING DB!")
     db.query(models.User).delete()

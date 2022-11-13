@@ -4,9 +4,10 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends
 from loguru import logger
 from sqlalchemy.orm import Session
-from src import utils
 from src.api import accounts
 from src.dataTypes import models, schemas, structs
+from ....utils.prettifyTeacherName import prettifyName
+from ....api import utils
 
 from ....database import crud
 
@@ -126,8 +127,8 @@ def addSpecialDay(
         schedule = structs.ScheduleWithTimes(specialDay.schedule)
         specialDay.schedule = schedule
     except:
-        utils.raiseError(422, "Schedule data is wrong", structs.ErrorType.PAYLOAD)
         logger.error("Received incorrect format or invalid data for schedule")
+        utils.raiseError(422, "Schedule data is wrong", structs.ErrorType.PAYLOAD)
         return schemas.Bool(success=False)
     result = crud.getSpecialDay(db, specialDay.date, specialDay.school)
     if result is None:
@@ -167,10 +168,75 @@ def getTeacher(
     )
 
 
-@router.post("/teacher/alias", response_model=schemas.Bool, status_code=201)
+@router.get("/teacher/alias", response_model = schemas.TeacherAliasReturn, status_code=201)
+def getTeacherAlias(
+    first: str,
+    last: str,
+    school: structs.SchoolName,
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    (first, last) = prettifyName(first, last)
+    return crud.getTeacherAlias(db, schemas.TeacherAliasBase(first=first, last=last, school=school))
+
+
+@router.post("/teacher/alias", response_model=schemas.TeacherAliasReturn, status_code=201)
 def addTeacherAlias(
     alias: schemas.TeacherAliasCreate,
     db: Session = Depends(accounts.getDBSession),
     creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
 ):
-    return crud.addTeacherAlias(db, alias)
+    if alias.first is None or alias.last is None:
+        utils.raiseError(422, "First and last name must be provided", structs.ErrorType.PAYLOAD)
+    aliasTeacher = crud.getTeacherAlias(db, alias)
+    if aliasTeacher is None:
+        result = crud.addTeacherAlias(db, alias)
+        if result is None:
+            utils.raiseError(422, "Teacher not found", structs.ErrorType.PAYLOAD)
+        return result
+    else:
+        utils.raiseError(422, "Alias already exists", structs.ErrorType.PAYLOAD)
+
+
+# More like a rename then an update. Does not change alid or tid of entry!
+@router.put("/teacher/alias", response_model=schemas.Bool, status_code=201)
+def updateTeacherAlias(
+    oldFirst: str,
+    oldLast: str,
+    oldSchool: structs.SchoolName,
+    newFirst: str,
+    newLast: str,
+    newSchool: structs.SchoolName,
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    if len(oldFirst) == 0 or len(oldLast) == 0 or oldSchool is None:
+        utils.raiseError(422, "Old entry first, last names and school must be provided", structs.ErrorType.PAYLOAD)
+
+    if len(newFirst) == 0 or len(newLast) == 0 or newSchool is None:
+        utils.raiseError(422, "New entry first, last names and school must be provided", structs.ErrorType.PAYLOAD)
+    
+    oldAlias = crud.getTeacherAlias(db, schemas.TeacherAliasBase(first=oldFirst, last=oldLast, school=oldSchool))
+
+    if oldAlias is None:
+        print("Alias does not exist")
+        utils.raiseError(422, "Alias does not exist", structs.ErrorType.PAYLOAD)
+    
+    update = schemas.TeacherAliasUpdate(
+        entryToUpdate=oldAlias,
+        first=newFirst,
+        last=newLast,
+        school=newSchool,
+    )
+    result = crud.updateTeacherAlias(db, update)
+    if result is None:
+        utils.raiseError(422, "Alias does not exist", structs.ErrorType.PAYLOAD)
+    return schemas.Bool(success=True)
+
+
+@router.get("/teacher/aliases", response_model=List[schemas.TeacherAliasReturn], status_code=201)
+def getTeacherAliases(
+    db: Session = Depends(accounts.getDBSession),
+    creds: schemas.SessionReturn = Depends(accounts.verifyAdmin),
+):
+    return crud.getTeacherAliases(db)

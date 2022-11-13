@@ -97,7 +97,7 @@ def listener():
                         northCheck = sc.northRun()
                     else:
                         logger.info("North has already been checked today.")
-                    
+
                     logger.info(f"Schoology success: NSHS: {southCheck}, NNHS: {northCheck}.")
                 else:
                     if southCheck and northCheck:
