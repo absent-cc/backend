@@ -1,0 +1,45 @@
+{
+    "date": "2022-11-23",
+    "name": "Thanksgiving Eve",
+    "schedule": [
+        {
+            "block": "C",
+            "startTime": "09:00:00",
+            "endTime": "09:35:00",
+            "lunches": null
+        },
+        {
+            "block": "D",
+            "startTime": "09:40:00",
+            "endTime": "10:15:00",
+            "lunches": null
+        },
+        {
+            "block": "E",
+            "startTime": "10:20:00",
+            "endTime": "10:55:00",
+            "lunches": null
+        },
+        {
+            "block": "F",
+            "startTime": "11:00:00",
+            "endTime": "11:35:00",
+            "lunches": null 
+        },
+        {
+            "block": "EXTRA",
+            "startTime": "11:50:00",
+            "endTime": "12:25:00",
+            "lunches": [
+                {
+                  "lunch": "L1",
+                  "startTime": "12:30:00",
+                  "endTime": "12:55:00"
+                }
+            ]
+        }
+    ],
+    "note": "Have a great Thanksgiving!",
+    "special": true,
+    "school": "NSHS"
+}
