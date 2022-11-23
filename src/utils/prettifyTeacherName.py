@@ -4,7 +4,7 @@ from typing import List, Tuple
 from src.dataTypes.schemas import TeacherReturn
 from src.database.database import SessionLocal
 
-splitTable = "\s|-|_|\."
+splitTable = "\s|-|_|\.|'"
 
 
 def prettifyTeacher(teacher: TeacherReturn) -> TeacherReturn:
@@ -41,7 +41,6 @@ def prettifyName(first: str, last: str) -> Tuple[str, str]:
     prettyLast = prettyCompile(last_split, last_delim)
 
     return prettyFirst, prettyLast
-
 
 # if __name__ == "__main__":
 #     # print(prettify(TeacherBase(first="jimmy-john", last="smith-jr")))
