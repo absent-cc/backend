@@ -34,6 +34,7 @@ def prettifyName(first: str, last: str) -> Tuple[str, str]:
             if counter < len(delimitingChar):
                 returnStr += delimitingChar[counter]
             counter += 1
+        returnStr = returnStr.strip()
         return returnStr
 
     prettyFirst = prettyCompile(first_split, first_delim)
