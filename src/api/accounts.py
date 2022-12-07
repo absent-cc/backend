@@ -106,7 +106,7 @@ def validateGoogleToken(token) -> dict:
     try:
         domain = idInfo["email"].split("@")[1]
         verified = idInfo["email_verified"]
-        if domain != NEWTON or domain != ABSENT or not verified:
+        if (domain != NEWTON and domain != ABSENT) or not verified:
             logger.info(f"Google token for a non-NPS account POSTed")
             utils.raiseError(401, "Not an NPS issued account", structs.ErrorType.AUTH)
     except BaseException:
