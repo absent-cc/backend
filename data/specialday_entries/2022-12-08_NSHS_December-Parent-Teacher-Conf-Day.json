@@ -1,6 +1,6 @@
 {
-    "date": "2022-12-08",
-    "name": "December Half Day",
+    "date": "2022-12-13",
+    "name": "Parent Teacher Conferences",
     "schedule": [
         {
             "block": "A",
@@ -15,7 +15,7 @@
             "lunches": null
         },
         {
-            "block": "CAT",
+            "block": "F",
             "startTime": "10:50:00",
             "endTime": "11:40:00",
             "lunches": null 
@@ -35,5 +35,5 @@
     ],
     "note": "",
     "special": true,
-    "school": "NSHS"
+    "school": null
 }
