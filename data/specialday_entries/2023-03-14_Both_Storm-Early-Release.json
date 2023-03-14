@@ -1,0 +1,39 @@
+{
+    "date": "2023-03-14",
+    "name": "Storm Early Release",
+    "schedule": [
+        {
+            "block": "A",
+            "startTime": "09:00:00",
+            "endTime": "09:50:00",
+            "lunches": null
+        },
+        {
+            "block": "B",
+            "startTime": "09:55:00",
+            "endTime": "10:45:00",
+            "lunches": null
+        },
+        {
+            "block": "F",
+            "startTime": "10:50:00",
+            "endTime": "11:40:00",
+            "lunches": null 
+        },
+        {
+            "block": "G",
+            "startTime": "11:45:00",
+            "endTime": "12:35:00",
+            "lunches": [
+                {
+                  "lunch": "L1",
+                  "startTime": "12:35:00",
+                  "endTime": "12:55:00"
+                }
+            ]
+        }
+    ],
+    "note": "",
+    "special": true,
+    "school": null
+}
